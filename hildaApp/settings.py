@@ -47,9 +47,11 @@ DJANGO_APPS = [
 PROJECT_APPS = [
     'data',
     'main',
+    'api',
 ]
 
 THIRD_PARTY_APPS=[
+    'django_extensions',
     # 'corsheaders',
     # 'rest_framework',
     # 'import_export',
@@ -110,16 +112,29 @@ DATABASES = {
         'PORT': env('PORT'),
         'ATOMIC_REQUEST': env('ATOMIC_REQUEST')
     },
+    'api_data': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('APIDATA'),
+        'USER': env('USER_DB'),
+        'PASSWORD': env('PASSWORD'),
+        'HOST': env('HOST'),
+        'PORT': env('PORT'),
+        'ATOMIC_REQUEST': env('ATOMIC_REQUEST')
+    },
 }
 
-
 DATABASE_ROUTERS = [
-    'data.data_router.DataRouter'
+    'data.data_router.DataRouter',
+    'api.api_router.ApiRouter',
 ]
 
 # Default User model for the app
 AUTH_USER_MODEL = 'main.Usuario'
 
+GRAPH_MODELS = {
+    'all_applications': True,
+    'group_models': True,
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
