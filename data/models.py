@@ -1,9 +1,7 @@
-from django.db import models
 from .choices import *
+from django.db import models
 from django.core.validators import RegexValidator
 from django.core.validators import  MinValueValidator, MaxValueValidator
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 
 # Create your models here.
 class Cliente(models.Model):
@@ -342,9 +340,13 @@ class CarpetaExamenFisico(models.Model):
 class CarpetaExamenSocioeconomico(models.Model):
     
     # TODO: make a function that sums up all the amounts and returns the total amount
+    def obtener_total_ingresos(self):
+        total = sum(self.ingreso_familiar_1, self.ingreso_familiar_2, self.ingreso_familiar_3, self.ingreso_familiar_4)
+        return total
 
-    def obtener_total():
-        pass
+    def obtener_total_egresos(self):
+        total = sum(self.egresos_adeudos, self.egresos_agua, self.egresos_alimentacion, self.egresos_educacion, self.egresos_electricidad, self.egresos_gas, self.egresos_otros, self.egresos_renta, self.egresos_telefono, self.egresos_transporte)
+        return total
 
     propiedades = models.CharField(max_length=200, blank=True)
     inversiones = models.CharField(max_length=200, blank=True)
@@ -385,7 +387,7 @@ class CarpetaExamenSocioeconomico(models.Model):
     ingreso_familiar_3 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
     familiar_4 = models.CharField(max_length=35)
     ingreso_familiar_4 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
-    total_ingresos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=obtener_total)
+    total_ingresos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=obtener_total_ingresos)
     egresos_alimentacion = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
     egresos_renta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
     egresos_agua = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
@@ -396,7 +398,7 @@ class CarpetaExamenSocioeconomico(models.Model):
     egresos_educacion = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
     egresos_adeudos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
     egresos_otros = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
-    total_egresos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=obtener_total)
+    total_egresos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=obtener_total_egresos)
     salud_alergias = models.CharField(max_length=100, blank=True)
     salud_visual_auditiva_fisica = models.CharField(max_length=100, blank=True)
     salud_cirugias = models.CharField(max_length=100, blank=True)
@@ -415,6 +417,29 @@ class CarpetaExamenSocioeconomico(models.Model):
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
     telefono_emergencia = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     parentesco_contacto = models.CharField(max_length=100, blank=True)
+    actividates_fin_semana = models.PositiveSmallIntegerField(choices=ACTIVIDADES_FIN_SEMANA, blank=True)
+    actividades_culturales_deportes = models.CharField(max_length=100, blank=True)
+    estudia = models.BooleanField(blank=True, default=False)
+    que_estudia = models.CharField(max_length=100, blank=True)
+    organizacion_familia = models.CharField(max_length=100, blank=True)
+    comunicacion = models.CharField(max_length=100, blank=True)
+    roles = models.CharField(max_length=100, blank=True)
+    autoridad = models.CharField(max_length=100, blank=True)
+    limites = models.CharField(max_length=100, blank=True)
+    calidad_vida = models.CharField(max_length=100, blank=True)
+    imagen_publica = models.CharField(max_length=100, blank=True)
+    comportamiento_social = models.CharField(max_length=100, blank=True)
+    demanda_laboral = models.CharField(max_length=100, blank=True)
+    antecedentes_penales = models.CharField(max_length=100, blank=True)
+    porque_este_empleo = models.CharField(max_length=200, blank=True)
+    puesto_deseado = models.CharField(max_length=100, blank=True)
+    area_deseada = models.CharField(max_length=100, blank=True)
+    tiempo_ascenso = models.CharField(max_length=100, blank=True)
+    obtencion_reconocimiento = models.CharField(max_length=100, blank=True)
+    obtencion_ascenso = models.CharField(max_length=100, blank=True)
+    capacitacion_deseada = models.CharField(max_length=100, blank=True)
+    fecha_entrevista = models.DateField(blank=True)
+
     class Meta:
         verbose_name_plural = 'Carpeta Examen Socioeconómico'
 
@@ -455,83 +480,6 @@ class DocumentosDigitales(models.Model):
     class Meta:
         verbose_name_plural = 'Documentos Personales'
 
-class Curp(models.Model):
-    
-    # TODO: Make a connection with a CURP_DB
-    # TODO: Make a Consult function to save third person APIs Info (Signals)
-    
-    def check_curp_info():
-        pass
-    
-    # TODO: Function to transform Str to Date data type (Signals)
-    
-    def transform_api_str_to_date():
-        pass
-
-    # TODO: Function to verify CURP by regex 
-    def verify_curp_syntax():
-        pass
-
-    # TODO: Function to transform gender str into options
-    def api_str_to_option():
-        pass
-
-    # TODO: Function to calculate age
-    def calculate_age():
-        pass
-
-    # TODO: Function to transform year str into integer
-    def transform_str_year_to_integer():
-        pass
-
-    curp = models.CharField(max_length=18, default=verify_curp_syntax)
-    nombre = models.CharField(max_length=100, blank=True)
-    apellido_paterno = models.CharField(max_length=100, blank=True)
-    apellido_materno = models.CharField(max_length=100, blank=True)
-    iniciales = models.CharField(max_length=30, default=check_curp_info, blank=True)
-    fecha_nacimiento = models.DateField(blank=True, default=transform_api_str_to_date)
-    edad = models.PositiveIntegerField(validators=[MinValueValidator(18), MaxValueValidator(99)], blank=True, default=calculate_age)
-    anio_registro = models.PositiveIntegerField(validators=[MinValueValidator(1850), MaxValueValidator(2200)], blank=True, default=transform_str_year_to_integer)
-    numero_acta = models.CharField(max_length=6, blank=True)
-    validacion_renapo = models.CharField(max_length=3,blank=True)
-    sexo = models.PositiveSmallIntegerField(choices=SEXO_OPCIONES, default=api_str_to_option, blank=True)
-    estatus_curp = models.CharField(max_length=20, blank=True)
-    empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
-
-
-    def __str__(self):
-        return f'{self.curp}: {self.nombre} {self.apellido_paterno} {self.apellido_materno} ({self.empleado})'
-    
-    class Meta:
-        verbose_name_plural = 'CURP'
-
-class Rfc(models.Model):
-    #TODO: Make a connection with a RFC_DB
-    #TODO: Function to transform Str to Date data type (Signals)
-    
-    def transform_api_str_to_date():
-        pass
-
-    #TODO: Function to verify RFC syntax by regex 
-    def verify_rfc_syntax():
-        pass
-
-    rfc = models.CharField(max_length=13, default=verify_rfc_syntax)
-    rfc_digital = models.FileField(upload_to="temp/documentos", blank=True)
-    razon_social  = models.CharField(max_length=255, blank=True)
-    estatus = models.CharField(max_length=20, blank=True)
-    fecha_efectiva = models.DateField(blank=True, default=transform_api_str_to_date)
-    correo_contacto = models.CharField(max_length=200, blank=True)
-    validez = models.CharField(max_length=20, blank=True)
-    tipo = models.CharField(max_length=20, blank=True)
-    empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f'{self.rfc}: {self.empleado}'
-    
-    class Meta:
-        verbose_name_plural = 'RFC'
-
 class Domicilio(models.Model):
     calle = models.CharField(max_length=100, blank=True)
     numero_exterior = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99999)], blank=True)
@@ -554,61 +502,3 @@ class Domicilio(models.Model):
 
     class Meta:
         verbose_name_plural = 'Domicilios'
-
-class CodigoPostal(models.Model):
-    codigo_postal = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99999)])
-    domicilio = models.OneToOneField(Domicilio, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.codigo_postal}'
-    
-    class Meta:
-        verbose_name_plural = 'Codigos Postales'
-
-class Colonia(models.Model):
-    colonia = models.CharField(max_length=100)
-    codigo_postal = models.ForeignKey(CodigoPostal, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.colonia}'
-    
-    class Meta:
-        verbose_name_plural = 'Colonias'
-
-class Municipio(models.Model):
-    municipio = models.CharField(max_length=100)
-    clave_municipio_racek = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(9999)])
-    clave_municipio_api_curp = models.CharField(max_length=3)
-    colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT, null=True)
-    curp = models.OneToOneField(Curp, on_delete=models.RESTRICT, null=True)
-
-    def __str__(self):
-        return f'{self.municipio}'
-    
-    class Meta:
-        verbose_name_plural = 'Municipios'
-
-class Estado(models.Model):
-    estado = models.CharField(max_length=100)
-    clave_estado_racek = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99)])
-    clave_num_estado_api_curp = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99)])
-    clave_txt_estado_api_curp = models.CharField(max_length=11)
-    municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.estado}'
-    
-    class Meta:
-        verbose_name_plural = 'Estados'
-
-class Pais(models.Model):
-    pais = models.CharField(max_length=100, default='México')
-    clave_pais_racek = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(999)])
-    clave_pais_api_curp = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(999)])
-    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.pais}'
-    
-    class Meta:
-        verbose_name_plural = 'Paises'

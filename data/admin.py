@@ -43,35 +43,6 @@ class CarpetaGeneralesAdmin(admin.ModelAdmin):
 class DocumentosDigitalesAdmin(admin.ModelAdmin):
     list_display = ('id','empleado')
 
-@admin.register(Curp)
-class CurpAdmin(admin.ModelAdmin):
-    list_display = ('id','curp','nombre','apellido_materno','apellido_paterno','iniciales','fecha_nacimiento','sexo')
-
-@admin.register(Rfc)
-class RfcAdmin(admin.ModelAdmin):
-    list_display = ('id','rfc','razon_social','correo_contacto','validez','tipo',)
-
 @admin.register(Domicilio)
 class DomicilioAdmin(admin.ModelAdmin):
     list_display = ('id','empleado','cliente_generales','cliente_pagos','calle','numero_exterior','ciudad')
-
-@admin.register(CodigoPostal)
-class CodigoPostalAdmin(admin.ModelAdmin):
-    list_display = ('id','codigo_postal')
-
-@admin.register(Colonia)
-class ColoniaAdmin(admin.ModelAdmin):
-    list_display = ('id','colonia')
-
-@admin.register(Municipio)
-class MunicipioAdmin(admin.ModelAdmin):
-    list_display = ('id','municipio')
-
-@admin.register(Estado)
-class EstadoAdmin(admin.ModelAdmin):
-    list_display = ('id','estado')
-
-@admin.register(Pais)
-class PaisAdmin(admin.ModelAdmin):
-    list_display = ('id','pais')
-
