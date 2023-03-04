@@ -111,15 +111,6 @@ DATABASES = {
         'PORT': env('PORT'),
         'ATOMIC_REQUEST': env('ATOMIC_REQUEST')
     },
-    # 'api_data': {
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': env('APIDATA'),
-    #     'USER': env('USER_DB'),
-    #     'PASSWORD': env('PASSWORD'),
-    #     'HOST': env('HOST'),
-    #     'PORT': env('PORT'),
-    #     'ATOMIC_REQUEST': env('ATOMIC_REQUEST')
-    # },
 }
 
 DATABASE_ROUTERS = [
