@@ -3,59 +3,41 @@ from dateutil.relativedelta import relativedelta
 from django.core.validators import RegexValidator
 from datetime import datetime
 from django.db import models
-from data.models import *
-
-"""
-El problema con este código es que todavía no verifica y almacena el municipio 
-ni la entidad, ni las claves, las cuales quiero que primero se verifique en Municipio, Estado.
-También falta en anio_registro
-"""
+from .models import *
 
 class Curp(models.Model):
-    curp_regex = '^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$'
-    curp = models.CharField(max_length=18, blank=True, validators=[RegexValidator(curp_regex, 'La CURP no es válida')])
-    nombre = models.CharField(max_length=100, blank=True)
-    apellido_paterno = models.CharField(max_length=100, blank=True)
-    apellido_materno = models.CharField(max_length=100, blank=True)
-    iniciales = models.CharField(max_length=20, blank=True)
+    empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=50, blank=True)
+    apellido_paterno = models.CharField(max_length=50, blank=True)
+    apellido_materno = models.CharField(max_length=50, blank=True)
+    iniciales = models.CharField(max_length=15, blank=True)
     fecha_nacimiento = models.DateField(blank=True, null=True)
-    edad = models.PositiveIntegerField(validators=[MinValueValidator(18), MaxValueValidator(99)], blank=True)
+    edad = models.PositiveIntegerField(blank=True, null=True)
     anio_registro = models.PositiveIntegerField(blank=True, null=True)
     numero_acta = models.CharField(max_length=20, blank=True)
     validacion_renapo = models.BooleanField(default=False, blank=True)
-    sexo = models.CharField(max_length=1, blank=True, choices=SEXO_OPCIONES)
+    sexo = models.CharField(max_length=1, blank=True, choices=(('H', 'Hombre'), ('M', 'Mujer')))
     estatus_curp = models.CharField(max_length=20, blank=True, choices=(('emitida', 'Emitida'), ('vigente', 'Vigente'), ('desconocido', 'Desconocido')))
-    empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
+    curp_regex = '^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$'
+    curp = models.CharField(max_length=18, blank=True, validators=[RegexValidator(curp_regex, 'La CURP no es válida')])
 
     def __str__(self):
         return f'{self.empleado} - {self.curp}'
 
-    def obtener_iniciales(nombre, apellido_paterno, apellido_materno)->str:
-        """List of words to exclude from initials. Obtener las palabras en el nombre 
-        y eliminar las excluidas. Obtain the words in the name and eliminate the excluded ones.
-        Combine initials and return them
-
-        Args:
-            nombre (str): Is the name of the person in question, can be more than one name.
-            apellido_paterno (str): It is the last name of the person in question, it can be more than one last name.
-            apellido_materno (str): It is the second last name of the person in question, it can be more than one second last name.
-
-        Returns:
-            _type_: Returns the initials excluding words like ['y', 'de', 'la', 'el', 'las', 'los'] from the result
-        """
-        # List of words to exclude from initials
+    def obtener_iniciales(nombre, apellido_paterno, apellido_materno):
+        # Lista de palabras a excluir de las iniciales
         excluidas = ['y', 'de', 'la', 'el', 'las', 'los']
 
         # Obtener las palabras en el nombre y eliminar las excluidas
         palabras_nombre = [word for word in nombre.split() if word.lower() not in excluidas]
         iniciales_nombre = ''.join([word[0] for word in palabras_nombre])
         
-        # Obtain the words in the name and eliminate the excluded ones.
+        # Obtener las palabras en los apellidos y eliminar las excluidas
         palabras_apellidos = [apellido.split() for apellido in [apellido_paterno, apellido_materno]]
         palabras_apellidos = [word for apellido in palabras_apellidos for word in apellido if word.lower() not in excluidas]
         iniciales_apellidos = ''.join([word[0] for word in palabras_apellidos])
         
-        # Combine initials and return them
+        # Combinar las iniciales y retornarlas
         return iniciales_nombre + iniciales_apellidos
 
     def calcular_edad(fecha_nacimiento):
@@ -105,7 +87,7 @@ class Curp(models.Model):
                     self.numero_acta = data['probation_document_data']['numActa']
                     self.validacion_renapo = data['renapo_valid']
                     self.sexo = data['sex']
-                    self.estatus_curp = data['status_curp']
+                    self.estatus_curp = 'emitida'
                 else:
                     # Si la consulta a la API falló, se puede manejar el error adecuadamente
                     print(f'Error al consultar la CURP en la API: {response.status_code}')
@@ -114,62 +96,3 @@ class Curp(models.Model):
                 super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
-
-
-class CodigoPostal(models.Model):
-    codigo_postal = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99999)])
-    domicilio = models.OneToOneField(Domicilio, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.codigo_postal}'
-    
-    class Meta:
-        verbose_name_plural = 'Codigos Postales'
-
-class Colonia(models.Model):
-    colonia = models.CharField(max_length=100)
-    codigo_postal = models.ForeignKey(CodigoPostal, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.colonia}'
-    
-    class Meta:
-        verbose_name_plural = 'Colonias'
-
-class Municipio(models.Model):
-    municipio = models.CharField(max_length=100)
-    clave_municipio_racek = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(9999)])
-    clave_municipio_api_curp = models.CharField(max_length=3)
-    colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT, null=True)
-    curp = models.OneToOneField(Curp, on_delete=models.RESTRICT, null=True)
-
-    def __str__(self):
-        return f'{self.municipio}'
-    
-    class Meta:
-        verbose_name_plural = 'Municipios'
-
-class Estado(models.Model):
-    estado = models.CharField(max_length=100)
-    clave_estado_racek = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99)])
-    clave_num_estado_api_curp = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99)])
-    clave_txt_estado_api_curp = models.CharField(max_length=11)
-    municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.estado}'
-    
-    class Meta:
-        verbose_name_plural = 'Estados'
-
-class Pais(models.Model):
-    pais = models.CharField(max_length=100, default='México')
-    clave_pais_racek = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(999)])
-    clave_pais_api_curp = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(999)])
-    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.pais}'
-    
-    class Meta:
-        verbose_name_plural = 'Paises'
