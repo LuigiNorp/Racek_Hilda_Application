@@ -74,4 +74,3 @@ class EstadoAdmin(admin.ModelAdmin):
 @admin.register(Pais)
 class PaisAdmin(admin.ModelAdmin):
     list_display = ('id','pais')
-

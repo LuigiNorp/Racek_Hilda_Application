@@ -572,7 +572,7 @@ class Curp(models.Model):
     numero_acta = models.CharField(max_length=20, blank=True, null=True)
     validacion_renapo = models.BooleanField(default=False, blank=True, null=True)
     sexo = models.CharField(max_length=1, blank=True, null=True)
-    estatus_curp = models.CharField(max_length=20, blank=True, null=True)
+    estatus_curp = models.CharField(max_length=20, choices=ESTATUS_CURP, blank=True, null=True)
     clave_municipio_registro = models.CharField(max_length=5, blank=True, null=True)
     municipio_registro = models.CharField(max_length=100, blank=True, null=True)
     clave_entidad_registro = models.CharField(max_length=5, blank=True, null=True)
@@ -653,6 +653,8 @@ class Curp(models.Model):
                 super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
+    class Meta:
+        verbose_name_plural = 'CURP'
 
 class Rfc(models.Model):
     #TODO: Make a connection with a RFC_DB
