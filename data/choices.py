@@ -277,3 +277,29 @@ ACTIVIDADES_FIN_SEMANA = (
     (5,"ACTIVIDAD AL AIRE LIBRE"),
     (6,"REALIZAR QUEHACERES DEL HOGAR"),    
 )
+
+ESTATUS_CURP = {
+'AN':'Alta Normal',
+'AH':'Alta con Homonimia',
+'RCC':'Registro de cambio afectando a CURP',
+'RCN':'Registro de cambio no afectando a CURP',
+'BD':'Baja por defunción',
+'BSU':'Baja sin uso',
+'BJD':'Baja Judicial',
+'BDM':'Baja administrativa',
+'BAP':'Baja por documento apócrifo',
+'BDP':'Baja por adopción',
+}
+
+# (
+# ('AN','Alta Normal')
+# ('AH','Alta con Homonimia')
+# ('RCC','Registro de cambio afectando a CURP')
+# ('RCN','Registro de cambio no afectando a CURP')
+# ('BD','Baja por defunción')
+# ('BSU','Baja sin uso')
+# ('BJD','Baja Judicial')
+# ('BDM','Baja administrativa')
+# ('BAP','Baja por documento apócrifo')
+# ('BDP','Baja por adopción')
+# )
