@@ -115,7 +115,6 @@ DATABASES = {
 
 DATABASE_ROUTERS = [
     'data.data_router.DataRouter',
-    'api.api_router.ApiRouter',
 ]
 
 # Default User model for the app
