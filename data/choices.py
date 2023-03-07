@@ -288,3 +288,16 @@ ESTATUS_CURP = (
     ('BAP','Baja por documento apócrifo'),
     ('BDP','Baja por adopción'),
 )
+
+RECOMENDABLE = (
+    (1,"SI"),
+    (2,"NO"),
+    (3,"BAJO RESERVA"),
+)
+
+ENTORNO_SOCIAL = (
+    (1,"DEFICIENTE"),
+    (2,"REGULAR"),
+    (3,"BUENO"),
+    (4,"EXCELENTE"),
+)
