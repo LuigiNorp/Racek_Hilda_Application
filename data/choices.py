@@ -295,9 +295,29 @@ RECOMENDABLE = (
     (3,"BAJO RESERVA"),
 )
 
-ENTORNO_SOCIAL = (
+CALIF_BUENO_MALO = (
     (1,"DEFICIENTE"),
     (2,"REGULAR"),
     (3,"BUENO"),
     (4,"EXCELENTE"),
+)
+
+TIPO_SEPARACION = (
+    (1,"RENUNCIA"),
+    (2,"CAUSA ADMINISTRATIVA"),
+    (3,"COMETER DELITO"),
+    (4,"PENSIONADO(A)"),
+    (5,"DEFUNCIÓN"),      
+)
+
+IMPARTIDO_RECIBIDO = (
+    (1,"IMPARTIDO"),
+    (2,"RECIBIDO"),    
+)
+
+EFICIENCIA_TERMINAL = (
+    (1,"INCONCLUSO"),
+    (2,"CONCLUIDO"),
+    (3,"CURSANDO"),
+    (4,"SOLICITUD"),    
 )

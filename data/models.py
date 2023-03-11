@@ -4,6 +4,7 @@ from .choices import *
 from django.db import models
 from django.core.validators import RegexValidator
 from django.core.validators import  MinValueValidator, MaxValueValidator
+from decimal import Decimal
 
 # Create your models here.
 class Cliente(models.Model):
@@ -18,7 +19,7 @@ class Cliente(models.Model):
         verbose_name_plural = 'Clientes'
 
 class Sede(models.Model):
-    clave_sede = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99999)], blank=True)
+    clave_sede = models.CharField(max_length=6, blank=True, null=True)
     nombre_sede = models.CharField(max_length=100, blank=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
 
@@ -173,7 +174,7 @@ class CarpetaGenerales(models.Model):
     telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     numero_elemento = models.PositiveIntegerField(blank=True)
     transporte = models.CharField(max_length=50, blank=True)
-    tiempo_trayecto = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(1440)], blank=True, help_text="Ingrese el tiempo en minutos")
+    tiempo_trayecto = models.CharField(max_length=15, blank=True, null=True)
     estado_civil = models.PositiveSmallIntegerField(choices=EDO_CIVIL, blank=True)
     estado_cartilla = models.PositiveSmallIntegerField(choices=ESTADO_CARTILLA, blank=True)
     clave_cartilla = models.CharField(max_length=18, blank=True)
@@ -201,7 +202,7 @@ class CarpetaGenerales(models.Model):
     sangre = models.PositiveSmallIntegerField(choices=SANGRE, blank=True)
     rh = models.PositiveSmallIntegerField(choices=RH, blank=True)
     peso = models.DecimalField(max_digits=3, decimal_places=2, blank=True)
-    estatura = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(400)], blank=True, default=0)
+    estatura = models.CharField(max_length=15, blank=True, null=True)
     alergias = models.CharField(max_length=30, blank=True)
     inicio_trabajo = models.DateField(blank=True)
     fin_trabajo = models.DateField(blank=True)
@@ -228,7 +229,7 @@ class Referencia(models.Model):
     parentesco = models.PositiveSmallIntegerField(choices=PARENTESCO, blank=True)
     tiempo_de_conocerse = models.CharField(max_length=30, blank=True)
     direccion = models.CharField(max_length=100, blank=True)
-    codigo_postal = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99999)], blank=True)
+    codigo_postal = models.CharField(max_length=5, blank=True, null=True)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
     telefono_contacto = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     opinion = models.TextField(blank=True, null=True)
@@ -237,10 +238,10 @@ class Referencia(models.Model):
     class Meta:
         verbose_name_plural = 'Referencias'
 
-class CarpetasDependientes(models.Model):
+class CarpetaDependientes(models.Model):
     vive_con_familia = models.BooleanField(default=False, blank=True)
-    cantidad_dependientes_economicos = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(999)], blank=True, default=0)
-    cantidad_hijos = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(999)], blank=True, default=0)
+    cantidad_dependientes_economicos = models.CharField(max_length=3, blank=True, null=True)
+    cantidad_hijos = models.CharField(max_length=3, blank=True, null=True)
     empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
 
     class Meta:
@@ -255,7 +256,7 @@ class Dependiente(models.Model):
     parentesco = models.PositiveSmallIntegerField(choices=PARENTESCO, blank=True)
     actividad =  models.PositiveSmallIntegerField(choices=ACTIVIDAD, blank=True)
     comentarios = models.TextField(blank=True, null=True)
-    carpeta_dependiente = models.ForeignKey(CarpetasDependientes, on_delete=models.CASCADE)
+    carpeta_dependientes = models.ForeignKey(CarpetaDependientes, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name_plural = 'Dependientes'
@@ -340,15 +341,6 @@ class CarpetaExamenFisico(models.Model):
         verbose_name_plural = 'Carpeta Examen Físico'
 
 class CarpetaExamenSocioeconomico(models.Model):
-    
-    # TODO: make a function that sums up all the amounts and returns the total amount
-    def obtener_total_ingresos(self):
-        total = sum(self.ingreso_familiar_1, self.ingreso_familiar_2, self.ingreso_familiar_3, self.ingreso_familiar_4)
-        return total
-
-    def obtener_total_egresos(self):
-        total = sum(self.egresos_adeudos, self.egresos_agua, self.egresos_alimentacion, self.egresos_educacion, self.egresos_electricidad, self.egresos_gas, self.egresos_otros, self.egresos_renta, self.egresos_telefono, self.egresos_transporte)
-        return total
 
     propiedades = models.CharField(max_length=200, blank=True, null=True)
     inversiones = models.CharField(max_length=200, blank=True, null=True)
@@ -359,10 +351,10 @@ class CarpetaExamenSocioeconomico(models.Model):
     titular_domicilio = models.CharField(max_length=300, blank=True, null=True)
     tipo_vivienda = models.PositiveSmallIntegerField(choices=TIPO_VIVIENDA, blank=True, null=True)
     anios_residencia =  models.CharField(max_length=10, blank=True, null=True)
-    niveles = models.PositiveIntegerField(validators=[MinValueValidator(-99), MaxValueValidator(999)], blank=True, default=0, null=True)
-    cuartos = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(99999)], blank=True, default=0, null=True)
-    banos = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(999)], blank=True, default=0, null=True)
-    patios = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(999)], blank=True, default=0, null=True)
+    niveles = models.CharField(max_length=4, blank=True, null=True)
+    cuartos = models.CharField(max_length=5, blank=True, null=True)
+    banos = models.CharField(max_length=3, blank=True, null=True)
+    patios = models.CharField(max_length=3, blank=True, null=True)
     material_paredes = models.PositiveSmallIntegerField(choices=MATERIAL_PAREDES, blank=True, null=True)
     material_pisos = models.PositiveSmallIntegerField(choices=MATERIAL_PISOS, blank=True, null=True)
     material_techos = models.PositiveSmallIntegerField(choices=MATERIAL_TECHOS, blank=True, null=True)
@@ -379,17 +371,18 @@ class CarpetaExamenSocioeconomico(models.Model):
     tv_paga = models.BooleanField(blank=True, default=False)
     empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
     gasto_diario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    ingreso_familiar_adicional = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    importe_ingreso_interesado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    familiar_1 = models.CharField(max_length=35, null=True, blank=True)
-    ingreso_familiar_1 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    familiar_2 = models.CharField(max_length=35, null=True, blank=True)
-    ingreso_familiar_2 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    familiar_3 = models.CharField(max_length=35, null=True, blank=True)
-    ingreso_familiar_3 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    familiar_4 = models.CharField(max_length=35, null=True, blank=True)
-    ingreso_familiar_4 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    total_ingresos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=obtener_total_ingresos)
+    familiar_adicional = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    importe_interesado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    parentesco_familiar_1 = models.CharField(max_length=35, null=True, blank=True)
+    importe_familiar_1 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    parentesco_familiar_2 = models.CharField(max_length=35, null=True, blank=True)
+    importe_familiar_2 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    parentesco_familiar_3 = models.CharField(max_length=35, null=True, blank=True)
+    importe_familiar_3 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    parentesco_familiar_4 = models.CharField(max_length=35, null=True, blank=True)
+    importe_familiar_4 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    # La suma del total de ingresos se hará desde frontend
+    total_ingresos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     egresos_alimentacion = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     egresos_renta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     egresos_agua = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
@@ -399,8 +392,9 @@ class CarpetaExamenSocioeconomico(models.Model):
     egresos_transporte = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     egresos_educacion = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     egresos_adeudos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    egresos_otros = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    total_egresos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=obtener_total_egresos)
+    egresos_otros = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)    
+    # La suma del total de egresos se hará desde frontend
+    total_egresos = models.DecimalField(max_digits=10,decimal_places=2,blank=True,null=True)
     salud_alergias = models.CharField(max_length=100, blank=True, null=True)
     salud_visual_auditiva_fisica = models.CharField(max_length=100, blank=True, null=True)
     salud_cirugias = models.CharField(max_length=100, blank=True, null=True)
@@ -416,10 +410,21 @@ class CarpetaExamenSocioeconomico(models.Model):
     ultima_vez_enfermo = models.CharField(max_length=100, blank=True, null=True)
     embarazada = models.CharField(max_length=100, blank=True, null=True)
     contacto_emergencia = models.CharField(max_length=100, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_emergencia = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(
+        regex=r'^\+?1?\d{9,10}$', 
+        message='El número telefónico debe ser ingresado de la siguiente manera: \
+                "5512345678". Limitado a 10 dígitos.')
+    telefono_emergencia = models.CharField(
+        validators=[validador_num_telefono], 
+        max_length=17, 
+        blank=True, 
+        null=True, 
+        help_text='Ingrese número telefónico a 10 dígitos')
     parentesco_contacto = models.CharField(max_length=100, blank=True, null=True)
-    actividates_fin_semana = models.PositiveSmallIntegerField(choices=ACTIVIDADES_FIN_SEMANA, blank=True, null=True)
+    actividates_fin_semana = models.PositiveSmallIntegerField(
+        choices=ACTIVIDADES_FIN_SEMANA,
+        blank=True,
+        null=True)
     actividades_culturales_deportes = models.CharField(max_length=100, blank=True, null=True)
     estudia = models.BooleanField(blank=True, default=False)
     que_estudia = models.CharField(max_length=100, blank=True, null=True)
@@ -446,10 +451,10 @@ class CarpetaExamenSocioeconomico(models.Model):
     supervisor = models.CharField(max_length=300, null=True, blank=True)
     cedula_profesional_supervisor = models.CharField(max_length=30, null=True, blank=True)
     recomendable = models.PositiveSmallIntegerField(choices=RECOMENDABLE, blank=True, null=True)
-    entorno_social = models.PositiveSmallIntegerField(choices=ENTORNOS, blank=True, null=True)
-    entorno_familiar = models.PositiveSmallIntegerField(choices=ENTORNOS, blank=True, null=True)
-    situacion_economica = models.PositiveSmallIntegerField(choices=ENTORNOS, blank=True, null=True)
-    experiencia_laboral = models.PositiveSmallIntegerField(choices=ENTORNOS, blank=True, null=True)
+    entorno_social = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    entorno_familiar = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    situacion_economica = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    experiencia_laboral = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
     comentarios_generales = models.TextField(blank=True, null=True)
     ruta_acceso = models.CharField(max_length=200, blank=True, null=True)
     color_vivienda_porton = models.CharField(max_length=150, blank=True, null=True)
@@ -459,41 +464,193 @@ class CarpetaExamenSocioeconomico(models.Model):
     nombre_recados = models.CharField(max_length=300, blank=True, null=True)
     parentesco = models.CharField(max_length=30, blank=True, null=True)
     nombre_recados = models.CharField(max_length=300, blank=True, null=True)
-    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_recados = models.CharField(
+        validators=[validador_num_telefono],
+        max_length=17, 
+        blank=True, 
+        null=True, 
+        help_text='Ingrese número telefónico a 10 dígitos')
     comentario = models.CharField(max_length=300, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'Carpeta Examen Socioeconómico'
 
+# Consultar con Hilda si es así
+class CarpetaEmpleoAnteriorSeguridadPublica(models.Model):
+    empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Carpeta Empresas Anteriores Seguridad Publica'
+
+class EmpleoAnteriorSeguridadPublica(models.Model):
+    dependencia = models.CharField(max_length=100, blank=True, null=True)
+    corporacion = models.CharField(max_length=100, blank=True, null=True)
+    direccion = models.CharField(max_length=150, blank=True, null=True)
+    numero_exterior = models.CharField(max_length=20, blank=True, null=True)
+    numero_interior = models.CharField(max_length=20, blank=True, null=True)
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    fecha_ingreso = models.DateField(blank=True, null=True)
+    fecha_separacion = models.DateField(blank=True, null=True)
+    funciones = models.CharField(max_length=100, blank=True, null=True)
+    especialidad = models.CharField(max_length=50, blank=True, null=True)
+    rango_categoria = models.CharField(max_length=50, blank=True, null=True)
+    sueldo_base = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    numero_placa = models.CharField(max_length=15, blank=True, null=True)
+    numero_emp = models.CharField(max_length=15, blank=True, null=True)
+    area = models.CharField(max_length=50, blank=True, null=True)
+    division = models.CharField(max_length=50, blank=True, null=True)
+    tipo_separacion = models.PositiveSmallIntegerField(choices=TIPO_SEPARACION, blank=True, null=True)
+    jefe_inmediato = models.CharField(max_length=300, blank=True, null=True)
+    cuip_jefe_inmediato = models.CharField(max_length=20, blank=True, null=True)
+    comentarios = models.CharField(max_length=150, blank=True, null=True)
+    carp_emp_ant_seg_pub = models.ForeignKey(CarpetaEmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Empresas Anteriores Seguridad Publica'
+
+class PuestoFuncional(models.Model):
+    nombre_puesto = models.CharField(max_length=50, blank=True, null=True)
+    emp_ant_seg_pub = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.RESTRICT)
+
+    class Meta:
+        verbose_name_plural = 'Puestos Funcionales'
+
+class TipoBaja(models.Model):
+    motivo = models.CharField(max_length=50, blank=True, null=True)
+    emp_ant_seg_pub = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.RESTRICT)
+
+    class Meta:
+        verbose_name_plural = 'Tipos Baja'
+
+class CarpetaEmpleoAnterior(models.Model):
+    empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Carpeta Empleos Anteriores'
+
+class EmpleoAnterior(models.Model):
+    empresa = models.CharField(max_length=100, blank=True, null=True)
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    fecha_ingreso = models.DateField(blank=True, null=True)
+    fecha_separacion = models.DateField(blank=True, null=True)
+    salario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    area_puesto = models.CharField(max_length=50, blank=True, null=True)
+    funciones = models.CharField(max_length=100, blank=True, null=True)
+    tipo_separacion = models.PositiveSmallIntegerField(choices=TIPO_SEPARACION, blank=True, null=True)
+    jefe_inmediato = models.CharField(max_length=300, blank=True, null=True)
+    puesto_jefe_inmediato = models.CharField(max_length=50, blank=True, null=True)
+    informante = models.CharField(max_length=300, blank=True, null=True)
+    puesto_informante = models.CharField(max_length=50, blank=True, null=True)
+    desempenio = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+    emp_ant = models.OneToOneField(CarpetaEmpleoAnterior, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Empleados Anteriores'
+
+class MotivoSeparacion(models.Model):
+    motivo = models.CharField(max_length=50, blank=True, null=True)
+    emp_ant_seg_pub = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.RESTRICT, null=True)
+    emp_ant = models.OneToOneField(EmpleoAnterior, on_delete=models.RESTRICT, null=True)
+
+    class Meta:
+        verbose_name_plural = 'Motivos Separacion'
+
+class CarpetaCapacitacion(models.Model):
+    empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Carpeta Capacitaciones'
+
+
+class Capacitacion(models.Model):
+    institucion_empresa = models.CharField(max_length=100, blank=True, null=True)
+    curso = models.CharField(max_length=100, blank=True, null=True)
+    impartido_recibido = models.PositiveSmallIntegerField(choices=IMPARTIDO_RECIBIDO, blank=True, null=True)
+    eficiencia_terminal = models.PositiveSmallIntegerField(choices=EFICIENCIA_TERMINAL, blank=True, null=True)
+    inicio = models.DateField(blank=True, null=True)
+    conclusion = models.DateField(blank=True, null=True)
+    duracion = models.CharField(max_length=10, blank=True, null=True)
+    carpeta_capacitacion = models.ForeignKey(CarpetaCapacitacion, on_delete=models.CASCADE)
+    class Meta:
+        verbose_name_plural = 'Capacitaciones'
+
+class TipoCurso(models.Model):
+    tipo_curso = models.CharField(max_length=100, blank=True, null=True)
+    capacitacion = models.OneToOneField(Capacitacion, on_delete=models.RESTRICT)
+    
+    class Meta:
+        verbose_name_plural = 'Tipo Cursos'
+
+class Curso(models.Model):
+    estudio_curso = models.CharField(max_length=100, blank=True, null=True)
+    inicio = models.DateField(blank=True, null=True)
+    conclusion = models.DateField(blank=True, null=True)
+    duracion = models.CharField(max_length=10, blank=True, null=True)
+    carpeta_capacitacion = models.ForeignKey(CarpetaCapacitacion, on_delete=models.RESTRICT)
+
+    class Meta:
+        verbose_name_plural = 'Cursos'
+
+class Idioma(models.Model):
+    idioma = models.CharField(max_length=50, blank=True, null=True)
+    lectura = models.CharField(max_length=3, blank=True, null=True)
+    escritura = models.CharField(max_length=3, blank=True, null=True)
+    conversacion = models.CharField(max_length=3, blank=True, null=True)
+    carpeta_capacitacion = models.ForeignKey(CarpetaCapacitacion, on_delete=models.CASCADE)
+
+class Habilidad(models.Model):
+    computacion = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    investigacion = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    manejo_armas = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    manejo_grupos = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    mecanica = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    carpinteria = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    conduccion_medios = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    carpeta_capacitacion = models.OneToOneField(CarpetaCapacitacion, on_delete=models.CASCADE)
+    
+    class Meta:
+        verbose_name_plural = 'Habilidades'
+
+class HabilidadPersonalizada(models.Model):
+    nombre_habilidad = models.CharField(max_length=50, blank=True, null=True)
+    calificacion = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    habilidad = models.ForeignKey(Habilidad, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Habilidades Personalizadas'
+
 class DocumentosDigitales(models.Model):
-    hoja_datos = models.FileField(upload_to="temp/documentos", blank=True)
-    solicitud = models.ImageField(upload_to="temp/documentos", blank=True)
-    ine = models.ImageField(upload_to="temp/documentos", blank=True)
-    acta_nacimiento = models.ImageField(upload_to="temp/documentos", blank=True)
-    folio_acta_nacimiento = models.CharField(max_length=20, blank=True)
-    curp = models.FileField(upload_to="temp/documentos", blank=True)
-    comprobante_domicilio = models.ImageField(upload_to="temp/documentos", blank=True)
-    fecha_comprobante_domicilio = models.DateField(blank=True)
-    antecedentes_no_penales = models.ImageField(upload_to="temp/documentos", blank=True)
-    fecha_antecedentes_no_penales = models.DateField(blank=True)
-    comprobante_estudios = models.ImageField(upload_to="temp/documentos", blank=True)
-    cartilla_smn = models.ImageField(upload_to="temp/documentos", blank=True)
-    nss = models.FileField(upload_to="temp/documentos", blank=True)
-    carta_recomendacion = models.FileField(upload_to="temp/documentos", blank=True)
-    contrato = models.FileField(upload_to="temp/documentos", blank=True)
-    socioeconomico = models.FileField(upload_to="temp/documentos", blank=True)
-    fecha_socioeconomico = models.DateField(blank=True)
-    foto_socioeconomico = models.ImageField(upload_to="temp/documentos", blank=True)
-    psicologico = models.FileField(upload_to="temp/documentos", blank=True)
-    fecha_psicologico = models.DateField(blank=True)
-    medico = models.FileField(upload_to="temp/documentos", blank=True)
-    fecha_medico = models.DateField(blank=True)
-    toxicologico = models.FileField(upload_to="temp/documentos", blank=True)
-    fecha_toxicologico = models.DateField(blank=True)
-    fisico = models.FileField(upload_to="temp/documentos", blank=True)
-    fecha_fisico = models.DateField(blank=True)
-    croquis = models.ImageField(upload_to="temp/documentos", blank=True)
-    curriculum = models.FileField(upload_to="temp/documentos", blank=True)
+    hoja_datos = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    solicitud = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    ine = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    acta_nacimiento = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    folio_acta_nacimiento = models.CharField(max_length=20, blank=True, null=True)
+    curp = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    comprobante_domicilio = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    fecha_comprobante_domicilio = models.DateField(blank=True, null=True)
+    antecedentes_no_penales = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    fecha_antecedentes_no_penales = models.DateField(blank=True, null=True)
+    comprobante_estudios = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    cartilla_smn = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    nss = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    carta_recomendacion = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    contrato = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    socioeconomico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    fecha_socioeconomico = models.DateField(blank=True, null=True)
+    foto_socioeconomico = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    psicologico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    fecha_psicologico = models.DateField(blank=True, null=True)
+    medico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    fecha_medico = models.DateField(blank=True, null=True)
+    toxicologico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    fecha_toxicologico = models.DateField(blank=True, null=True)
+    fisico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    fecha_fisico = models.DateField(blank=True, null=True)
+    croquis = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    curriculum = models.FileField(upload_to="temp/documentos", blank=True, null=True)
     empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -504,8 +661,8 @@ class DocumentosDigitales(models.Model):
 
 class Domicilio(models.Model):
     calle = models.CharField(max_length=100, blank=True)
-    numero_exterior = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99999)], blank=True)
-    numero_interior = models.IntegerField(validators=[MinValueValidator(-99), MaxValueValidator(99999)], blank=True)
+    numero_exterior = models.CharField(max_length=20, blank=True)
+    numero_interior = models.CharField(max_length=20, blank=True, null=True)
     entre_calle = models.CharField(max_length=100, null=True, blank=True)
     y_calle = models.CharField(max_length=100, null=True, blank=True)
     ciudad = models.CharField(max_length=50, blank=True)
@@ -513,6 +670,8 @@ class Domicilio(models.Model):
     cliente_generales = models.OneToOneField(ClienteGenerales, on_delete=models.CASCADE, null=True)
     cliente_pagos = models.OneToOneField(ClientePagos, on_delete=models.CASCADE, null=True)
     referencia = models.OneToOneField(Referencia, on_delete=models.CASCADE, null=True)
+    carp_emp_ant_seg_pub = models.OneToOneField(CarpetaEmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE, null=True)
+    carp_emp_ant = models.OneToOneField(CarpetaEmpleoAnterior, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         if self.empleado is not None:
@@ -526,7 +685,7 @@ class Domicilio(models.Model):
         verbose_name_plural = 'Domicilios'
 
 class CodigoPostal(models.Model):
-    codigo_postal = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99999)])
+    codigo_postal = models.CharField(max_length=5, blank=True, null=True)
     domicilio = models.OneToOneField(Domicilio, on_delete=models.RESTRICT)
 
     def __str__(self):
@@ -547,7 +706,7 @@ class Colonia(models.Model):
 
 class Municipio(models.Model):
     municipio = models.CharField(max_length=100)
-    clave_municipio_racek = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(9999)])
+    clave_municipio_racek = models.CharField(max_length=4, blank=True, null=True)
     colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT, null=True)
 
     def __str__(self):
@@ -558,7 +717,7 @@ class Municipio(models.Model):
 
 class Estado(models.Model):
     estado = models.CharField(max_length=100)
-    clave_estado_racek = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(99)])
+    clave_estado_racek = models.CharField(max_length=2, blank=True, null=True)
     municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
 
     def __str__(self):
@@ -569,7 +728,7 @@ class Estado(models.Model):
 
 class Pais(models.Model):
     pais = models.CharField(max_length=100, default='México')
-    clave_pais_racek = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(999)])
+    clave_pais_racek = models.CharField(max_length=4, blank=True, null=True)
     estado = models.OneToOneField(Estado, on_delete=models.RESTRICT)
 
     def __str__(self):
@@ -602,84 +761,85 @@ class Curp(models.Model):
     def __str__(self):
         return f'{self.empleado} - {self.curp}: {self.nombre} {self.apellido_paterno} {self.apellido_materno} ({self.empleado})'
 
-    def obtener_iniciales(nombre, apellido_paterno, apellido_materno):
-        # Lista de palabras a excluir de las iniciales
-        excluidas = ['y', 'de', 'la', 'el', 'las', 'los']
+    # Implementar Curp Api desde Frontend
 
-        # Obtener las palabras en el nombre y eliminar las excluidas
-        palabras_nombre = [word for word in nombre.split() if word.lower() not in excluidas]
-        iniciales_nombre = ''.join([word[0] for word in palabras_nombre])
-        
-        # Obtener las palabras en los apellidos y eliminar las excluidas
-        palabras_apellidos = [apellido.split() for apellido in [apellido_paterno, apellido_materno]]
-        palabras_apellidos = [word for apellido in palabras_apellidos for word in apellido if word.lower() not in excluidas]
-        iniciales_apellidos = ''.join([word[0] for word in palabras_apellidos])
-        
-        # Combinar las iniciales y retornarlas
-        return iniciales_nombre + iniciales_apellidos
+    # def obtener_iniciales(nombre, apellido_paterno, apellido_materno):
+    #     # Lista de palabras a excluir de las iniciales
+    #     excluidas = ['y', 'de', 'la', 'el', 'las', 'los']
 
-    def calcular_edad(fecha_nacimiento, fecha_referencia=None):
-        if not fecha_referencia:
-            fecha_referencia = datetime.now().date()
-        edad = fecha_referencia.year - fecha_nacimiento.year - ((fecha_referencia.month, fecha_referencia.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
-        return edad
+    #     # Obtener las palabras en el nombre y eliminar las excluidas
+    #     palabras_nombre = [word for word in nombre.split() if word.lower() not in excluidas]
+    #     iniciales_nombre = ''.join([word[0] for word in palabras_nombre])
+        
+    #     # Obtener las palabras en los apellidos y eliminar las excluidas
+    #     palabras_apellidos = [apellido.split() for apellido in [apellido_paterno, apellido_materno]]
+    #     palabras_apellidos = [word for apellido in palabras_apellidos for word in apellido if word.lower() not in excluidas]
+    #     iniciales_apellidos = ''.join([word[0] for word in palabras_apellidos])
+        
+    #     # Combinar las iniciales y retornarlas
+    #     return iniciales_nombre + iniciales_apellidos
+
+    # def calcular_edad(fecha_nacimiento, fecha_referencia=None):
+    #     if not fecha_referencia:
+    #         fecha_referencia = datetime.now().date()
+    #     edad = fecha_referencia.year - fecha_nacimiento.year - ((fecha_referencia.month, fecha_referencia.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
+    #     return edad
     
-    def save(self, *args, **kwargs):
-        if not self.id:
-            # Consultar si la CURP ya existe en la base de datos
-            curp_existente = Curp.objects.filter(curp=self.curp).first()
-            if curp_existente:
-                # Si la CURP ya existe, mostrar un mensaje y no hacer nada
-                print('La CURP ya se encuentra registrada')
-                return
-            else:
-                # Si la CURP no existe en la base de datos, buscar en la API                
-                url = "https://www.curpapi.mx/api/v1/curp"
-                payload = {
-                    "curp": self.curp
-                }
-                headers = {
-                    "Content-Type": "application/json",
-                    "Authorization": f"TU_API_KEY" # Reemplazar TU_API_KEY por tu clave de API
-                }
-                response = requests.post(url, json=payload, headers=headers)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:
+    #         # Consultar si la CURP ya existe en la base de datos
+    #         curp_existente = Curp.objects.filter(curp=self.curp).first()
+    #         if curp_existente:
+    #             # Si la CURP ya existe, mostrar un mensaje y no hacer nada
+    #             print('La CURP ya se encuentra registrada')
+    #             return
+    #         else:
+    #             # Si la CURP no existe en la base de datos, buscar en la API                
+    #             url = "https://www.curpapi.mx/api/v1/curp"
+    #             payload = {
+    #                 "curp": self.curp
+    #             }
+    #             headers = {
+    #                 "Content-Type": "application/json",
+    #                 "Authorization": f"TU_API_KEY" # Reemplazar TU_API_KEY por tu clave de API
+    #             }
+    #             response = requests.post(url, json=payload, headers=headers)
 
-                if response.status_code == 200:
-                    # Si la consulta a la API fue exitosa, llenar los campos correspondientes
-                    data = response.json()
-                    self.nombre = data['names']
-                    self.apellido_paterno = data['paternal_surname']
-                    self.apellido_materno = data['mothers_maiden_name']
-                    self.iniciales = self.obtener_iniciales(data['names'], data['paternal_surname'], data['mothers_maiden_name'])
-                    self.fecha_nacimiento = datetime.strptime(data['birthdate'], '%d/%m/%Y')
-                    self.edad = self.calcular_edad(self.fecha_nacimiento)
-                    self.anio_registro = data['anioReg']
-                    self.numero_acta = data['probation_document_data']['numActa']
-                    self.validacion_renapo = data['renapo_valid']
-                    self.sexo = data['sex']
-                    estatus_curp_clave = data['status_curp']
-                    estatus_curp_completo = dict(ESTATUS_CURP).get(estatus_curp_clave, "Opción no existe" )
-                    self.estatus_curp = estatus_curp_completo
-                    self.municipio_registro = data['probation_document_data']['municipioRegistro']
-                    self.clave_municipio_registro = data['probation_document_data']['claveMunicipioRegistro']
-                    self.entidad_registro = data['probation_document_data']['entidadRegistro']
-                    self.clave_entidad_registro = data['probation_document_data']['claveEntidadRegistro']
-                    self.transaction_id = data ['transaction_id']
-                else:
-                    # Si la consulta a la API falló, se puede manejar el error adecuadamente
-                    print(f'Error al consultar la CURP en la API: {response.status_code}')
+    #             if response.status_code == 200:
+    #                 # Si la consulta a la API fue exitosa, llenar los campos correspondientes
+    #                 data = response.json()
+    #                 self.nombre = data['names']
+    #                 self.apellido_paterno = data['paternal_surname']
+    #                 self.apellido_materno = data['mothers_maiden_name']
+    #                 self.iniciales = self.obtener_iniciales(data['names'], data['paternal_surname'], data['mothers_maiden_name'])
+    #                 self.fecha_nacimiento = datetime.strptime(data['birthdate'], '%d/%m/%Y')
+    #                 self.edad = self.calcular_edad(self.fecha_nacimiento)
+    #                 self.anio_registro = data['anioReg']
+    #                 self.numero_acta = data['probation_document_data']['numActa']
+    #                 self.validacion_renapo = data['renapo_valid']
+    #                 self.sexo = data['sex']
+    #                 estatus_curp_clave = data['status_curp']
+    #                 estatus_curp_completo = dict(ESTATUS_CURP).get(estatus_curp_clave, "Opción no existe" )
+    #                 self.estatus_curp = estatus_curp_completo
+    #                 self.municipio_registro = data['probation_document_data']['municipioRegistro']
+    #                 self.clave_municipio_registro = data['probation_document_data']['claveMunicipioRegistro']
+    #                 self.entidad_registro = data['probation_document_data']['entidadRegistro']
+    #                 self.clave_entidad_registro = data['probation_document_data']['claveEntidadRegistro']
+    #                 self.transaction_id = data ['transaction_id']
+    #             else:
+    #                 # Si la consulta a la API falló, se puede manejar el error adecuadamente
+    #                 print(f'Error al consultar la CURP en la API: {response.status_code}')
                 
-                # Guardar el objeto
-                super().save(*args, **kwargs)
-        else:
-            super().save(*args, **kwargs)
+    #             # Guardar el objeto
+    #             super().save(*args, **kwargs)
+    #     else:
+    #         super().save(*args, **kwargs)
+
     class Meta:
         verbose_name_plural = 'CURP'
 
 class Rfc(models.Model):
-    #TODO: Make a connection with a RFC_DB
-    #TODO: Function to transform Str to Date data type (Signals)
-    
+    # Hacer conexiones con API RFC desde FrontEnd
 
     rfc_regex = r'/^([A-ZÑ&]{3,4}) ?(?:- ?)?(\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])) ?(?:- ?)?([A-Z\d]{2})([A\d])$/'
     rfc = models.CharField(max_length=18, blank=True, validators=[RegexValidator(rfc_regex, 'La CURP no es válida')])
