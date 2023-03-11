@@ -410,21 +410,10 @@ class CarpetaExamenSocioeconomico(models.Model):
     ultima_vez_enfermo = models.CharField(max_length=100, blank=True, null=True)
     embarazada = models.CharField(max_length=100, blank=True, null=True)
     contacto_emergencia = models.CharField(max_length=100, blank=True, null=True)
-    validador_num_telefono = RegexValidator(
-        regex=r'^\+?1?\d{9,10}$', 
-        message='El número telefónico debe ser ingresado de la siguiente manera: \
-                "5512345678". Limitado a 10 dígitos.')
-    telefono_emergencia = models.CharField(
-        validators=[validador_num_telefono], 
-        max_length=17, 
-        blank=True, 
-        null=True, 
-        help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_emergencia = models.CharField(validators=[validador_num_telefono],max_length=17,blank=True,null=True,help_text='Ingrese número telefónico a 10 dígitos')
     parentesco_contacto = models.CharField(max_length=100, blank=True, null=True)
-    actividates_fin_semana = models.PositiveSmallIntegerField(
-        choices=ACTIVIDADES_FIN_SEMANA,
-        blank=True,
-        null=True)
+    actividates_fin_semana = models.PositiveSmallIntegerField(choices=ACTIVIDADES_FIN_SEMANA,blank=True,null=True)
     actividades_culturales_deportes = models.CharField(max_length=100, blank=True, null=True)
     estudia = models.BooleanField(blank=True, default=False)
     que_estudia = models.CharField(max_length=100, blank=True, null=True)
@@ -738,6 +727,8 @@ class Pais(models.Model):
         verbose_name_plural = 'Paises'
 
 class Curp(models.Model):
+    # Implementar Curp Api desde Frontend
+    
     empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
     curp_regex = r'^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$'
     curp = models.CharField(max_length=18, blank=True, unique=True,validators=[RegexValidator(curp_regex, 'La CURP no es válida')])
@@ -760,80 +751,6 @@ class Curp(models.Model):
 
     def __str__(self):
         return f'{self.empleado} - {self.curp}: {self.nombre} {self.apellido_paterno} {self.apellido_materno} ({self.empleado})'
-
-    # Implementar Curp Api desde Frontend
-
-    # def obtener_iniciales(nombre, apellido_paterno, apellido_materno):
-    #     # Lista de palabras a excluir de las iniciales
-    #     excluidas = ['y', 'de', 'la', 'el', 'las', 'los']
-
-    #     # Obtener las palabras en el nombre y eliminar las excluidas
-    #     palabras_nombre = [word for word in nombre.split() if word.lower() not in excluidas]
-    #     iniciales_nombre = ''.join([word[0] for word in palabras_nombre])
-        
-    #     # Obtener las palabras en los apellidos y eliminar las excluidas
-    #     palabras_apellidos = [apellido.split() for apellido in [apellido_paterno, apellido_materno]]
-    #     palabras_apellidos = [word for apellido in palabras_apellidos for word in apellido if word.lower() not in excluidas]
-    #     iniciales_apellidos = ''.join([word[0] for word in palabras_apellidos])
-        
-    #     # Combinar las iniciales y retornarlas
-    #     return iniciales_nombre + iniciales_apellidos
-
-    # def calcular_edad(fecha_nacimiento, fecha_referencia=None):
-    #     if not fecha_referencia:
-    #         fecha_referencia = datetime.now().date()
-    #     edad = fecha_referencia.year - fecha_nacimiento.year - ((fecha_referencia.month, fecha_referencia.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
-    #     return edad
-    
-    # def save(self, *args, **kwargs):
-    #     if not self.id:
-    #         # Consultar si la CURP ya existe en la base de datos
-    #         curp_existente = Curp.objects.filter(curp=self.curp).first()
-    #         if curp_existente:
-    #             # Si la CURP ya existe, mostrar un mensaje y no hacer nada
-    #             print('La CURP ya se encuentra registrada')
-    #             return
-    #         else:
-    #             # Si la CURP no existe en la base de datos, buscar en la API                
-    #             url = "https://www.curpapi.mx/api/v1/curp"
-    #             payload = {
-    #                 "curp": self.curp
-    #             }
-    #             headers = {
-    #                 "Content-Type": "application/json",
-    #                 "Authorization": f"TU_API_KEY" # Reemplazar TU_API_KEY por tu clave de API
-    #             }
-    #             response = requests.post(url, json=payload, headers=headers)
-
-    #             if response.status_code == 200:
-    #                 # Si la consulta a la API fue exitosa, llenar los campos correspondientes
-    #                 data = response.json()
-    #                 self.nombre = data['names']
-    #                 self.apellido_paterno = data['paternal_surname']
-    #                 self.apellido_materno = data['mothers_maiden_name']
-    #                 self.iniciales = self.obtener_iniciales(data['names'], data['paternal_surname'], data['mothers_maiden_name'])
-    #                 self.fecha_nacimiento = datetime.strptime(data['birthdate'], '%d/%m/%Y')
-    #                 self.edad = self.calcular_edad(self.fecha_nacimiento)
-    #                 self.anio_registro = data['anioReg']
-    #                 self.numero_acta = data['probation_document_data']['numActa']
-    #                 self.validacion_renapo = data['renapo_valid']
-    #                 self.sexo = data['sex']
-    #                 estatus_curp_clave = data['status_curp']
-    #                 estatus_curp_completo = dict(ESTATUS_CURP).get(estatus_curp_clave, "Opción no existe" )
-    #                 self.estatus_curp = estatus_curp_completo
-    #                 self.municipio_registro = data['probation_document_data']['municipioRegistro']
-    #                 self.clave_municipio_registro = data['probation_document_data']['claveMunicipioRegistro']
-    #                 self.entidad_registro = data['probation_document_data']['entidadRegistro']
-    #                 self.clave_entidad_registro = data['probation_document_data']['claveEntidadRegistro']
-    #                 self.transaction_id = data ['transaction_id']
-    #             else:
-    #                 # Si la consulta a la API falló, se puede manejar el error adecuadamente
-    #                 print(f'Error al consultar la CURP en la API: {response.status_code}')
-                
-    #             # Guardar el objeto
-    #             super().save(*args, **kwargs)
-    #     else:
-    #         super().save(*args, **kwargs)
 
     class Meta:
         verbose_name_plural = 'CURP'
