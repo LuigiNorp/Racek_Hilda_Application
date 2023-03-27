@@ -1,3 +1,8 @@
+ORIGEN_ASPIRANTE = (
+    (1,"Presencial"),
+    (2,"Remoto"),
+)
+
 SEXO_OPCIONES = (
     (1, 'FEMENINO'),
     (2, 'MASCULINO'),
@@ -212,6 +217,31 @@ ACTIVIDAD = (
     (5,"DESEMPLEADO"),        
 )
 
+RESULTADOS_COMPLETOS_ASPIRANTES = (
+    (1,"APTO"),
+    (2,"APTO BAJO RESERVA"),
+    (3,"NO APTO"),
+    (4,"NO INICIA PROCESO"),
+    (5,"NO FINALIZA PROCESO"),
+    (6,"NO SOLICITADO"),
+)
+
+RESULTADO_TOXICOLOGICO_ASPIRANTE = (
+    (1,"POSITIVO"),
+    (2,"NEGATIVO"),
+    (3,"NO INICIA PROCESO"),
+    (4,"NO FINALIZA PROCESO"),
+    (5,"NO SOLICITADO"),
+)
+
+RESULTADO_POLIGRAFO_ASPIRANTE = (
+    (1,"APTO"),
+    (2,"NO APTO"),
+    (3,"NO INICIA PROCESO"),
+    (4,"NO FINALIZA PROCESO"),
+    (5,"NO SOLICITADO"),
+)
+
 OPCIONES_PSICOLOGICO = (
     (1,"DEFICIENTE"),
     (2,"BUENO"),
@@ -219,9 +249,18 @@ OPCIONES_PSICOLOGICO = (
 )
 
 RESULTADO_PSICOLOGICO = (
-    (1,"NO APTO"),
+    (1,"APTO"),
     (2,"APTO BAJO RESERVA"),
-    (3,"APTO"),
+    (3,"NO APTO"),
+)
+
+CLASIFICACION_IMC = (
+    (1,"NORMAL"),
+    (2,"SOBREPESO"),
+    (3,"OBESIDAD GI"),
+    (4,"OBESIDAD GII"),
+    (5,"OBESIDAD GIII"),
+    (6,"DELGADEZ"),
 )
 
 TIPO_DOMICILIO  = (
@@ -320,4 +359,198 @@ EFICIENCIA_TERMINAL = (
     (2,"CONCLUIDO"),
     (3,"CURSANDO"),
     (4,"SOLICITUD"),    
+)
+
+CABELLO_CANTIDAD = (
+    (1,"ABUNDANTE"),
+    (2,"ESCASO"),
+    (3,"REGULAR"),
+    (4,"SIN CABELLO"),
+)
+
+CABELLO_COLOR = (
+    (1,"ALBINO"),
+    (2,"CANO TOTAL"),
+    (3,"CASTAÑO CLARO"),
+    (4,"CASTAÑO OSCURO"),
+    (5,"ENTRECANO"),
+    (6,"NEGRO"),    
+    (7,"PELIRROJO"),
+    (8,"RUBIO"),    
+)
+
+CABELLO_FORMA = (
+    (1,"CRESPO"),
+    (2,"LACIO"),
+    (3,"ONDULADO"),
+    (4,"RIZADO"),
+)
+
+CABELLO_CALVICIE = (
+    (1,"FRONTAL"),
+    (2,"TONSURAL"),
+    (3,"FRONTOPARIETAL"),
+    (4,"TOTAL"),
+)
+
+CABELLO_IMPLANTACION = (
+    (1,"CIRUCLAR"),
+    (2,"RECTANGULAR"),
+    (3,"EN PUNTA"),
+)
+
+TAMANIOS_GMP = (
+    (1,"GRANDE"),
+    (2,"MEDIANA"),
+    (3,"PEQUEÑA"),    
+)
+
+FRENTE_INCLINACION = (
+    (1,"OBLICUA"),
+    (2,"INTERMEDIA"),
+    (3,"VERTICAL"),
+    (4,"PROMINENTE"),    
+)
+
+CEJAS_DIRECCION = (
+    (1,"INTERNAS"),
+    (2,"EXTERNAS"),
+    (3,"HORIZONTAL"),        
+)
+
+CEJAS_IMPLANTACION = (
+    (1,"ALTAS"),
+    (2,"BAJAS"),
+    (3,"PROXIMAS"),
+    (4,"SEPARADAS"),    
+)
+
+CEJAS_FORMA = (
+    (1,"ARQUEADAS"),
+    (2,"ARQUEADAS SINUOSAS"),
+    (3,"RECTILÍNEAS"),
+    (4,"RECTILÍNEAS SINUOSAS"),    
+)
+
+CEJAS_TAMANIO = (
+    (1,"GRUESAS"),
+    (2,"DELGADAS"),
+    (3,"CORTAS"),
+    (4,"LARGAS"),    
+)
+
+OJOS_COLOR = (
+    (1,"AZUL"),
+    (2,"CAFÉ CLARO"),
+    (3,"CAFÉ OSCURO"),
+    (4,"GRIS"),
+    (5,"VERDE"),
+    (6,"OTRO"),       
+)
+
+OJOS_FORMA = (
+    (1,"ALARGADOS"),
+    (2,"REDONDOS"),
+    (3,"OVALES"),    
+)
+
+OJOS_TAMANIO = (
+    (1,"GRANDES"),
+    (2,"PEQUEÑOS"),
+    (3,"REGULARES"),
+)
+
+NARIZ_DORSO = (
+    (1,"CÓNCAVO"),
+    (2,"CONVEXO"),
+    (3,"RECTO"),
+    (4,"SINUOSO"),
+)
+
+NARIZ_BASE = (
+    (1,"ABATIDA"),
+    (2,"HORIZONTAL"),
+    (3,"LEVANTADA"),    
+)
+
+BOCA_COMISURAS = (
+    (1,"ABATIDAS"),
+    (2,"ELEVADAS"),
+    (3,"SIMÉTRICAS"),
+    (4,"ASIMÉTRICAS"),    
+)
+
+LABIOS_ESPESOR = (
+    (1,"DELGADOS"),
+    (2,"MEDIANOS"),
+    (3,"GRUESOS"),
+    (4,"MORRUDOS"),    
+)
+
+LABIOS_PROMINENCIA = (
+    (1,"LABIO INFERIOR"),
+    (2,"LABIO SUPERIOR"),
+    (3,"NINGUNO"),       
+)
+
+MENTON_TIPO = (
+    (1,"BILOVADO"),
+    (2,"FOSETA"),
+    (3,"BORLA"),
+    (4,"NINGUNA"),    
+)    
+
+MENTON_FORMA = (
+    (1,"OVAL"),
+    (2,"CUADRADO"),
+    (3,"EN PUNTA"),    
+)
+
+MENTON_INCLINACION = (
+    (1,"HUYENTE"),
+    (2,"PROMINENTE"),
+    (3,"VERTICAL"),
+)
+
+OREJA_DERECHA_FORMA = (
+    (1,"CUADRADA"),
+    (2,"OVALADA"),
+    (3,"REDONDA"),
+    (4,"TRIANGULAR"),    
+)
+
+OREJA_DERECHA_ADHERENCIA = (
+    (1,"UNIDO"),
+    (2,"SEPARADO"),
+    (3,"MUY SEPARADO"),    
+)
+
+OREJA_DERECHA_HELIX_CONTORNO = (
+    (1,"DESCENDENTE"),
+    (2,"EN ESCUADRA"),
+    (3,"EN GOLFO"),
+    (4,"INTERMEDIO"),        
+)
+
+OREJA_DERECHA_LOBULO_PARTICULARIDAD = (
+    (1,"PERFORADO"),
+    (2,"FOSETA"),
+    (3,"ISLOTE"),        
+)
+
+ESTATUS_CAPACITACION = (
+    (1,"NO INICIADO"),
+    (2,"EN PROCESO"),
+    (3,"REALIZADO"),
+    (4,"ENTREGADO"),
+    (5,"FACTURADO"),
+    (6,"PAGADO"),
+    (7,"CANCELADO"),        
+)
+
+RESULTADO_CAPACITACION = (
+    (1,"NO HA PRESENTADO"),
+    (2,"EN CAPACITACIÓN"),
+    (3,"APROBÓ"),
+    (4,"NO APROBÓ"),         
 )

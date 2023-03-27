@@ -1,11 +1,14 @@
-asgiref==3.5.0
+asgiref==3.6.0
+certifi @ file:///croot/certifi_1671487769961/work/certifi
+charset-normalizer==3.0.1
 darkdetect==0.5.1
 defusedxml==0.7.1
 diff-match-patch==20200713
-Django==4.0.3
+Django==4.1.7
 django-cors-headers==3.13.0
 django-db-multitenant==0.3.2
 django-environ==0.9.0
+django-extensions==3.2.1
 django-import-export==3.0.2
 djangorestframework==3.13.1
 et-xmlfile==1.1.0
@@ -14,6 +17,7 @@ gaphas==3.6.0
 gaphor==2.9.2
 generic==1.1.0
 html2text==2020.1.16
+idna==3.4
 jedi==0.18.1
 MarkupPy==1.14
 mysqlclient==2.1.1
@@ -27,15 +31,18 @@ Pillow==9.2.0
 psycopg2-binary==2.9.4
 pycairo==1.21.0
 PyGObject==3.42.2
+pygraphviz==1.10
 python-dateutil==2.8.2
 pytz==2022.6
 PyYAML==6.0
+requests==2.28.2
 six==1.16.0
 sqlparse==0.4.2
 style==1.1.0
 tablib==3.3.0
 tinycss2==1.1.1
 update==0.0.1
+urllib3==1.26.14
 webencodings==0.5.1
 whitenoise==6.2.0
 xlrd==2.0.1
