@@ -224,8 +224,3 @@ class EstadoViewSet(BaseViewSet):
 class PaisViewSet(BaseViewSet):
     serializer_class = PaisSerializer
     model_class = Pais
-
-
-
-class EmpleadoView(TemplateView):
-    template_name = 'data/empleado/base.html'
