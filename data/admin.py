@@ -123,7 +123,7 @@ class MotivoSeparacionAdmin(admin.ModelAdmin):
 class CarpetaCapacitacionAdmin(admin.ModelAdmin):
     list_display = ('id','personal')
 
-@admin.register(CapacitacionPrevia)
+@admin.register(Capacitacion)
 class CapacitacionPreviaAdmin(admin.ModelAdmin):
     list_display = ('id','carpeta_capacitacion','institucion_empresa')
 
@@ -131,21 +131,21 @@ class CapacitacionPreviaAdmin(admin.ModelAdmin):
 class TipoCursoAdmin(admin.ModelAdmin):
     list_display = ('id','tipo_curso')
 
-@admin.register(CapacitacionEnCurso)
-class CapacitacionEnCursoAdmin(admin.ModelAdmin):
-    list_display = ('id','carpeta_capacitacion','estudio_curso')
+# @admin.register(CapacitacionEnCurso)
+# class CapacitacionEnCursoAdmin(admin.ModelAdmin):
+#     list_display = ('id','carpeta_capacitacion','estudio_curso')
 
 @admin.register(Idioma)
 class IdiomaAdmin(admin.ModelAdmin):
     list_display = ('id','carpeta_capacitacion','idioma')
 
-@admin.register(Habilidad)
-class HabilidadAdmin(admin.ModelAdmin):
-    list_display = ('id','carpeta_capacitacion')
+# @admin.register(Habilidad)
+# class HabilidadAdmin(admin.ModelAdmin):
+#     list_display = ('id','carpeta_capacitacion')
 
-@admin.register(HabilidadPersonalizada)
-class HabilidadPersonalizadaAdmin(admin.ModelAdmin):
-    list_display = ('id','habilidad','nombre_habilidad')
+# @admin.register(HabilidadPersonalizada)
+# class HabilidadPersonalizadaAdmin(admin.ModelAdmin):
+#     list_display = ('id','habilidad','nombre_habilidad')
 
 @admin.register(CarpetaMediaFiliacion)
 class CarpetaMediaFilicacionAdmin(admin.ModelAdmin):
