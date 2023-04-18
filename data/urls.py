@@ -1,7 +1,6 @@
 from django.urls import path
 from .views import *
 from .models import *
-from rest_framework import viewsets
 
 all_models = [model.__name__ for model in globals().values() if isinstance(model, type) and issubclass(model, models.Model)]
 

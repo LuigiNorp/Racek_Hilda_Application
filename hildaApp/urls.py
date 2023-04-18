@@ -15,9 +15,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from data.views import *
+from main.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('data.urls')),
-    path('api/', include('main.urls')),
+    path('users/', include('main.urls')),
+    path('', Login, name='login'),
+    path('signup/', SignupView, name='signup'),
+    path('index/', Index, name='index'),
+
+    # if you want to include the main app, uncomment the following line:
+    # path('api/', include('main.urls')),
+ 
 ]
