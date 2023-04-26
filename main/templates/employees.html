@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <h1>Empleado</h1>
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active" data-toggle="tab" href="{% url 'carpeta_laboral' %}">Carpeta Laboral</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="{% url 'carpeta_generales' %}">Carpeta Generales</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="{% url 'carpeta_referencias' %}">Carpeta Referencias</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="{% url 'carpeta_dependientes' %}">Carpeta Dependientes</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#carpeta-examenes">Carpeta Examenes</a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div id="carpeta-laboral" class="tab-pane active">
+      <h3>Carpeta Laboral</h3>
+      <p>Contenido de la Carpeta Laboral</p>
+      <p>personal:{{carpetalaboral.personal}}</p>
+    </div>
+    <div id="carpeta-generales" class="tab-pane">
+      <h3>Carpeta Generales</h3>
+      <p>Contenido de la Carpeta Generales</p>
+    </div>
+    <div id="carpeta-referencias" class="tab-pane">
+      <h3>Carpeta Referencias</h3>
+      <p>Contenido de la Carpeta Referencias</p>
+    </div>
+    <div id="carpeta-dependientes" class="tab-pane">
+      <h3>Carpeta Dependientes</h3>
+      <p>Contenido de la Carpeta Dependientes</p>
+    </div>
+    <div id="carpeta-examenes" class="tab-pane">
+        <h3>Carpeta Examenes</h3>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="{% url 'carpeta_examen_psicologico' %}">Carpeta Examen Psicológico</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="{% url 'carpeta_examen_toxicologico' %}">Carpeta Examen Toxicológico</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="{% url 'carpeta_examen_medico' %}">Carpeta Examen Médico</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="{% url 'carpeta_examen_fisico' %}">Carpeta Examen Físico</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="{% url 'carpeta_examen_socioeconomico' %}">Carpeta Examen Socioeconómico</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="{% url 'carpeta_examen_poligrafo' %}">Carpeta Examen Poligráfico</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="examen_psicologico" role="tabpanel">
+                    <!-- Contenido de la carpeta examen psicológico -->
+                </div>
+                <div class="tab-pane fade" id="examen_toxicologico" role="tabpanel">
+                    <!-- Contenido de la carpeta examen toxicológico -->
+                </div>
+                <div class="tab-pane fade" id="examen_medico" role="tabpanel">
+                    <!-- Contenido de la carpeta examen médico -->
+                </div>
+                <div class="tab-pane fade" id="examen_fisico" role="tabpanel">
+                    <!-- Contenido de la carpeta examen físico -->
+                </div>
+                <div class="tab-pane fade" id="examen_socioeconomico" role="tabpanel">
+                    <!-- Contenido de la carpeta examen socioeconómico -->
+                </div>
+                <div class="tab-pane fade" id="examen_poligrafo" role="tabpanel">
+                    <!-- Contenido de la carpeta examen poligráfico -->
+                </div>
+            </div>
+{% endblock %}
