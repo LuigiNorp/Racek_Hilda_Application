@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from .choices import DEPARTAMENTO, PERMISOS
+from django.contrib.auth import get_user_model
+
 
 # Create your models here.
 class CustomUserManager(BaseUserManager):
@@ -38,6 +40,7 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
         return self.create_user(email, password, **extra_fields)
+    
 
 class Usuario(AbstractUser):
     email = models.EmailField(unique=True)
@@ -51,3 +54,14 @@ class Usuario(AbstractUser):
 
     def nombre_completo(self):
         return f'{self.apellido_paterno}{self.apellido_materno}{self.nombre}'
+
+
+User = get_user_model()
+class Profile(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    forget_password_token = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.usuario.username
+    

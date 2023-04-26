@@ -22,11 +22,19 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('data.urls')),
     path('users/', include('main.urls')),
-    path('', Login, name='login'),
-    path('signup/', SignupView, name='signup'),
     path('index/', Index, name='index'),
 
     # if you want to include the main app, uncomment the following line:
     # path('api/', include('main.urls')),
  
+    path('' , Home , name="home"),
+    path('login/' , Login , name="login"),\
+    path('register/' , Register , name="register"),
+    path('forget-password/' , ForgetPassword , name="forget_password"),
+    path('change-password/<token>/' , ChangePassword , name="change_password"),
+    path('logout/' , Logout , name="logout"),
+
+    path('employees/' , Employees , name="employees"),
+    
 ]
+

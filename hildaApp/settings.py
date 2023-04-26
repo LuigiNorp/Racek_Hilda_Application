@@ -51,12 +51,12 @@ PROJECT_APPS = [
 
 THIRD_PARTY_APPS=[
     'django_extensions',
-    # 'corsheaders',
-    # 'rest_framework',
+    'corsheaders',
+    'rest_framework',
     # 'import_export',
 ]
 
-INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
