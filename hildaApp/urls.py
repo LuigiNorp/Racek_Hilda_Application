@@ -35,6 +35,18 @@ urlpatterns = [
     path('logout/' , Logout , name="logout"),
 
     path('employees/' , Employees , name="employees"),
+
+    path('employment-portfolio/', EmploymentPortfolio, name="employment-portfolio"),
+    path('general-portfolio/', GeneralPortfolio, name="general-portfolio"),
+    path('references-portfolio/', ReferencesPortfolio, name="references-portfolio"),
+    path('dependents-portfolio/', DependentsPortfolio, name="dependents-portfolio"),
+    path('exams-portfolio/', ExamsPortfolio, name="exams-portfolio"),
+    path('psychological-portfolio/', PsychologicalPortfolio, name="psychological-portfolio"),
+    path('toxicological-portfolio/', ToxicologicalPortfolio, name="toxicological-portfolio"),
+    path('medical-portfolio/', MedicalPortfolio, name="medical-portfolio"),
+    path('physical-portfolio/', PhysicalPortfolio, name="physical-portfolio"),
+    path('socioeconomic-portfolio/', SocioeconomicPortfolio, name="socioeconomic-portfolio"),
+    path('polygraph-portfolio/', PolygraphPortfolio, name="polygraph-portfolio"),
     
 ]
 

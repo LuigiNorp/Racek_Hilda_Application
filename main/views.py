@@ -170,3 +170,36 @@ def ForgetPassword(request):
 
 def Employees(request):
     return render(request , 'employees.html')
+
+def EmploymentPortfolio(request):
+    return render(request , 'employment-portfolio.html')
+
+def DependentsPortfolio(request):
+    return render(request , 'dependents-portfolio.html')
+
+def GeneralPortfolio(request):
+    return render(request , 'general-portfolio.html')
+
+def ReferencesPortfolio(request):
+    return render(request , 'references-portfolio.html')
+
+def ExamsPortfolio(request):
+    return render(request , 'exams-portfolio.html')
+
+def PsychologicalPortfolio(request):
+    return render(request , 'psychological-portfolio.html')
+
+def ToxicologicalPortfolio(request):
+    return render(request , 'toxicological-portfolio.html')
+
+def MedicalPortfolio(request):
+    return render(request , 'medical-portfolio.html')
+
+def PhysicalPortfolio(request):
+    return render(request , 'physical-portfolio.html')
+
+def SocioeconomicPortfolio(request):
+    return render(request , 'socioeconomic-portfolio.html')
+
+def PolygraphPortfolio(request):
+    return render(request , 'polygraph-portfolio.html')
