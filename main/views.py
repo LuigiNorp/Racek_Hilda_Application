@@ -168,9 +168,6 @@ def ForgetPassword(request):
         print(e)
     return render(request , 'forget-password.html')
 
-def Employees(request):
-    return render(request , 'employees.html')
-
 def EmploymentPortfolio(request):
     return render(request , 'employment-portfolio.html')
 

@@ -3,15 +3,13 @@
 
     {% include "main-menu.html" %}
 
-    <div class="container d-flex align-items-center justify-content-center vh-100">
-    <div class="text-center">
-        <h1>Welcome.. </h1>
-        <div class="button-container">
-            <a href="clientes.html" class="btn btn-danger">Clientes</a>
-            <a href="previos.html" class="btn btn-danger">Previos</a>
-            <a href="/employees/" class="btn btn-danger">Empleados</a>
+    <div class="container">
+        {% include "buttons-box.html" %}
+        <div class="right-container">
+        <div class="image-container">
+            <img src="static/img/racek_logo_med.svg" alt="Logo" class="img-background">
+        </div>    
         </div>
-    </div>
     </div>
 
 {% endblock %}  

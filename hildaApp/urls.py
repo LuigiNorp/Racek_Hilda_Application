@@ -33,9 +33,6 @@ urlpatterns = [
     path('forget-password/' , ForgetPassword , name="forget_password"),
     path('change-password/<token>/' , ChangePassword , name="change_password"),
     path('logout/' , Logout , name="logout"),
-
-    path('employees/' , Employees , name="employees"),
-
     path('employment-portfolio/', EmploymentPortfolio, name="employment-portfolio"),
     path('general-portfolio/', GeneralPortfolio, name="general-portfolio"),
     path('references-portfolio/', ReferencesPortfolio, name="references-portfolio"),

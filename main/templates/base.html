@@ -32,7 +32,6 @@
             align-items: center;
             height: 100vh;
             background-color: rgb(246, 255, 255);
-
         }
 
 
@@ -40,15 +39,114 @@
 
 
         .container{
-            background-color: rgb(253, 253, 253);
-            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
-            border-radius: 10px;
-            width: 400px;
+            display: flex;
+            height: 100vh; /* set the height to full screen height */
         }
 
         .container h1{
             text-align: center;
             margin: 50px;
+        }
+
+
+
+
+
+        .left-container {
+            width: 25%; /* specify the width of the left container */
+            position: relative;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            transform: translate(-50%,-50%);
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 10px;
+            cursor: pointer;
+            margin: 10px;
+            color: rgb(255, 255, 255); 
+            font-size: 16px; 
+            line-height: 16px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            background-color: rgb(255,120,79); 
+            border: 2px solid rgb(255,120,79); 
+        }
+
+        .btn-main:hover {
+            background-color: rgb(255,171,145);
+            border: 2px solid rgb(255,171,145);
+
+        }
+
+        .btn-main:active {
+            background-color: rgb(191,90,59) !important;
+            border: 2px solid rgb(191,90,59) !important;
+            color: rgb(255, 255, 255) !important;
+        }
+
+
+
+
+        
+        .work-container{
+            background-color: rgb(253, 253, 253);
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+            border-radius: 10px;
+            width: 2300px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            margin-right: -35px;
+            flex-grow: 1; /* make the right container occupy the remaining space */
+        }
+        
+        .folder-container {
+            margin-left: 2px;
+        }
+        
+        
+        
+        .right-container {
+            background-color: rgb(253, 253, 253);
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+            border-radius: 10px;
+            width: 2300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 75px;
+            margin-right: -35px;
+
+            flex-grow: 1; /* make the right container occupy the remaining space */
+            background-image: url("static/img/racek-background.jpg"); /* add your desired background image */
+            background-size: cover; /* scale the background image to cover the container */
+            background-repeat: no-repeat; /* prevent the image from repeating when the container overflows */
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%; /* Asignar el 100% de altura al contenedor para centrar verticalmente */
+            opacity: 0.5;
+        }
+
+
+
+
+
+        .tab-content {
+            margin-left: 40px;
+            margin-top: 20px;
         }
 
 
@@ -134,11 +232,27 @@
 
         .form button.btn{
             width: 100%;
-            padding: 10px 15px;
-            border: none;
+            padding: 10px;
             cursor: pointer;
-            background-color: rgb(238, 155, 0);
-            color: #fff;    
+            margin: 0px;
+            color: rgb(255, 255, 255); 
+            font-size: 16px; 
+            line-height: 16px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            background-color: rgb(255,120,79); 
+            border: 2px solid rgb(255,120,79);  
+        }
+
+        .form button.btn:hover{
+            background-color: rgb(255,171,145);
+            border: 2px solid rgb(255,171,145); 
+        }
+
+        .form button.btn:active{
+            background-color: rgb(191,90,59);
+            border: 2px solid rgb(191,90,59);
+            color: rgb(255, 255, 255);
         }
 
         .form-control .sucsess input{
@@ -159,41 +273,28 @@
 
 
         .navbar {
-        height: 70px; /* reducir la altura de la navbar */
-        margin-top: -10px; /* modificar el margen superior de la navbar */
+            height: 75px; /* reducir la altura de la navbar */
+            margin-top: -5px; /* modificar el margen superior de la navbar */
 
         }
 
         .navbar form .form-control {
-        height: 35px; /* modificar el tamaño del input */
+            height: 35px; /* modificar el tamaño del input */
         }
 
         .navbar form .btn {
-        height: 35px; /* modificar el tamaño del botón */
-        margin-left: 0px; /* modificar la posición del botón */
-        margin-right: 5px; /* modificar la posición del botón */
+            height: 35px; /* modificar el tamaño del botón */
+            margin-left: 0px; /* modificar la posición del botón */
+            margin-right: 5px; /* modificar la posición del botón */
         }
-
-        .navbar form .btn-toggle {
-        height: 35px; /* modificar el tamaño del toggle */
-        width: 50px; /* modificar el ancho del toggle */
-        }
-
-
-
-
-
-
-        .container-offcanvas {
-        padding-left: 15px; 
-        margin-top: 0px; 
-        margin-bottom: 0px;
-        margin-left: -15px;
-        margin-right: -31px;
-        }
-
-        .container-offcanvas:hover {
-            background-color: rgba(0,0,0,0.5);
+  
+        .navbar-toggler {
+            height: 42px; /* modificar el tamaño del toggle */
+            width: 47px; /* modificar el ancho del toggle */
+            padding-top: 2%;
+            padding-left: 3%;
+            margin-right: 15px; /* modificar la posición del toggle */
+            margin-left: 40px; /* modificar la posición del toggle */
         }
 
 
@@ -202,24 +303,32 @@
 
 
         .offcanvas-body {
-        display: flex;
-        flex-direction: column;
-        overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
         }
 
         #offcanvas-button-container {
-        margin-top: auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        max-height: 50px;
+            margin-top: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-height: 75px;
         }
                 
-        
-        
-        
-        .navbar-toggler {
+        .container-offcanvas {
+            padding-left: 15px; 
+            margin-top: 0px; 
+            margin-bottom: 0px;
+            margin-left: -15px;
+            margin-right: -31px;
         }
+
+        .container-offcanvas:hover {
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        
 
     </style>
    
