@@ -21,17 +21,17 @@ from main.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('data.urls')),
-    path('users/', include('main.urls')),
-    path('index/', Index, name='index'),
 
     # if you want to include the main app, uncomment the following line:
     # path('api/', include('main.urls')),
+
+    path('users/', Users, name="users"),
  
-    path('' , Home , name="home"),
-    path('login/' , Login , name="login"),\
-    path('register/' , Register , name="register"),
-    path('forget-password/' , ForgetPassword , name="forget_password"),
-    path('change-password/<token>/' , ChangePassword , name="change_password"),
+    path('', Home, name="home"),
+    path('login/', Login , name="login"),\
+    path('register/', Register , name="register"),
+    path('forget-password/', ForgetPassword , name="forget_password"),
+    path('change-password/<token>/', ChangePassword , name="change_password"),
     path('logout/' , Logout , name="logout"),
     path('employment-portfolio/', EmploymentPortfolio, name="employment-portfolio"),
     path('general-portfolio/', GeneralPortfolio, name="general-portfolio"),

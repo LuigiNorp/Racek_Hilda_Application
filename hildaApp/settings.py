@@ -49,7 +49,7 @@ PROJECT_APPS = [
     'main',
 ]
 
-THIRD_PARTY_APPS=[
+THIRD_PARTY_APPS = [
     'django_extensions',
     'corsheaders',
     'rest_framework',
@@ -118,11 +118,11 @@ WSGI_APPLICATION = 'hildaApp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3-1',
+        'NAME': BASE_DIR / 'db.sqlite3-app',
     },
     'hilda_data': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3-2',
+        'NAME': BASE_DIR / 'db.sqlite3-data',
     },
 }
 
@@ -131,7 +131,7 @@ DATABASE_ROUTERS = [
 ]
 
 # Default User model for the app
-AUTH_USER_MODEL = 'main.Usuario'
+AUTH_USER_MODEL = 'main.CustomUser'
 
 GRAPH_MODELS = {
     'all_applications': True,
@@ -141,18 +141,19 @@ GRAPH_MODELS = {
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
+AUTH_PSWD_MODULE="django.contrib.auth.password_validation."
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': f'{AUTH_PSWD_MODULE}UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': f'{AUTH_PSWD_MODULE}MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': f'{AUTH_PSWD_MODULE}CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': f'{AUTH_PSWD_MODULE}NumericPasswordValidator',
     },
 ]
 
@@ -169,7 +170,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
@@ -183,3 +183,6 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# To redirect to home after login django admin
+LOGIN_REDIRECT_URL = 'home'

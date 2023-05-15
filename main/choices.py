@@ -1,6 +1,6 @@
 DEPARTAMENTO = (
-    (1, 'Karla'),
-    (2, 'César'),
+    (1, 'César'),
+    (2, 'Karla'),
     (3,'Ramiro'),
 )
 

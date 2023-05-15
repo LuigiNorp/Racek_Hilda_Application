@@ -1,0 +1,36 @@
+{% extends 'navigation/main-menu-with-buttons.html' %}
+
+{% block extrahead %}
+  <title>
+    Nuevo Usuario
+  </title>
+  <style>
+    .container {
+      width: 520px;
+      height: 100%;
+      overflow: auto;
+    }
+  </style>
+{% endblock %}
+
+{% block start %}
+  <div class="container">
+    <form method="post" class="form" id="form">
+      <h1>Nuevo Usuario</h1>
+      {% csrf_token %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-info">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+      <div class="form-group">
+        {{ form.as_p }}
+      </div>
+      <button class="btn btn-success mt-3" type="submit">
+        Registrar
+      </button>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,16 @@
+.work-container{
+    background-color: rgb(253, 253, 253);
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    border-radius: 10px;
+    width: 2300px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    margin-right: -35px;
+    flex-grow: 1; /* make the right container occupy the remaining space */
+}
+
+.tab-content {
+    margin-left: 40px;
+    margin-top: 20px;
+}

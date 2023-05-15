@@ -1,0 +1,1131 @@
+{{ form.my_date }}
+
+<div class="content">
+    <!-- Content -->
+    <div id="content" class="colM">
+        <h1>{{ user.username|capfirst }}</h1>
+        <div id="content-main">
+            <form method="post" id="usuario_form" novalidate="">
+            <input
+                type="hidden"
+                name="csrfmiddlewaretoken"
+                value="5A9Po105Tr5RrtZHgRVTaDuBv8oRV4cPkolold5CwcnGuXI23RC0IFgqRJVqFMHM"
+            />
+            <div>
+                <fieldset class="module aligned">
+                    <div class="form-row field-username">
+                        <div>
+                            <label class="required" for="id_username">
+                                Nombre de usuario:
+                            </label>
+                            <input
+                                type="text"
+                                name="username"
+                                value="{{ user.username }}"
+                                class="vTextField"
+                                maxlength="{{ username_max_length }}"
+                                required=""
+                                id="id_username"
+                            />
+                            <div class="help" id="id_username_helptext">
+                                Obligatorio. Longitud máxima {{ username_max_length }} caracteres alfanuméricos.
+                                Letras, dígitos y @/./+/-/_ únicamente.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row field-password">
+                        <div>
+                            <label class="required" for="id_password">
+                                Contraseña:
+                            </label>
+                            <input
+                                type="text"
+                                name="password"
+                                value="{{ user.password }}"
+                                class="vTextField"
+                                maxlength="{{ password_max_length }}"
+                                required=""
+                                id="id_password"
+                            />
+                        </div>
+                    </div>
+                    <div class="form-row field-email">
+                    <div>
+                        <label class="required" for="id_email"> Email: </label>
+
+                        <input
+                        type="email"
+                        name="email"
+                        value="{{ user.email }}"
+                        class="vTextField"
+                        maxlength="{{ email_max_length }}"
+                        required=""
+                        id="id_email"
+                        />
+                    </div>
+                    </div>
+
+                    <div class="form-row field-nombre">
+                    <div>
+                        <label class="required" for="id_nombre"> Nombre: </label>
+
+                        <input
+                            type="text"
+                            name="nombre"
+                            value="{{ user.nombre }}"
+                            class="vTextField"
+                            maxlength={{ nombre_max_length }}
+                            required=True
+                            id="id_nombre"
+                        />
+                        <div class="help" id="id_username_helptext">
+                            Obligatorio. Longitud máxima {{ nombre_max_length }} caracteres alfanuméricos.
+                        </div>
+                    </div>
+                    </div>
+
+                    <div class="form-row field-apellido_paterno">
+                    <div>
+                        <label class="required" for="id_apellido_paterno">
+                        Apellido paterno:
+                        </label>
+
+                        <input
+                        type="text"
+                        name="apellido_paterno"
+                        value="{{ user.apellido_paterno }}"
+                        class="vTextField"
+                        maxlength="{{ apellido_paterno_max_length }}"
+                        required=""
+                        id="id_apellido_paterno"
+                        />
+                    </div>
+                    </div>
+
+                    <div class="form-row field-apellido_materno">
+                    <div>
+                        <label class="required" for="id_apellido_materno">
+                        Apellido materno:
+                        </label>
+
+                        <input
+                        type="text"
+                        name="apellido_materno"
+                        value="{{ user.apellido_materno }}"
+                        class="vTextField"
+                        maxlength="{{ apellido_materno_max_length }}"
+                        required=""
+                        id="id_apellido_materno"
+                        />
+                    </div>
+                    </div>
+                    <div class="form-row field-last_login">
+                        <div>
+                            <label>
+                                Último ingreso:
+                            </label>
+                            <p class="datetime">
+                                Fecha:
+                                <input
+                                    type="text"
+                                    name="last_login_0"
+                                    value=" {{ user.last_login|date:'d/m/Y' }} "
+                                    class="vDateField"
+                                    size="10"
+                                    id="id_last_login_0"/>
+                                <br/>
+                                Hora:
+                                <input
+                                    type="text"
+                                    name="last_login_1"
+                                    value=" {{ user.last_login|time:"H:i:s"  }}"
+                                    class="vTimeField"
+                                    size="8"
+                                    id="id_last_login_1"/>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="form-row field-is_superuser">
+                    <div class="checkbox-row">
+                        <input
+                        type="checkbox"
+                        name="is_superuser"
+                        id="id_is_superuser"
+                        />
+                        <label class="vCheckboxLabel" for="id_is_superuser">
+                        Es superusuario
+                        </label>
+                        <div class="help" id="id_is_superuser_helptext">
+                        Indica que este usuario posee todos los permisos sin que sea
+                        necesario asignarle los mismos en forma explícita.
+                        </div>
+                    </div>
+                    </div>
+                    <div class="form-row field-groups">
+                    <div>
+                        <label for="id_groups">Grupos:</label>
+                        <div class="related-widget-wrapper" data-model-ref="grupo">
+                        <select name="groups" id="id_groups" multiple=""></select>
+                        <a
+                            class="related-widget-wrapper-link add-related"
+                            id="add_id_groups"
+                            data-popup="yes"
+                            href="/admin/auth/group/add/?_to_field=id&amp;_popup=1"
+                            title="Añadir otro grupo"
+                        >
+                            <img
+                            src="/static/admin/img/icon-addlink.svg"
+                            alt="Agregar"
+                            />
+                        </a>
+                        </div>
+                        <div class="help" id="id_groups_helptext">
+                        Los grupos a los que pertenece este usuario. Un usuario
+                        obtendrá todos los permisos concedidos para cada uno de su
+                        grupo. Mantenga presionado "Control" o "Comando" en una Mac,
+                        para seleccionar más de uno.
+                        </div>
+                    </div>
+                    </div>
+                    <div class="form-row field-user_permissions">
+                    <div>
+                        <label for="id_user_permissions"> Permisos de usuario: </label>
+                        <div class="related-widget-wrapper" data-model-ref="permiso">
+                        <select
+                            name="user_permissions"
+                            id="id_user_permissions"
+                            multiple=""
+                        >
+                            <option value="21">
+                            admin | entrada de registro | Can add log entry
+                            </option>
+                            <option value="22">
+                            admin | entrada de registro | Can change log entry
+                            </option>
+
+                            <option value="23">
+                            admin | entrada de registro | Can delete log entry
+                            </option>
+
+                            <option value="24">
+                            admin | entrada de registro | Can view log entry
+                            </option>
+
+                            <option value="5">auth | grupo | Can add group</option>
+
+                            <option value="6">auth | grupo | Can change group</option>
+
+                            <option value="7">auth | grupo | Can delete group</option>
+
+                            <option value="8">auth | grupo | Can view group</option>
+
+                            <option value="1">
+                            auth | permiso | Can add permission
+                            </option>
+
+                            <option value="2">
+                            auth | permiso | Can change permission
+                            </option>
+
+                            <option value="3">
+                            auth | permiso | Can delete permission
+                            </option>
+
+                            <option value="4">
+                            auth | permiso | Can view permission
+                            </option>
+
+                            <option value="9">
+                            contenttypes | tipo de contenido | Can add content type
+                            </option>
+
+                            <option value="10">
+                            contenttypes | tipo de contenido | Can change content type
+                            </option>
+
+                            <option value="11">
+                            contenttypes | tipo de contenido | Can delete content type
+                            </option>
+
+                            <option value="12">
+                            contenttypes | tipo de contenido | Can view content type
+                            </option>
+
+                            <option value="29">
+                            data | capacitacion | Can add capacitacion
+                            </option>
+
+                            <option value="30">
+                            data | capacitacion | Can change capacitacion
+                            </option>
+
+                            <option value="31">
+                            data | capacitacion | Can delete capacitacion
+                            </option>
+
+                            <option value="32">
+                            data | capacitacion | Can view capacitacion
+                            </option>
+
+                            <option value="33">
+                            data | capacitacion cliente | Can add capacitacion cliente
+                            </option>
+
+                            <option value="34">
+                            data | capacitacion cliente | Can change capacitacion
+                            cliente
+                            </option>
+
+                            <option value="35">
+                            data | capacitacion cliente | Can delete capacitacion
+                            cliente
+                            </option>
+
+                            <option value="36">
+                            data | capacitacion cliente | Can view capacitacion
+                            cliente
+                            </option>
+
+                            <option value="37">
+                            data | carpeta capacitacion | Can add carpeta capacitacion
+                            </option>
+
+                            <option value="38">
+                            data | carpeta capacitacion | Can change carpeta
+                            capacitacion
+                            </option>
+
+                            <option value="39">
+                            data | carpeta capacitacion | Can delete carpeta
+                            capacitacion
+                            </option>
+
+                            <option value="40">
+                            data | carpeta capacitacion | Can view carpeta
+                            capacitacion
+                            </option>
+
+                            <option value="197">
+                            data | carpeta cliente contactos | Can add carpeta cliente
+                            contactos
+                            </option>
+
+                            <option value="198">
+                            data | carpeta cliente contactos | Can change carpeta
+                            cliente contactos
+                            </option>
+
+                            <option value="199">
+                            data | carpeta cliente contactos | Can delete carpeta
+                            cliente contactos
+                            </option>
+
+                            <option value="200">
+                            data | carpeta cliente contactos | Can view carpeta
+                            cliente contactos
+                            </option>
+
+                            <option value="41">
+                            data | carpeta cliente generales | Can add carpeta cliente
+                            generales
+                            </option>
+
+                            <option value="42">
+                            data | carpeta cliente generales | Can change carpeta
+                            cliente generales
+                            </option>
+
+                            <option value="43">
+                            data | carpeta cliente generales | Can delete carpeta
+                            cliente generales
+                            </option>
+
+                            <option value="44">
+                            data | carpeta cliente generales | Can view carpeta
+                            cliente generales
+                            </option>
+
+                            <option value="45">
+                            data | carpeta cliente pagos | Can add carpeta cliente
+                            pagos
+                            </option>
+
+                            <option value="46">
+                            data | carpeta cliente pagos | Can change carpeta cliente
+                            pagos
+                            </option>
+
+                            <option value="47">
+                            data | carpeta cliente pagos | Can delete carpeta cliente
+                            pagos
+                            </option>
+
+                            <option value="48">
+                            data | carpeta cliente pagos | Can view carpeta cliente
+                            pagos
+                            </option>
+
+                            <option value="49">
+                            data | carpeta dependientes | Can add carpeta dependientes
+                            </option>
+
+                            <option value="50">
+                            data | carpeta dependientes | Can change carpeta
+                            dependientes
+                            </option>
+
+                            <option value="51">
+                            data | carpeta dependientes | Can delete carpeta
+                            dependientes
+                            </option>
+
+                            <option value="52">
+                            data | carpeta dependientes | Can view carpeta
+                            dependientes
+                            </option>
+
+                            <option value="53">
+                            data | carpeta empleo anterior | Can add carpeta empleo
+                            anterior
+                            </option>
+
+                            <option value="54">
+                            data | carpeta empleo anterior | Can change carpeta empleo
+                            anterior
+                            </option>
+
+                            <option value="55">
+                            data | carpeta empleo anterior | Can delete carpeta empleo
+                            anterior
+                            </option>
+
+                            <option value="56">
+                            data | carpeta empleo anterior | Can view carpeta empleo
+                            anterior
+                            </option>
+
+                            <option value="57">
+                            data | carpeta empleo anterior seguridad publica | Can add
+                            carpeta empleo anterior seguridad publica
+                            </option>
+
+                            <option value="58">
+                            data | carpeta empleo anterior seguridad publica | Can
+                            change carpeta empleo anterior seguridad publica
+                            </option>
+
+                            <option value="59">
+                            data | carpeta empleo anterior seguridad publica | Can
+                            delete carpeta empleo anterior seguridad publica
+                            </option>
+
+                            <option value="60">
+                            data | carpeta empleo anterior seguridad publica | Can
+                            view carpeta empleo anterior seguridad publica
+                            </option>
+
+                            <option value="193">
+                            data | carpeta examen fisico | Can add carpeta examen
+                            fisico
+                            </option>
+
+                            <option value="194">
+                            data | carpeta examen fisico | Can change carpeta examen
+                            fisico
+                            </option>
+
+                            <option value="195">
+                            data | carpeta examen fisico | Can delete carpeta examen
+                            fisico
+                            </option>
+
+                            <option value="196">
+                            data | carpeta examen fisico | Can view carpeta examen
+                            fisico
+                            </option>
+
+                            <option value="189">
+                            data | carpeta examen medico | Can add carpeta examen
+                            medico
+                            </option>
+
+                            <option value="190">
+                            data | carpeta examen medico | Can change carpeta examen
+                            medico
+                            </option>
+
+                            <option value="191">
+                            data | carpeta examen medico | Can delete carpeta examen
+                            medico
+                            </option>
+
+                            <option value="192">
+                            data | carpeta examen medico | Can view carpeta examen
+                            medico
+                            </option>
+
+                            <option value="185">
+                            data | carpeta examen poligrafo | Can add carpeta examen
+                            poligrafo
+                            </option>
+
+                            <option value="186">
+                            data | carpeta examen poligrafo | Can change carpeta
+                            examen poligrafo
+                            </option>
+
+                            <option value="187">
+                            data | carpeta examen poligrafo | Can delete carpeta
+                            examen poligrafo
+                            </option>
+
+                            <option value="188">
+                            data | carpeta examen poligrafo | Can view carpeta examen
+                            poligrafo
+                            </option>
+
+                            <option value="181">
+                            data | carpeta examen psicologico | Can add carpeta examen
+                            psicologico
+                            </option>
+
+                            <option value="182">
+                            data | carpeta examen psicologico | Can change carpeta
+                            examen psicologico
+                            </option>
+
+                            <option value="183">
+                            data | carpeta examen psicologico | Can delete carpeta
+                            examen psicologico
+                            </option>
+
+                            <option value="184">
+                            data | carpeta examen psicologico | Can view carpeta
+                            examen psicologico
+                            </option>
+
+                            <option value="177">
+                            data | carpeta examen socioeconomico | Can add carpeta
+                            examen socioeconomico
+                            </option>
+
+                            <option value="178">
+                            data | carpeta examen socioeconomico | Can change carpeta
+                            examen socioeconomico
+                            </option>
+
+                            <option value="179">
+                            data | carpeta examen socioeconomico | Can delete carpeta
+                            examen socioeconomico
+                            </option>
+
+                            <option value="180">
+                            data | carpeta examen socioeconomico | Can view carpeta
+                            examen socioeconomico
+                            </option>
+
+                            <option value="173">
+                            data | carpeta examen toxicologico | Can add carpeta
+                            examen toxicologico
+                            </option>
+
+                            <option value="174">
+                            data | carpeta examen toxicologico | Can change carpeta
+                            examen toxicologico
+                            </option>
+
+                            <option value="175">
+                            data | carpeta examen toxicologico | Can delete carpeta
+                            examen toxicologico
+                            </option>
+
+                            <option value="176">
+                            data | carpeta examen toxicologico | Can view carpeta
+                            examen toxicologico
+                            </option>
+
+                            <option value="169">
+                            data | carpeta generales | Can add carpeta generales
+                            </option>
+
+                            <option value="170">
+                            data | carpeta generales | Can change carpeta generales
+                            </option>
+
+                            <option value="171">
+                            data | carpeta generales | Can delete carpeta generales
+                            </option>
+
+                            <option value="172">
+                            data | carpeta generales | Can view carpeta generales
+                            </option>
+
+                            <option value="61">
+                            data | carpeta laboral | Can add carpeta laboral
+                            </option>
+
+                            <option value="62">
+                            data | carpeta laboral | Can change carpeta laboral
+                            </option>
+
+                            <option value="63">
+                            data | carpeta laboral | Can delete carpeta laboral
+                            </option>
+
+                            <option value="64">
+                            data | carpeta laboral | Can view carpeta laboral
+                            </option>
+
+                            <option value="165">
+                            data | carpeta media filiacion | Can add carpeta media
+                            filiacion
+                            </option>
+
+                            <option value="166">
+                            data | carpeta media filiacion | Can change carpeta media
+                            filiacion
+                            </option>
+
+                            <option value="167">
+                            data | carpeta media filiacion | Can delete carpeta media
+                            filiacion
+                            </option>
+
+                            <option value="168">
+                            data | carpeta media filiacion | Can view carpeta media
+                            filiacion
+                            </option>
+
+                            <option value="65">
+                            data | carpeta referencias | Can add carpeta referencias
+                            </option>
+
+                            <option value="66">
+                            data | carpeta referencias | Can change carpeta
+                            referencias
+                            </option>
+
+                            <option value="67">
+                            data | carpeta referencias | Can delete carpeta
+                            referencias
+                            </option>
+
+                            <option value="68">
+                            data | carpeta referencias | Can view carpeta referencias
+                            </option>
+
+                            <option value="69">data | cliente | Can add cliente</option>
+
+                            <option value="70">
+                            data | cliente | Can change cliente
+                            </option>
+
+                            <option value="71">
+                            data | cliente | Can delete cliente
+                            </option>
+
+                            <option value="72">
+                            data | cliente | Can view cliente
+                            </option>
+
+                            <option value="73">
+                            data | codigo postal | Can add codigo postal
+                            </option>
+
+                            <option value="74">
+                            data | codigo postal | Can change codigo postal
+                            </option>
+
+                            <option value="75">
+                            data | codigo postal | Can delete codigo postal
+                            </option>
+
+                            <option value="76">
+                            data | codigo postal | Can view codigo postal
+                            </option>
+
+                            <option value="77">data | colonia | Can add colonia</option>
+
+                            <option value="78">
+                            data | colonia | Can change colonia
+                            </option>
+
+                            <option value="79">
+                            data | colonia | Can delete colonia
+                            </option>
+
+                            <option value="80">
+                            data | colonia | Can view colonia
+                            </option>
+
+                            <option value="81">data | curp | Can add curp</option>
+
+                            <option value="82">data | curp | Can change curp</option>
+
+                            <option value="83">data | curp | Can delete curp</option>
+
+                            <option value="84">data | curp | Can view curp</option>
+
+                            <option value="161">
+                            data | dependiente | Can add dependiente
+                            </option>
+
+                            <option value="162">
+                            data | dependiente | Can change dependiente
+                            </option>
+
+                            <option value="163">
+                            data | dependiente | Can delete dependiente
+                            </option>
+
+                            <option value="164">
+                            data | dependiente | Can view dependiente
+                            </option>
+
+                            <option value="157">
+                            data | documentos digitales | Can add documentos digitales
+                            </option>
+
+                            <option value="158">
+                            data | documentos digitales | Can change documentos
+                            digitales
+                            </option>
+
+                            <option value="159">
+                            data | documentos digitales | Can delete documentos
+                            digitales
+                            </option>
+
+                            <option value="160">
+                            data | documentos digitales | Can view documentos
+                            digitales
+                            </option>
+
+                            <option value="153">
+                            data | domicilio | Can add domicilio
+                            </option>
+
+                            <option value="154">
+                            data | domicilio | Can change domicilio
+                            </option>
+
+                            <option value="155">
+                            data | domicilio | Can delete domicilio
+                            </option>
+
+                            <option value="156">
+                            data | domicilio | Can view domicilio
+                            </option>
+
+                            <option value="85">
+                            data | empleo anterior | Can add empleo anterior
+                            </option>
+
+                            <option value="86">
+                            data | empleo anterior | Can change empleo anterior
+                            </option>
+
+                            <option value="87">
+                            data | empleo anterior | Can delete empleo anterior
+                            </option>
+
+                            <option value="88">
+                            data | empleo anterior | Can view empleo anterior
+                            </option>
+
+                            <option value="89">
+                            data | empleo anterior seguridad publica | Can add empleo
+                            anterior seguridad publica
+                            </option>
+
+                            <option value="90">
+                            data | empleo anterior seguridad publica | Can change
+                            empleo anterior seguridad publica
+                            </option>
+
+                            <option value="91">
+                            data | empleo anterior seguridad publica | Can delete
+                            empleo anterior seguridad publica
+                            </option>
+
+                            <option value="92">
+                            data | empleo anterior seguridad publica | Can view empleo
+                            anterior seguridad publica
+                            </option>
+
+                            <option value="93">data | estado | Can add estado</option>
+
+                            <option value="94">
+                            data | estado | Can change estado
+                            </option>
+
+                            <option value="95">
+                            data | estado | Can delete estado
+                            </option>
+
+                            <option value="96">data | estado | Can view estado</option>
+
+                            <option value="149">
+                            data | evaluador | Can add evaluador
+                            </option>
+
+                            <option value="150">
+                            data | evaluador | Can change evaluador
+                            </option>
+
+                            <option value="151">
+                            data | evaluador | Can delete evaluador
+                            </option>
+
+                            <option value="152">
+                            data | evaluador | Can view evaluador
+                            </option>
+
+                            <option value="145">data | idioma | Can add idioma</option>
+
+                            <option value="146">
+                            data | idioma | Can change idioma
+                            </option>
+
+                            <option value="147">
+                            data | idioma | Can delete idioma
+                            </option>
+
+                            <option value="148">data | idioma | Can view idioma</option>
+
+                            <option value="141">
+                            data | motivo separacion | Can add motivo separacion
+                            </option>
+
+                            <option value="142">
+                            data | motivo separacion | Can change motivo separacion
+                            </option>
+
+                            <option value="143">
+                            data | motivo separacion | Can delete motivo separacion
+                            </option>
+
+                            <option value="144">
+                            data | motivo separacion | Can view motivo separacion
+                            </option>
+
+                            <option value="137">
+                            data | municipio | Can add municipio
+                            </option>
+
+                            <option value="138">
+                            data | municipio | Can change municipio
+                            </option>
+
+                            <option value="139">
+                            data | municipio | Can delete municipio
+                            </option>
+
+                            <option value="140">
+                            data | municipio | Can view municipio
+                            </option>
+
+                            <option value="133">data | pais | Can add pais</option>
+
+                            <option value="134">data | pais | Can change pais</option>
+
+                            <option value="135">data | pais | Can delete pais</option>
+
+                            <option value="136">data | pais | Can view pais</option>
+
+                            <option value="97">
+                            data | personal | Can add personal
+                            </option>
+
+                            <option value="98">
+                            data | personal | Can change personal
+                            </option>
+
+                            <option value="99">
+                            data | personal | Can delete personal
+                            </option>
+
+                            <option value="100">
+                            data | personal | Can view personal
+                            </option>
+
+                            <option value="129">
+                            data | personal por capacitar | Can add personal por
+                            capacitar
+                            </option>
+
+                            <option value="130">
+                            data | personal por capacitar | Can change personal por
+                            capacitar
+                            </option>
+
+                            <option value="131">
+                            data | personal por capacitar | Can delete personal por
+                            capacitar
+                            </option>
+
+                            <option value="132">
+                            data | personal por capacitar | Can view personal por
+                            capacitar
+                            </option>
+
+                            <option value="125">data | puesto | Can add puesto</option>
+
+                            <option value="126">
+                            data | puesto | Can change puesto
+                            </option>
+
+                            <option value="127">
+                            data | puesto | Can delete puesto
+                            </option>
+
+                            <option value="128">data | puesto | Can view puesto</option>
+
+                            <option value="121">
+                            data | puesto funcional | Can add puesto funcional
+                            </option>
+
+                            <option value="122">
+                            data | puesto funcional | Can change puesto funcional
+                            </option>
+
+                            <option value="123">
+                            data | puesto funcional | Can delete puesto funcional
+                            </option>
+
+                            <option value="124">
+                            data | puesto funcional | Can view puesto funcional
+                            </option>
+
+                            <option value="117">
+                            data | referencia | Can add referencia
+                            </option>
+
+                            <option value="118">
+                            data | referencia | Can change referencia
+                            </option>
+
+                            <option value="119">
+                            data | referencia | Can delete referencia
+                            </option>
+
+                            <option value="120">
+                            data | referencia | Can view referencia
+                            </option>
+
+                            <option value="101">data | rfc | Can add rfc</option>
+
+                            <option value="102">data | rfc | Can change rfc</option>
+
+                            <option value="103">data | rfc | Can delete rfc</option>
+
+                            <option value="104">data | rfc | Can view rfc</option>
+
+                            <option value="113">data | sede | Can add sede</option>
+
+                            <option value="114">data | sede | Can change sede</option>
+
+                            <option value="115">data | sede | Can delete sede</option>
+
+                            <option value="116">data | sede | Can view sede</option>
+
+                            <option value="109">
+                            data | tipo baja | Can add tipo baja
+                            </option>
+
+                            <option value="110">
+                            data | tipo baja | Can change tipo baja
+                            </option>
+
+                            <option value="111">
+                            data | tipo baja | Can delete tipo baja
+                            </option>
+
+                            <option value="112">
+                            data | tipo baja | Can view tipo baja
+                            </option>
+
+                            <option value="105">
+                            data | tipo curso | Can add tipo curso
+                            </option>
+
+                            <option value="106">
+                            data | tipo curso | Can change tipo curso
+                            </option>
+
+                            <option value="107">
+                            data | tipo curso | Can delete tipo curso
+                            </option>
+
+                            <option value="108">
+                            data | tipo curso | Can view tipo curso
+                            </option>
+
+                            <option value="17">main | profile | Can add profile</option>
+
+                            <option value="18">
+                            main | profile | Can change profile
+                            </option>
+
+                            <option value="19">
+                            main | profile | Can delete profile
+                            </option>
+
+                            <option value="20">
+                            main | profile | Can view profile
+                            </option>
+
+                            <option value="13">main | usuario | Can add user</option>
+
+                            <option value="14">main | usuario | Can change user</option>
+
+                            <option value="15">main | usuario | Can delete user</option>
+
+                            <option value="16">main | usuario | Can view user</option>
+
+                            <option value="25">
+                            sessions | período de sesiones | Can add session
+                            </option>
+
+                            <option value="26">
+                            sessions | período de sesiones | Can change session
+                            </option>
+
+                            <option value="27">
+                            sessions | período de sesiones | Can delete session
+                            </option>
+
+                            <option value="28">
+                            sessions | período de sesiones | Can view session
+                            </option>
+                        </select>
+                        </div>
+
+                        <div class="help" id="id_user_permissions_helptext">
+                        Permisos específicos para este usuario Mantenga presionado
+                        "Control" o "Comando" en una Mac, para seleccionar más de uno.
+                        </div>
+                    </div>
+                    </div>
+
+                    <div class="form-row field-is_staff">
+                    <div class="checkbox-row">
+                        <input type="checkbox" name="is_staff" id="id_is_staff" /><label
+                        class="vCheckboxLabel"
+                        for="id_is_staff"
+                        >Es staff</label
+                        >
+
+                        <div class="help" id="id_is_staff_helptext">
+                        Indica si el usuario puede ingresar a este sitio de
+                        administración.
+                        </div>
+                    </div>
+                    </div>
+
+                    <div class="form-row field-is_active">
+                    <div class="checkbox-row">
+                        <input
+                        type="checkbox"
+                        name="is_active"
+                        id="id_is_active"
+                        checked=""
+                        /><label class="vCheckboxLabel" for="id_is_active"
+                        >Activo</label
+                        >
+
+                        <div class="help" id="id_is_active_helptext">
+                        Indica si el usuario debe ser tratado como un usuario activo.
+                        Desactive este campo en lugar de eliminar usuarios.
+                        </div>
+                    </div>
+                    </div>
+
+                    <div class="form-row field-date_joined">
+                    <div>
+                        <label class="required">
+                            Fecha de creación:
+                        </label>
+                        <p class="datetime">
+                            Fecha:
+                            <input
+                                type="text"
+                                name="last_login_0"
+                                value=" {{ user.date_joined|date:'d/m/Y' }} "
+                                class="vDateField"
+                                size="10"
+                                id="id_last_login_0"/>
+                            <br/>
+                            Hora:
+                            <input
+                                type="text"
+                                name="last_login_1"
+                                value=" {{ user.date_joined|time:"H:i:s"  }}"
+                                class="vTimeField"
+                                size="8"
+                                id="id_last_login_1"/>
+                        </p>
+                    </div>
+                    </div>
+
+                    <div class="form-row field-departamento">
+                    <div>
+                        <label class="required" for="id_departamento"
+                        >Departamento:</label
+                        >
+
+                        <select name="departamento" required="" id="id_departamento">
+                        <option value="" selected="">---------</option>
+
+                        <option value="1">Karla</option>
+
+                        <option value="2">César</option>
+
+                        <option value="3">Ramiro</option>
+                        </select>
+                    </div>
+                    </div>
+                </fieldset>
+
+            <div class="submit-row">
+                <input type="submit" value="Guardar" class="default" name="_save" />
+
+                <p class="deletelink-box">
+                <a href="/admin/main/usuario/1/delete/" class="deletelink"
+                    >Eliminar</a
+                >
+                </p>
+
+                <input
+                type="submit"
+                value="Guardar y agregar otro"
+                name="_addanother"
+                />
+                <input
+                type="submit"
+                value="Guardar y continuar editando"
+                name="_continue"
+                />
+            </div>
+
+            <script
+                id="django-admin-form-add-constants"
+                src="/static/admin/js/change_form.js"
+                async=""
+            ></script>
+
+            <script
+                id="django-admin-prepopulated-fields-constants"
+                src="/static/admin/js/prepopulate_init.js"
+                data-prepopulated-fields="[]"
+            ></script>
+            </div>
+        </form>
+        </div>
+
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+    <div id="footer">
+    </div>
+</div>

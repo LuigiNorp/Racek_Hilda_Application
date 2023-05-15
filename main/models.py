@@ -42,26 +42,31 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
     
 
-class Usuario(AbstractUser):
+class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     nombre = models.CharField(max_length=150) 
     apellido_paterno = models.CharField(max_length=150) 
     apellido_materno = models.CharField(max_length=150) 
-    departamento = models.PositiveSmallIntegerField(choices=DEPARTAMENTO, null=True)
+    departamento = models.PositiveSmallIntegerField(choices=DEPARTAMENTO)
 
     # USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['email','nombre','apellido_paterno','apellido_materno','departamento']
 
     def nombre_completo(self):
         return f'{self.apellido_paterno}{self.apellido_materno}{self.nombre}'
+    
+    class Meta:
+        managed = True
+        verbose_name = 'Usuario'
+        verbose_name_plural = 'Usuarios'
 
 
 User = get_user_model()
 class Profile(models.Model):
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     forget_password_token = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.usuario.username
+        return self.user.username
     

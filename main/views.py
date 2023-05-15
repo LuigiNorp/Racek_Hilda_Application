@@ -1,24 +1,38 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
+from django.views.generic.edit import CreateView
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import *
 from django.contrib.auth import authenticate,login,logout
 from .helpers import send_forget_password_mail
 
+from django.contrib.admin.views.decorators import staff_member_required
+from django.urls import reverse_lazy
+
 from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
-from .serializers import UserSerializer, AuthTokenSerializer
+from .serializers import CustomUserSerializer, AuthTokenSerializer
+from django.shortcuts import get_object_or_404
+from .forms import CustomUserAdminForm
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .forms import *
+
+import uuid
+
+from .models import *
+
 
 # Create your views here.
 
-class CreateUserView(generics.CreateAPIView):
-    serializer_class = UserSerializer
-    model_class = Usuario
+# Views for API REST
+class CreateCustomUserView(generics.CreateAPIView):
+    serializer_class = CustomUserSerializer
+    model_class = CustomUser
 
 class RetrieveUpdateUserView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserSerializer
-    model_class = Usuario
+    serializer_class = CustomUserSerializer
+    model_class = CustomUser
     authentication_classes = (authentication.TokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -29,17 +43,7 @@ class CreateTokenView(ObtainAuthToken):
     serializer_class = AuthTokenSerializer
 
 
-# class UsuarioAPIView(APIView):
-#     def get(self, _):
-#         usuarios = Usuario.objects.all()
-#         usuario = random.choice(usuarios)
-#         return Response({
-#             'id':usuario.id
-#             })
-
-def Index(request):
-    return render(request, 'index.html')
-
+# Views for Website
 
 def Login(request):
     try:
@@ -66,42 +70,18 @@ def Login(request):
             return redirect('/')           
     except Exception as e:
         print(e)
-    return render(request , 'login.html')
-
+    return render(request , 'login/login.html')
 
 
 def Register(request):
-    try:
-        if request.method == 'POST':
-            username = request.POST.get('username')
-            email = request.POST.get('email')
-            password = request.POST.get('password')
-
-        try:
-            if User.objects.filter(username = username).first():
-                messages.success(request, 'Username is taken.')
-                return redirect('/register/')
-
-            if User.objects.filter(email = email).first():
-                messages.success(request, 'Email is taken.')
-                return redirect('/register/')
-            
-            user_obj = User(username = username , email = email)
-            user_obj.set_password(password)
-            user_obj.save()
-    
-            profile_obj = Profile.objects.create(user = user_obj )
-            profile_obj.save()
-            return redirect('/login/')
-
-        except Exception as e:
-            print(e)
-
-    except Exception as e:
-            print(e)
-
-    return render(request , 'register.html')
-
+    if request.method == 'POST':
+        form = CustomUserRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirect to success page.
+    else:
+        form = CustomUserRegisterForm()
+    return render(request, 'login/register.html', {'form': form})
 
 def Logout(request):
     logout(request)
@@ -142,10 +122,9 @@ def ChangePassword(request , token):
          
     except Exception as e:
         print(e)
-    return render(request , 'change-password.html' , context)
+    return render(request , 'login/change-password.html' , context)
 
 
-import uuid
 def ForgetPassword(request):
     try:
         if request.method == 'POST':
@@ -166,7 +145,46 @@ def ForgetPassword(request):
     
     except Exception as e:
         print(e)
-    return render(request , 'forget-password.html')
+    return render(request , 'login/forget-password.html')
+
+
+@login_required
+def Users(request):
+    user= request.user
+    username_max_length = user._meta.get_field('username').max_length
+    email_max_length = user._meta.get_field('email').max_length
+    password_max_length = user._meta.get_field('password').max_length
+    nombre_max_length = user._meta.get_field('nombre').max_length
+    apellido_materno_max_length = user._meta.get_field('apellido_materno').max_length
+    apellido_paterno_max_length = user._meta.get_field('apellido_paterno').max_length
+
+    context = {
+                'user':user,
+                'username_max_length': username_max_length,
+                'email_max_length': email_max_length,
+                'password_max_length': password_max_length,
+                'nombre_max_length': nombre_max_length,
+                'apellido_materno_max_length': apellido_materno_max_length,
+                'apellido_paterno_max_length': apellido_paterno_max_length,
+               }
+    return render(request , 'user-account.html', context)
+
+
+@staff_member_required
+class CreateUserAdminView(CreateView):
+    model = CustomUser
+    fields = [ # lista los campos que se muestran en el formulario
+        'id',
+        'nombre',
+        'apellido_materno',
+        'apellido_paterno',
+        'email',
+        'departamento',
+        'is_superuser',
+        'username'] 
+    success_url = reverse_lazy('user-account_list')
+    template_name = 'admin/user-account.html'
+
 
 def EmploymentPortfolio(request):
     return render(request , 'employment-portfolio.html')
@@ -200,3 +218,4 @@ def SocioeconomicPortfolio(request):
 
 def PolygraphPortfolio(request):
     return render(request , 'polygraph-portfolio.html')
+
