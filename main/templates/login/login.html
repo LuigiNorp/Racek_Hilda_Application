@@ -1,4 +1,11 @@
 {% extends "base.html"%}
+{% block extrahead %}
+{% load static %}
+<link 
+    rel="stylesheet" 
+    type="text/css"
+    href="{% static 'css/login.css' %}">
+{% endblock %}
 {% block start %}
 
     <div class="container">

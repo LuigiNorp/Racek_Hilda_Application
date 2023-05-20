@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "exams-portfolio.html" %}
 {% block extrahead %}
     {% load static %}
     
@@ -7,7 +7,7 @@
     <link 
         rel="stylesheet" 
         type="text/css" 
-        href="{% static 'css/home.css' %}"
+        href="{% static 'css/home2.css' %}"
     >
     
     <title>
@@ -16,10 +16,11 @@
 
 {% endblock %}
 
-{% block right %}
+{% block content %}
+
     <div class="right-container">
         <div class="image-container">
-            <img src="static/img/racek_logo_med.svg" alt="Logo" class="img-background">
+            <img src="{% static 'img/racek_logo_med.svg' %}" alt="Logo" class="img-background">
         </div>    
     </div>
 

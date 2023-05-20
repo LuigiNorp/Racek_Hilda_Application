@@ -73,6 +73,8 @@ def Login(request):
     return render(request , 'login/login.html')
 
 
+@login_required
+@staff_member_required
 def Register(request):
     if request.method == 'POST':
         form = CustomUserRegisterForm(request.POST)
@@ -88,7 +90,9 @@ def Logout(request):
     return redirect('/')
 
 
+
 @login_required(login_url='/login/')
+@staff_member_required
 def Home(request):
     return render(request , 'home.html')
 
@@ -148,7 +152,7 @@ def ForgetPassword(request):
     return render(request , 'login/forget-password.html')
 
 
-@login_required
+@staff_member_required
 def Users(request):
     user= request.user
     username_max_length = user._meta.get_field('username').max_length
@@ -185,7 +189,8 @@ class CreateUserAdminView(CreateView):
     success_url = reverse_lazy('user-account_list')
     template_name = 'admin/user-account.html'
 
-
+@login_required
+@staff_member_required
 def EmploymentPortfolio(request):
     return render(request , 'employment-portfolio.html')
 
@@ -198,8 +203,13 @@ def GeneralPortfolio(request):
 def ReferencesPortfolio(request):
     return render(request , 'references-portfolio.html')
 
-def ExamsPortfolio(request):
-    return render(request , 'exams-portfolio.html')
+def FrameWork(request):
+    pages = {
+    'page1': 'home2.html',
+    'page2': 'page2.html',
+    'page3': 'page3.html',
+    } 
+    return render(request , 'exams-portfolio.html', {'pages': pages})
 
 def PsychologicalPortfolio(request):
     return render(request , 'psychological-portfolio.html')

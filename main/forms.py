@@ -52,7 +52,6 @@ class CustomUserRegisterForm(forms.ModelForm):
     apellido_materno = forms.CharField(label='Apellido Materno', widget=forms.TextInput(attrs={'class': 'form-control'}))
     email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-control'}))
     departamento = forms.ChoiceField(label='Departamento', choices=DEPARTAMENTO, widget=forms.Select(attrs={'class': 'select'}))
-    # is_superuser = forms.BooleanField(label='Superuser')
 
     class Meta:
         model = CustomUser

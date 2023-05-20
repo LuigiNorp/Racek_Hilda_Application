@@ -26,7 +26,6 @@ urlpatterns = [
     # path('api/', include('main.urls')),
 
     path('users/', Users, name="users"),
- 
     path('', Home, name="home"),
     path('login/', Login , name="login"),\
     path('register/', Register , name="register"),
@@ -37,7 +36,7 @@ urlpatterns = [
     path('general-portfolio/', GeneralPortfolio, name="general-portfolio"),
     path('references-portfolio/', ReferencesPortfolio, name="references-portfolio"),
     path('dependents-portfolio/', DependentsPortfolio, name="dependents-portfolio"),
-    path('exams-portfolio/', ExamsPortfolio, name="exams-portfolio"),
+    path('exams-portfolio/', FrameWork, name="exams-portfolio"),
     path('psychological-portfolio/', PsychologicalPortfolio, name="psychological-portfolio"),
     path('toxicological-portfolio/', ToxicologicalPortfolio, name="toxicological-portfolio"),
     path('medical-portfolio/', MedicalPortfolio, name="medical-portfolio"),

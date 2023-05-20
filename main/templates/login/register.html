@@ -1,36 +1,43 @@
-{% extends 'navigation/main-menu-with-buttons.html' %}
-
+{% extends 'base.html' %}
+{% load static %}
 {% block extrahead %}
   <title>
     Nuevo Usuario
   </title>
-  <style>
+
+    <link 
+        rel="stylesheet" 
+        type="text/css" 
+        href="{% static 'css/register.css' %}"
+    >
+
+    <style>
     .container {
-      width: 520px;
-      height: 100%;
-      overflow: auto;
+      width: 1500px;
     }
-  </style>
+    </style>
 {% endblock %}
 
-{% block start %}
+{% block right %}
   <div class="container">
-    <form method="post" class="form" id="form">
-      <h1>Nuevo Usuario</h1>
-      {% csrf_token %}
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-info">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-      <div class="form-group">
-        {{ form.as_p }}
-      </div>
-      <button class="btn btn-success mt-3" type="submit">
-        Registrar
-      </button>
-    </form>
+    <div class="right-container">
+      <form method="post" class="form" id="form">
+        <h1>Nuevo Usuario</h1>
+        {% csrf_token %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-info">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+        <div class="form-group">
+          {{ form.as_p }}
+        </div>
+        <button class="btn btn-success mt-3" type="submit">
+          Registrar
+        </button>
+      </form>
+    </div>
   </div>
 {% endblock %}

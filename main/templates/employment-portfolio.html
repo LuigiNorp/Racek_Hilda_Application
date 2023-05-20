@@ -1,5 +1,12 @@
-{% extends 'navigation/main-menu-with-buttons.html' %}
-{% block start %}
+{% extends 'base.html' %}
+
+{% block extrahead %}
+
+    <title>Empleados</title>
+
+{% endblock %}
+
+{% block right %}
 
     <div class="work-container">
         {% include 'employee-form.html' %}
