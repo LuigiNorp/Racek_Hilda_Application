@@ -83,19 +83,38 @@ def Register(request):
             # Redirect to success page.
     else:
         form = CustomUserRegisterForm()
-    return render(request, 'login/register.html', {'form': form})
+    
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+
+    context = {
+        'form': form,
+        'is_register_enabled': is_register_enabled,
+    }
+
+    return render(request, 'login/register.html', context)
+
 
 def Logout(request):
     logout(request)
     return redirect('/')
 
 
-
 @login_required(login_url='/login/')
 @staff_member_required
 def Home(request):
-    return render(request , 'home.html')
-
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'home.html', context)
 
 def ChangePassword(request , token):
     context = {}    
@@ -152,8 +171,9 @@ def ForgetPassword(request):
     return render(request , 'login/forget-password.html')
 
 
+@login_required
 @staff_member_required
-def Users(request):
+def UserAccount(request):
     user= request.user
     username_max_length = user._meta.get_field('username').max_length
     email_max_length = user._meta.get_field('email').max_length
@@ -161,6 +181,12 @@ def Users(request):
     nombre_max_length = user._meta.get_field('nombre').max_length
     apellido_materno_max_length = user._meta.get_field('apellido_materno').max_length
     apellido_paterno_max_length = user._meta.get_field('apellido_paterno').max_length
+
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
 
     context = {
                 'user':user,
@@ -170,6 +196,7 @@ def Users(request):
                 'nombre_max_length': nombre_max_length,
                 'apellido_materno_max_length': apellido_materno_max_length,
                 'apellido_paterno_max_length': apellido_paterno_max_length,
+                'is_register_enabled': is_register_enabled,
                }
     return render(request , 'user-account.html', context)
 
@@ -192,40 +219,159 @@ class CreateUserAdminView(CreateView):
 @login_required
 @staff_member_required
 def EmploymentPortfolio(request):
-    return render(request , 'employment-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'employment-portfolio.html', context)
 
+@login_required
+@staff_member_required
 def DependentsPortfolio(request):
-    return render(request , 'dependents-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'dependents-portfolio.html', context)
 
+
+@login_required
+@staff_member_required
 def GeneralPortfolio(request):
-    return render(request , 'general-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'general-portfolio.html', context)
 
+
+@login_required
+@staff_member_required
 def ReferencesPortfolio(request):
-    return render(request , 'references-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'references-portfolio.html', context)
 
-def FrameWork(request):
+
+@login_required
+@staff_member_required
+def ExamsPortfolio(request):
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+        'pages': pages,
+    }
     pages = {
     'page1': 'home2.html',
     'page2': 'page2.html',
     'page3': 'page3.html',
     } 
-    return render(request , 'exams-portfolio.html', {'pages': pages})
+    return render(request,'exams-portfolio.html', context)
 
+
+@login_required
+@staff_member_required
 def PsychologicalPortfolio(request):
-    return render(request , 'psychological-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'psychological-portfolio.html', context)
 
+
+@login_required
+@staff_member_required
 def ToxicologicalPortfolio(request):
-    return render(request , 'toxicological-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'toxicological-portfolio.html', context)
 
+
+@login_required
+@staff_member_required
 def MedicalPortfolio(request):
-    return render(request , 'medical-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'medical-portfolio.html', context)
 
+
+@login_required
+@staff_member_required
 def PhysicalPortfolio(request):
-    return render(request , 'physical-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'physical-portfolio.html', context)
 
+
+@login_required
+@staff_member_required
 def SocioeconomicPortfolio(request):
-    return render(request , 'socioeconomic-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'socioeconomic-portfolio.html', context)
 
+
+@login_required
+@staff_member_required
 def PolygraphPortfolio(request):
-    return render(request , 'polygraph-portfolio.html')
+    user = request.user
+    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        is_register_enabled = True
+    else:
+        is_register_enabled = False
+    context = {
+        'is_register_enabled': is_register_enabled,
+    }
+    return render(request,'polygraph-portfolio.html', context)
+
 

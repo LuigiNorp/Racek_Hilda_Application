@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">   
         
-        {% load static%}
+        {% load static %}
         
         <!-- Enlace a los estilos de Bootstrap -->
         <link 
@@ -36,7 +36,11 @@
             {% block start %} {% endblock %}
         {% endif %}
         {% if user.is_authenticated %}
-            {% include "navigation/main-menu.html" %}
+            {% if is_register_enabled %}
+                {% include "navigation/main-menu-with-register.html" %}
+            {% else %}
+                {% include "navigation/main-menu-only.html" %}
+            {% endif %}
         {% endif %}
         <div class="workspace">
             <div class="left">
