@@ -1,4 +1,4 @@
-.right-container {
+.background-container {
     background-color: rgb(253, 253, 253);
     box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
     border-radius: 10px;
@@ -13,7 +13,7 @@
     height: 100%;
 }
 
-.image-container {
+.logo-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -25,3 +25,10 @@
     padding-left: 0px;
     padding-top: 0px;
 }
+
+body{
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgb(246, 255, 255);
+  }

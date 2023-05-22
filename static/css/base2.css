@@ -2,6 +2,7 @@ body {
     margin: 0;
     padding: 0;
 }
+
 .workspace {
     display: flex;
     height: 100vh;
@@ -59,12 +60,6 @@ body {
     background-color: rgb(246, 255, 255);
     padding-top: 70px;
 }
-
-
-
-
-
-
 
 .floating-bg{
     background-color: rgb(253, 253, 253);

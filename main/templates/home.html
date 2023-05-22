@@ -1,26 +1,26 @@
+<!-- Home -->
 {% extends "base.html" %}
 {% block extrahead %}
     {% load static %}
-    
+
     <!-- Enlace a tus estilos personalizados -->
 
     <link 
-        rel="stylesheet" 
-        type="text/css" 
-        href="{% static 'css/home.css' %}"
+      rel="stylesheet" 
+      type="text/css" 
+      href="{% static 'css/home2.css' %}"
     >
-    
+
     <title>
-        SPGestor
+      SPGestor
     </title>
 
 {% endblock %}
 
 {% block right %}
-    <div class="right-container">
-        <div class="image-container">
-            <img src="static/img/racek_logo_med.svg" alt="Logo" class="img-background">
-        </div>    
+  <div class="background-container">
+      <div class="logo-container">
+          <img src="static/img/racek_logo_med.svg" alt="Logo" class="img-background">
+      </div>    
     </div>
-
 {% endblock %}

@@ -3,10 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">   
         
-        {% load static %}
+        {% load static%}
         
         <!-- Enlace a los estilos de Bootstrap -->
         <link 
@@ -20,31 +19,35 @@
             integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" 
             crossorigin="anonymous">
         </script>
-    
-        <!-- Enlace a tus estilos personalizados -->        
+
+        <!-- Enlace a tus estilos personalizados para base -->        
         <link 
             rel="stylesheet" 
             type="text/css"
-            href="{% static 'css/base.css' %}"
+            href="{% static 'css/base2.css' %}"
         >
-
+        
         {% block extrahead %}{% endblock %}
     
     </head>
     
     <body>
+        {% if not user.is_authenticated %}
+            {% block start %} {% endblock %}
+        {% endif %}
         {% if user.is_authenticated %}
             {% include "navigation/main-menu.html" %}
         {% endif %}
-        {% if user.is_authenticated %}
-            <div class="left-container">
-            <div class="button-container">
-            {% include "navigation/buttons-box.html" %}
-            {% block right %} {% endblock %}
+        <div class="workspace">
+            <div class="left">
+            {% if user.is_authenticated %}
+                {% include "navigation/buttons-box.html" %}
+            {% endif %}
             </div>
-        {% else %}
-            {% block start %} {% endblock %}
-        {% endif %}
-        
+            <div class="right">
+                <div class="floating-bg">
+                    {% block right %} {% endblock %}
+                </div>
+            </div>
     </body>
 </html>

@@ -1,5 +1,24 @@
-.container {
-    width: 520px;
-    height: 100%;
-    overflow: auto;
-  }
+body{
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: rgb(246, 255, 255);
+}
+
+.floating-bg{
+  padding-left: 0px;
+  padding-top: 0px;
+}
+
+.floating-bg .container{
+  flex-grow: 1; /* occupy the remaining space */
+  width: 100%;
+  height: 100%;
+  margin: 0; /* Elimina el margen predeterminado */
+  padding: 0; /* Elimina el relleno predeterminado */
+}
+
+.left a.btn {
+  font-weight: 600;
+  font-size: 16px;
+}
