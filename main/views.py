@@ -1,25 +1,22 @@
+import uuid
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 from django.views.generic.edit import CreateView
+from django.views.generic.edit import FormView
+from rest_framework.views import APIView
+from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.auth import authenticate,login,logout
-from .helpers import send_forget_password_mail
-
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.views.decorators.cache import cache_control
+from .helpers import send_forget_password_mail
 from django.urls import reverse_lazy
-
 from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
+
 from .serializers import CustomUserSerializer, AuthTokenSerializer
-from django.shortcuts import get_object_or_404
-from .forms import CustomUserAdminForm
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from .forms import *
-
-import uuid
-
 from .models import *
 
 
@@ -27,6 +24,9 @@ from .models import *
 
 # Views for API REST
 class CreateCustomUserView(generics.CreateAPIView):
+    """This view is to create a CustomUser from API.
+
+    """
     serializer_class = CustomUserSerializer
     model_class = CustomUser
 
@@ -44,8 +44,13 @@ class CreateTokenView(ObtainAuthToken):
 
 
 # Views for Website
-
+@cache_control(no_cache=True, must_revalidate=True)
 def Login(request):
+    """Allows user to login to website
+
+    Args:
+        request: The user request.
+    """
     try:
         if request.method == 'POST':
             username = request.POST.get('username')
@@ -73,30 +78,27 @@ def Login(request):
     return render(request , 'login/login.html')
 
 
-@login_required
-@staff_member_required
-def Register(request):
-    if request.method == 'POST':
+class Register(APIView):
+    def get(self, request):
+        form = CustomUserRegisterForm()
+        context = {
+        'form': form,
+        }
+        return render(request, 'login/register.html', context)
+
+    def post(self, request):
         form = CustomUserRegisterForm(request.POST)
         if form.is_valid():
             form.save()
-            # Redirect to success page.
-    else:
-        form = CustomUserRegisterForm()
-    
-    user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
-        is_register_enabled = True
-    else:
-        is_register_enabled = False
-
-    context = {
+            messages.success(request, 'User created successfully.')
+            return redirect('/') # redirect to home page
+        else:
+            messages.error(request, form.errors)
+ 
+        context = {
         'form': form,
-        'is_register_enabled': is_register_enabled,
-    }
-
-    return render(request, 'login/register.html', context)
-
+        }
+        return render(request, 'login/register.html', context)
 
 def Logout(request):
     logout(request)
@@ -202,7 +204,7 @@ def UserAccount(request):
 
 
 @staff_member_required
-class CreateUserAdminView(CreateView):
+class UserAccountView(CreateView):
     model = CustomUser
     fields = [ # lista los campos que se muestran en el formulario
         'id',

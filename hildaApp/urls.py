@@ -25,10 +25,10 @@ urlpatterns = [
     # if you want to include the main app, uncomment the following line:
     # path('api/', include('main.urls')),
 
-    path('users/', UserAccount, name="users"),
+    path('users/', UserAccountView, name="users"),
     path('', Home, name="home"),
     path('login/', Login , name="login"),\
-    path('register/', Register , name="register"),
+    path('register/', Register.as_view(), name="register"),
     path('forget-password/', ForgetPassword , name="forget_password"),
     path('change-password/<token>/', ChangePassword , name="change_password"),
     path('logout/' , Logout , name="logout"),

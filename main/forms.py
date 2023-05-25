@@ -41,7 +41,7 @@ class signupform(UserCreationForm):
 
 # For API REST
 
-class CustomUserRegisterForm(forms.ModelForm):
+class   CustomUserRegisterForm(forms.ModelForm):
     
     # Custom User creation form.
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
@@ -70,7 +70,7 @@ class CustomUserRegisterForm(forms.ModelForm):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
-            raise forms.ValidationError("Passwords don't match")
+            raise forms.ValidationError("Las contraseñas no coinciden")
         return password2
 
     def save(self, commit=True):
