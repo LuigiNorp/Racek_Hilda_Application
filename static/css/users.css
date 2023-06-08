@@ -1,0 +1,50 @@
+.btn-main {
+    padding: 10px 20px;
+    border-width: 1px;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: rgb(238, 155, 0);
+    border-radius: .25rem;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px; 
+    line-height: 16px; 
+    border-radius: 5px; 
+}
+
+.btn-main:hover {
+    background-color: rgb(208,136,0);
+    color: #fff;
+}
+
+.btn-main:focus,
+.btn-main.focus {
+    outline: 0;
+    box-shadow: #F7DC6F;
+}
+
+.btn-main.disabled,
+.btn-main:disabled {
+    opacity: .65;
+}
+
+.buttons-container {
+    position: relative;
+    align-items: center;
+}
+
+.table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+  }
+  
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }

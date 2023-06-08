@@ -1,21 +1,21 @@
 import uuid
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views.generic.edit import CreateView
-from django.views.generic.edit import FormView
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import TemplateView
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.views.decorators.cache import cache_control
 from .helpers import send_forget_password_mail
-from django.urls import reverse_lazy
 from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
+from django.views import View
+from django.core.cache import cache
+from django.utils import timezone
 
-from .serializers import CustomUserSerializer, AuthTokenSerializer
+from .serializers import *
 from .forms import *
 from .models import *
 
@@ -44,179 +44,352 @@ class CreateTokenView(ObtainAuthToken):
 
 
 # Views for Website
-@cache_control(no_cache=True, must_revalidate=True)
-def Login(request):
-    """Allows user to login to website
+class LoginView(View):
+    template_name = 'login/login.html'
 
-    Args:
-        request: The user request.
-    """
-    try:
-        if request.method == 'POST':
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        try:
             username = request.POST.get('username')
             password = request.POST.get('password')
-            
+
             if not username or not password:
                 messages.success(request, 'Both Username and Password are required.')
                 return redirect('/login/')
-            user_obj = User.objects.filter(username = username).first()
+
+            user_obj = User.objects.filter(username=username).first()
             if user_obj is None:
                 messages.success(request, 'User not found.')
                 return redirect('/login/')
-        
-        
-            user = authenticate(username = username , password = password)
-            
+
+            user = authenticate(username=username, password=password)
+
             if user is None:
                 messages.success(request, 'Wrong password.')
                 return redirect('/login/')
-        
-            login(request , user)
-            return redirect('/')           
-    except Exception as e:
-        print(e)
-    return render(request , 'login/login.html')
+
+            login(request, user)
+            return redirect('/')
+        except Exception as e:
+            print(e)
+        return render(request, self.template_name)
 
 
-class Register(APIView):
+class LogoutView(View):
     def get(self, request):
-        form = CustomUserRegisterForm()
-        context = {
-        'form': form,
-        }
-        return render(request, 'login/register.html', context)
+        logout(request)
+        return redirect('/')
+
+
+class ForgetPasswordView(View):
+    template_name = 'login/forget-password.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
 
     def post(self, request):
-        form = CustomUserRegisterForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'User created successfully.')
-            return redirect('/') # redirect to home page
-        else:
-            messages.error(request, form.errors)
- 
-        context = {
-        'form': form,
-        }
-        return render(request, 'login/register.html', context)
+        try:
+            username = request.POST.get('username')
 
-def Logout(request):
-    logout(request)
-    return redirect('/')
+            if not User.objects.filter(username=username).first():
+                messages.success(request, 'No user found with this username.')
+                return redirect('/forget-password/')
+
+            user_obj = User.objects.get(username=username)
+            token = str(uuid.uuid4())
+            profile_obj = Profile.objects.get(user=user_obj)
+            profile_obj.forget_password_token = token
+            profile_obj.save()
+            send_forget_password_mail(user_obj.email, token)
+            messages.success(request, 'An email is sent.')
+            return redirect('/forget-password/')
+        except Exception as e:
+            print(e)
+        return render(request, self.template_name)
 
 
-@login_required(login_url='/login/')
-@staff_member_required
-def Home(request):
-    user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
-        is_register_enabled = True
-    else:
-        is_register_enabled = False
-    context = {
-        'is_register_enabled': is_register_enabled,
-    }
-    return render(request,'home.html', context)
+class ChangePasswordView(View):
+    template_name = 'login/change-password.html'
 
-def ChangePassword(request , token):
-    context = {}    
-    
-    try:
-        profile_obj = Profile.objects.filter(forget_password_token = token).first()
-        context = {'user_id' : profile_obj.user.id}
-        
-        if request.method == 'POST':
+    def get(self, request, token):
+        context = {}
+        profile_obj = Profile.objects.filter(forget_password_token=token).first()
+        if profile_obj:
+            context['user_id'] = profile_obj.user.id
+        return render(request, self.template_name, context)
+
+    def post(self, request, token):
+        try:
             new_password = request.POST.get('new_password')
             confirm_password = request.POST.get('reconfirm_password')
             user_id = request.POST.get('user_id')
-            
-            if user_id is  None:
+
+            if user_id is None:
                 messages.success(request, 'No user id found.')
                 return redirect(f'/change-password/{token}/')
-                
-            
-            if  new_password != confirm_password:
-                messages.success(request, 'both should  be equal.')
+
+            if new_password != confirm_password:
+                messages.success(request, 'Both passwords should be equal.')
                 return redirect(f'/change-password/{token}/')
-                         
-            
-            user_obj = User.objects.get(id = user_id)
+
+            user_obj = User.objects.get(id=user_id)
             user_obj.set_password(new_password)
             user_obj.save()
             return redirect('/login/')
-         
-    except Exception as e:
-        print(e)
-    return render(request , 'login/change-password.html' , context)
-
-
-def ForgetPassword(request):
-    try:
-        if request.method == 'POST':
-            username = request.POST.get('username')
-            
-            if not User.objects.filter(username=username).first():
-                messages.success(request, 'Not user found with this username.')
-                return redirect('/forget-password/')
-            
-            user_obj = User.objects.get(username = username)
-            token = str(uuid.uuid4())
-            profile_obj= Profile.objects.get(user = user_obj)
-            profile_obj.forget_password_token = token
-            profile_obj.save()
-            send_forget_password_mail(user_obj.email , token)
-            messages.success(request, 'An email is sent.')
-            return redirect('/forget-password/')
+        except Exception as e:
+            print(e)
+        return render(request, self.template_name)
     
-    except Exception as e:
-        print(e)
-    return render(request , 'login/forget-password.html')
+
+class HomeView(LoginRequiredMixin, TemplateView):
+    login_url = '/login/'
+    template_name = 'home.html'
+
+    def is_register_enabled(self):
+        user = self.request.user
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+            return True
+        return False
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_register_enabled'] = self.is_register_enabled()
+        return context
+
+    def get(self, request, *args, **kwargs):
+        # Clear the cache
+        cache.clear()
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+class Register(LoginRequiredMixin, UserPassesTestMixin, APIView):
+    login_url = '/login/'
+    template_name = 'login/register.html'
+
+    def test_func(self):
+        user = self.request.user
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+            return True
+        return False
+
+    def get(self, request):
+        cache.clear()
+        form = CustomUserRegisterForm()
+        is_register_enabled = self.test_func()
+        context = {
+            'form': form,
+            'is_register_enabled': is_register_enabled,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        cache.clear()
+        form = CustomUserRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # messages.success(request, 'Usuario creado exitosamente.')
+            return redirect('/')
+        else:
+            messages.error(request, form.errors)
+ 
+        is_register_enabled = self.test_func()
+        context = {
+            'form': form,
+            'is_register_enabled': is_register_enabled,
+        }
+        return render(request, self.template_name, context)
+
+
+class AddUser(LoginRequiredMixin, UserPassesTestMixin, APIView):
+    login_url = '/login/'
+    template_name = 'login/register.html'
+
+    def test_func(self):
+        user = self.request.user
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+            return True
+        return False
+
+    def get(self, request):
+        cache.clear()
+        form = CustomUserRegisterForm()
+        is_register_enabled = self.test_func()
+        context = {
+            'form': form,
+            'is_register_enabled': is_register_enabled,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        cache.clear()
+        form = CustomUserRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # messages.success(request, 'Usuario creado exitosamente.')
+            return redirect('users')
+        else:
+            messages.error(request, form.errors)
+ 
+        is_register_enabled = self.test_func()
+        context = {
+            'form': form,
+            'is_register_enabled': is_register_enabled,
+        }
+        return render(request, self.template_name, context)
+
+
+class CustomUserProfileView(LoginRequiredMixin, APIView):
+    login_url = '/login/'
+    template_name = 'user/user-profile.html'
+
+    def is_register_enabled(self):
+        user = self.request.user
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+            return True
+        return False
+
+    def get(self, request, pk):
+        user = get_object_or_404(CustomUser, pk=pk)
+        form = CustomUserProfileForm(instance=user)
+        is_register_enabled = self.is_register_enabled()
+        context = {
+            'form': form,
+            'is_register_enabled': is_register_enabled,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, pk):
+        user = get_object_or_404(CustomUser, pk=pk)
+        form = CustomUserProfileForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('/')
+        else:
+            messages.error(request, form.errors)
+        
+        is_register_enabled = self.is_register_enabled()
+        context = {
+            'form': form,
+            'is_register_enabled': is_register_enabled,
+        }
+        return render(request, self.template_name, context)
+
+
+class EditUserView(LoginRequiredMixin, UserPassesTestMixin, APIView):
+    login_url = '/login/'
+    template_name = 'user/user-profile.html'
+
+    def test_func(self):
+        user = self.request.user
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+            return True
+        return False
+
+    def get(self, request, pk):
+        user = get_object_or_404(CustomUser, pk=pk)
+        form = EditUserForm(instance=user)
+        is_register_enabled = self.test_func()
+        context = {
+            'form': form,
+            'is_register_enabled': is_register_enabled,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, pk):
+        user = get_object_or_404(CustomUser, pk=pk)
+        form = EditUserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('/')
+        else:
+            messages.error(request, form.errors)
+        
+        is_register_enabled = self.test_func()
+        context = {
+            'form': form,
+            'is_register_enabled': is_register_enabled,
+        }
+        return render(request, self.template_name, context)
+
+
+class Users(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    login_url = '/login/'
+
+    def test_func(self):
+        user = self.request.user
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+            return True
+        return False
+
+    def get(self, request):
+        users = CustomUser.objects.all()
+        context = self.get_context_data()
+        context['users'] = users
+        return render(request, 'user/users.html', context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_register_enabled'] = self.test_func()
+        return context
 
 
 @login_required
 @staff_member_required
-def UserAccount(request):
-    user= request.user
-    username_max_length = user._meta.get_field('username').max_length
-    email_max_length = user._meta.get_field('email').max_length
-    password_max_length = user._meta.get_field('password').max_length
-    nombre_max_length = user._meta.get_field('nombre').max_length
-    apellido_materno_max_length = user._meta.get_field('apellido_materno').max_length
-    apellido_paterno_max_length = user._meta.get_field('apellido_paterno').max_length
-
-    user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
-        is_register_enabled = True
-    else:
-        is_register_enabled = False
-
-    context = {
-                'user':user,
-                'username_max_length': username_max_length,
-                'email_max_length': email_max_length,
-                'password_max_length': password_max_length,
-                'nombre_max_length': nombre_max_length,
-                'apellido_materno_max_length': apellido_materno_max_length,
-                'apellido_paterno_max_length': apellido_paterno_max_length,
-                'is_register_enabled': is_register_enabled,
-               }
-    return render(request , 'user-account.html', context)
+def delete_selected_users(request):
+    if request.method == 'POST':
+        selected_users = request.POST.getlist('selected_users')
+        for user_id in selected_users:
+            user = CustomUser.objects.get(pk=user_id)
+            user.delete()
+        # messages.success(request, 'Selected users have been deleted.')
+    return redirect('users')
 
 
+@login_required
 @staff_member_required
-class UserAccountView(CreateView):
-    model = CustomUser
-    fields = [ # lista los campos que se muestran en el formulario
-        'id',
-        'nombre',
-        'apellido_materno',
-        'apellido_paterno',
-        'email',
-        'departamento',
-        'is_superuser',
-        'username'] 
-    success_url = reverse_lazy('user-account_list')
-    template_name = 'admin/user-account.html'
+def UserGroups(request):
+    groups = Group.objects.all()
+    context = {
+        'groups': groups,
+        'form': UserGroupForm(),
+    }
+    return render(request, 'user/user-groups.html', context)
+
+
+@login_required
+@staff_member_required
+def ChangeUserGroup(request):
+    form = UserGroupForm()
+    context = {'form': form}
+    return render(request, 'user/user-group.html', context)
+
+
+def eliminar_grupos(request):
+    if request.method == 'POST':
+        selected_group_ids = request.POST.getlist('selected_groups')
+        if 'confirm_delete' in request.POST:
+            Group.objects.filter(id__in=selected_group_ids).delete()
+            return redirect('/groups/')  # redirigir a la página de grupos o a donde desees
+    else:
+        return render(request, 'navigation/confirm_group_delete.html', {'selected_group_ids': selected_group_ids})  # renderizar el template
+
+    return render(request, 'user/groups.html')  # renderizar el template
+
+
+# class ClientProfileView(LoginRequiredMixin, APIView):
+#     login_url = '/login/'
+#     template_name = 'client-profile.html'
+
+#     def get(self, request, pk):
+#         user = get_object_or_404(CustomUser, pk=pk)
+#         form = EditClientProfileForm(instance=user)
+#         context = {
+#             'form': form,
+#         }
+#         return render(request, self.template_name, context)
+
 
 @login_required
 @staff_member_required

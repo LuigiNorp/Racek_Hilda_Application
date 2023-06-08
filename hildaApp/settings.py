@@ -186,3 +186,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # To redirect to home after login django admin
 LOGIN_REDIRECT_URL = 'home'
+
+# Group names with special permissions
+REGISTER_ENABLED_GROUPS = ['Admin', 'Superboss', 'Manager']

@@ -21,17 +21,28 @@ from main.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('data.urls')),
-
+    path('', HomeView.as_view(), name="home"),
+    path('login/', LoginView.as_view() , name="login"),\
+    path('register/', Register.as_view(), name="register"),
+    path('add-user/', AddUser.as_view(), name="add_user"),
+    path('forget-password/', ForgetPasswordView.as_view() , name="forget_password"),
+    path('change-password/<token>/', ChangePasswordView.as_view() , name="change_password"),
+    path('logout/' , LogoutView.as_view() , name="logout"),
     # if you want to include the main app, uncomment the following line:
     # path('api/', include('main.urls')),
 
-    path('users/', UserAccountView, name="users"),
-    path('', Home, name="home"),
-    path('login/', Login , name="login"),\
-    path('register/', Register.as_view(), name="register"),
-    path('forget-password/', ForgetPassword , name="forget_password"),
-    path('change-password/<token>/', ChangePassword , name="change_password"),
-    path('logout/' , Logout , name="logout"),
+    # If you want to create a page with all users in a table
+    path('users/', Users.as_view(), name='users'),
+    path('user/<int:pk>/profile/', CustomUserProfileView.as_view(), name="profile"),
+    path('user/<int:pk>/edit/', EditUserView.as_view(), name="edit_user"),
+    path('delete-selected-user/', delete_selected_users, name='delete_selected_users'),
+    path('groups/', UserGroups, name='groups'),
+    path('change-group/<int:pk>/', ChangeUserGroup, name='change_group'),
+    path('eliminar-grupos/', eliminar_grupos, name='eliminar_grupos'),
+
+    path('clients/', Users.as_view(), name="clients"),
+    # path('client/', ClientProfileView.as_view(), name="client-profile"),
+
     path('employment-portfolio/', EmploymentPortfolio, name="employment-portfolio"),
     path('general-portfolio/', GeneralPortfolio, name="general-portfolio"),
     path('references-portfolio/', ReferencesPortfolio, name="references-portfolio"),

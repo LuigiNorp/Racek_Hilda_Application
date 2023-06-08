@@ -55,6 +55,7 @@ body {
 .left a.btn:disabled {
     opacity: .65;
 }
+
 .right {
     flex-basis: 85%;
     background-color: rgb(246, 255, 255);

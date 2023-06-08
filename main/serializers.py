@@ -40,3 +40,13 @@ class AuthTokenSerializer(serializers.Serializer):
         
         data['user'] = user
         return data
+    
+
+class EditProfileSerializer(serializers.ModelSerializer):
+    nombre = serializers.CharField(max_length=100)
+    apellido_paterno = serializers.CharField(max_length=100)
+    apellido_materno = serializers.CharField(max_length=100)
+
+    class Meta:
+        model = CustomUser
+        fields = ('nombre', 'apellido_paterno', 'apellido_materno')

@@ -1,4 +1,7 @@
-<a href="clientes.html" class="btn btn-main mt-3">Clientes</a>
+{% if is_register_enabled %}
+    <a href="/users/" class="btn btn-main mt-3">Usuarios</a>
+{% endif %}
+<a href="/clients/" class="btn btn-main mt-3">Clientes</a>
 <a href="previos.html" class="btn btn-main mt-3">Previos</a>
 <a href="/employment-portfolio/" class="btn btn-main mt-3">Empleados</a>
 <a href="uploads.html" class="btn btn-main mt-3">Subir Archivos</a>

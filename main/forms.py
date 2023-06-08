@@ -1,14 +1,13 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
-from django.contrib.auth.forms import AuthenticationForm
-from django.utils.safestring import mark_safe
-from django.forms.widgets import CheckboxInput
+from django.contrib.auth.forms import AuthenticationForm, UserChangeForm, UserCreationForm
 from .choices import DEPARTAMENTO
+from django.contrib.auth.models import Permission
+from django.contrib.auth.forms import UserChangeForm
+from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.contrib.auth.models import Group
 
 from django import forms
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import CustomUser
 
 # For regular website
@@ -41,30 +40,42 @@ class signupform(UserCreationForm):
 
 # For API REST
 
-class   CustomUserRegisterForm(forms.ModelForm):
-    
+class CustomUserRegisterForm(UserCreationForm):
     # Custom User creation form.
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-control'}))
     nombre = forms.CharField(label='Nombre', widget=forms.TextInput(attrs={'class': 'form-control'}))
     apellido_paterno = forms.CharField(label='Apellido Paterno', widget=forms.TextInput(attrs={'class': 'form-control'}))
     apellido_materno = forms.CharField(label='Apellido Materno', widget=forms.TextInput(attrs={'class': 'form-control'}))
     email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-control'}))
     departamento = forms.ChoiceField(label='Departamento', choices=DEPARTAMENTO, widget=forms.Select(attrs={'class': 'select'}))
+    groups = forms.ModelMultipleChoiceField(
+        label='Tipos de Cuenta',
+        queryset=Group.objects.all(),
+        widget=FilteredSelectMultiple("Groups", is_stacked=False),
+        required=False,)
+    # permissions = forms.ModelMultipleChoiceField(
+    #     label='Permisos',
+    #     queryset=Permission.objects.all(),
+    #     widget=FilteredSelectMultiple("Permissions", is_stacked=False),
+    #     required=False,)
+    password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'nombre', 'apellido_paterno', 'apellido_materno', 'email','departamento', 'is_superuser', 'is_staff',)
+        fields = ('username', 'nombre', 'apellido_paterno', 'apellido_materno', 'email', 'departamento', 'is_superuser', 'is_staff', 'groups')
 
-    # Agregar div entre boolean y helptext
     def __init__(self, *args, **kwargs):
-        super(CustomUserRegisterForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         is_superuser_default_help_text = CustomUser._meta.get_field('is_superuser').help_text
         is_staff_default_help_text = CustomUser._meta.get_field('is_staff').help_text
+        # permissions_help_text = CustomUser._meta.get_field('user_permissions').help_text
+        groups_help_text = CustomUser._meta.get_field('groups').help_text
         self.fields['is_superuser'].help_text = '<div class="help">{}</div>'.format(is_superuser_default_help_text)
         self.fields['is_staff'].help_text = '<div class="help">{}</div>'.format(is_staff_default_help_text)
-
+        self.fields['groups'].help_text = '<div class="help">{} Mantenga presionado "Control" o "Comando" en una Mac, para seleccionar más de uno.</div>'.format(groups_help_text)
+        # self.fields['permissions'].help_text = '<div class="help" id="id_permissions_helptext">{}. Mantenga presionado "Control" o "Comando" en una Mac, para seleccionar más de uno.</div>'.format(permissions_help_text)
+    
     def clean_password2(self):
         # Check that both passwords match.
         password1 = self.cleaned_data.get("password1")
@@ -79,45 +90,54 @@ class   CustomUserRegisterForm(forms.ModelForm):
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
+            self.save_m2m()  # Save many-to-many relationships (permissions)
         return user
 
-class CustomUserChangeForm(forms.ModelForm):
-    # Custom User change form.
-    # Password is hidden by default, but can be changed if desired.
-    password = ReadOnlyPasswordHashField()
+
+class CustomUserProfileForm(UserChangeForm):
+    nombre = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    apellido_paterno = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    apellido_materno = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control', 'value': 'existing_password'}))
+    email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    departamento = forms.ChoiceField(label='Departamento', choices=DEPARTAMENTO, widget=forms.Select(attrs={'class': 'form-control'}))
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'password', 'first_name', 'last_name', 'is_active')
+        fields = ('username', 'nombre', 'apellido_paterno', 'apellido_materno', 'email', 'departamento')
 
-    def clean_password(self):
-        # Regardless of the provided value, don't return the password in plain text format.
-        return self.initial["password"]
 
-class CustomUserAdminForm(UserAdmin):
-    # The form to add and change user instances
-    form = CustomUserChangeForm
-    add_form = CustomUserRegisterForm
+class EditUserForm(UserChangeForm):
+    nombre = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    apellido_paterno = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    apellido_materno = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control', 'value': 'existing_password'}))
+    email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    departamento = forms.ChoiceField(label='Departamento', choices=DEPARTAMENTO, widget=forms.Select(attrs={'class': 'form-control'}))
+    groups = forms.ModelMultipleChoiceField(
+        label='Tipos de Cuenta',
+        queryset=Group.objects.all(),
+        widget=FilteredSelectMultiple(
+            "Groups", 
+            is_stacked=False, 
+            attrs={'class': 'form-control'}),
+    required=False,)
+        
 
-    # The fields to be used in displaying the User model.
-    list_display = ('username', 'nombre', 'apellido_paterno', 'apellido_materno', 'password1', 'password2', 'departamento', 'email', 'is_active', 'is_admin')
-    list_filter = ('is_admin',)
-    fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Personal Information', {'fields': ('nombre', 'apellido_paterno', 'apellido_materno')}),
-        ('Permissions', {'fields': ('is_active', 'is_admin')}),
-    )
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'nombre', 'apellido_paterno', 'apellido_materno', 'email', 'departamento', 'is_superuser', 'is_staff', 'groups')
     
-    # Customize admin templates to use the new form.
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'nombre', 'apellido_paterno', 'apellido_materno', 'password1', 'password2', 'departamento', 'email', 'is_active', 'is_admin')
-        }),
-    )
-    search_fields = ('email',)
-    ordering = ('email',)
-    filter_horizontal = ()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        is_superuser_default_help_text = CustomUser._meta.get_field('is_superuser').help_text
+        is_staff_default_help_text = CustomUser._meta.get_field('is_staff').help_text
+        groups_help_text = CustomUser._meta.get_field('groups').help_text
+        self.fields['is_superuser'].help_text = '<div class="help">{}</div>'.format(is_superuser_default_help_text)
+        self.fields['is_staff'].help_text = '<div class="help">{}</div>'.format(is_staff_default_help_text)
+        self.fields['groups'].help_text = '<div class="help">{} Mantenga presionado "Control" o "Comando" en una Mac, para seleccionar más de uno.</div>'.format(groups_help_text)
 
 class SignInForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
@@ -139,3 +159,19 @@ class SignInForm(AuthenticationForm):
                 return user
 
         return None
+    
+class UserDeleteForm(forms.Form):
+    ids = forms.ModelMultipleChoiceField(
+        queryset=CustomUser.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+
+class UserGroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = '__all__'
+
+    widgets = {
+        'name': forms.TextInput(attrs={'class': 'form-control'}),
+    }
