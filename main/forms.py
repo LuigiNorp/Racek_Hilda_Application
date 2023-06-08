@@ -115,7 +115,7 @@ class EditUserForm(UserChangeForm):
     username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control', 'value': 'existing_password'}))
     email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-control'}))
-    departamento = forms.ChoiceField(label='Departamento', choices=DEPARTAMENTO, widget=forms.Select(attrs={'class': 'form-control'}))
+    departamento = forms.ChoiceField(label='Departamento', choices=DEPARTAMENTO, widget=forms.Select(attrs={'class': 'select'}))
     groups = forms.ModelMultipleChoiceField(
         label='Tipos de Cuenta',
         queryset=Group.objects.all(),
@@ -123,8 +123,7 @@ class EditUserForm(UserChangeForm):
             "Groups", 
             is_stacked=False, 
             attrs={'class': 'form-control'}),
-    required=False,)
-        
+    required=False,)        
 
     class Meta:
         model = CustomUser
@@ -138,6 +137,7 @@ class EditUserForm(UserChangeForm):
         self.fields['is_superuser'].help_text = '<div class="help">{}</div>'.format(is_superuser_default_help_text)
         self.fields['is_staff'].help_text = '<div class="help">{}</div>'.format(is_staff_default_help_text)
         self.fields['groups'].help_text = '<div class="help">{} Mantenga presionado "Control" o "Comando" en una Mac, para seleccionar más de uno.</div>'.format(groups_help_text)
+
 
 class SignInForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):

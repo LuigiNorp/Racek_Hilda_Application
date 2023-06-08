@@ -13,7 +13,7 @@ from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.views import View
 from django.core.cache import cache
-from django.utils import timezone
+from django.db.models import Q
 
 from .serializers import *
 from .forms import *
@@ -325,15 +325,25 @@ class Users(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
     def get(self, request):
         users = CustomUser.objects.all()
+        filter_text = request.GET.get('q', '')
+        if filter_text:
+            users = users.filter(
+                Q(username__icontains=filter_text) |
+                Q(email__icontains=filter_text) |
+                Q(nombre__icontains=filter_text) |
+                Q(apellido_paterno__icontains=filter_text) |
+                Q(apellido_materno__icontains=filter_text) |
+                Q(departamento__icontains=filter_text)
+            )
         context = self.get_context_data()
         context['users'] = users
+        context['filter_text'] = filter_text
         return render(request, 'user/users.html', context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_register_enabled'] = self.test_func()
         return context
-
 
 @login_required
 @staff_member_required
@@ -349,13 +359,47 @@ def delete_selected_users(request):
 
 @login_required
 @staff_member_required
-def UserGroups(request):
-    groups = Group.objects.all()
-    context = {
-        'groups': groups,
-        'form': UserGroupForm(),
-    }
-    return render(request, 'user/user-groups.html', context)
+def AddGroup(request):
+    if request.method == 'POST':
+        form = UserGroupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/groups/')
+    else:
+        form = UserGroupForm()
+    return render(request, 'user/add-group.html', {'form': form})
+
+
+class UserGroups(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    login_url = '/login/'
+    template_name = 'user/user-groups.html'
+
+    def test_func(self):
+        user = self.request.user
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+            return True
+        return False
+    
+    def get(self, request):
+        groups = Group.objects.all()
+        filter_text = request.GET.get('q', '')
+        if filter_text:
+            groups = groups.filter(
+                Q(id__icontains=filter_text) |
+                Q(name__icontains=filter_text)
+            )
+        context = self.get_context_data()
+        context['groups'] = groups
+        context['filter_text'] = filter_text
+        return render(request, 'user/user-groups.html', context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        groups = Group.objects.all()
+        context['groups'] = groups
+        context['form'] = UserGroupForm()
+        context['is_register_enabled'] = self.test_func()
+        return context
 
 
 @login_required
@@ -366,17 +410,16 @@ def ChangeUserGroup(request):
     return render(request, 'user/user-group.html', context)
 
 
-def eliminar_grupos(request):
+@login_required
+@staff_member_required
+def DeleteGroups(request):
     if request.method == 'POST':
-        selected_group_ids = request.POST.getlist('selected_groups')
-        if 'confirm_delete' in request.POST:
-            Group.objects.filter(id__in=selected_group_ids).delete()
-            return redirect('/groups/')  # redirigir a la página de grupos o a donde desees
-    else:
-        return render(request, 'navigation/confirm_group_delete.html', {'selected_group_ids': selected_group_ids})  # renderizar el template
-
-    return render(request, 'user/groups.html')  # renderizar el template
-
+        selected_groups = request.POST.getlist('selected_groups')
+        for group_id in selected_groups:
+            group = Group.objects.get(pk=group_id)
+            group.delete()
+        # messages.success(request, 'Selected groups have been deleted.')
+    return redirect('groups')
 
 # class ClientProfileView(LoginRequiredMixin, APIView):
 #     login_url = '/login/'

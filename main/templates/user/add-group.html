@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block right %}
+    <h1>Nuevo Tipo de Usuario</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+{% endblock %}
