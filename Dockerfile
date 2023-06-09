@@ -18,9 +18,11 @@ RUN apt-get update && apt-get install -y \
     default-libmysqlclient-dev \
     build-essential \
     gcc \
+	graphviz \
+	libgraphviz-dev \
+	pkg-config \
     # snapd \
     && apt-get clean
-
 # RUN systemctl start snapd.service
 # RUN snap install core 
 # RUN snap refresh core
