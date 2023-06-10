@@ -18,6 +18,7 @@ from django.db.models import Q
 from .serializers import *
 from .forms import *
 from .models import *
+from .choices import REGISTER_ENABLED_GROUPS, DB_DELETE_ENABLED_GROUPS, SUPERUSER_GROUPS
 
 
 # Create your views here.
@@ -149,7 +150,9 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
             return True
         return False
 
@@ -170,7 +173,9 @@ class Register(LoginRequiredMixin, UserPassesTestMixin, APIView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
             return True
         return False
 
@@ -208,7 +213,9 @@ class AddUser(LoginRequiredMixin, UserPassesTestMixin, APIView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
             return True
         return False
 
@@ -246,10 +253,12 @@ class CustomUserProfileView(LoginRequiredMixin, APIView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
             return True
         return False
-
+    
     def get(self, request, pk):
         user = get_object_or_404(CustomUser, pk=pk)
         form = CustomUserProfileForm(instance=user)
@@ -283,7 +292,9 @@ class EditUserView(LoginRequiredMixin, UserPassesTestMixin, APIView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
             return True
         return False
 
@@ -319,7 +330,9 @@ class Users(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
             return True
         return False
 
@@ -376,10 +389,12 @@ class UserGroups(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
             return True
         return False
-    
+        
     def get(self, request):
         groups = Group.objects.all()
         filter_text = request.GET.get('q', '')
@@ -433,12 +448,13 @@ def DeleteGroups(request):
 #         }
 #         return render(request, self.template_name, context)
 
-
 @login_required
 @staff_member_required
 def EmploymentPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -451,7 +467,9 @@ def EmploymentPortfolio(request):
 @staff_member_required
 def DependentsPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -465,7 +483,9 @@ def DependentsPortfolio(request):
 @staff_member_required
 def GeneralPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -479,7 +499,9 @@ def GeneralPortfolio(request):
 @staff_member_required
 def ReferencesPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -493,7 +515,9 @@ def ReferencesPortfolio(request):
 @staff_member_required
 def ExamsPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -513,7 +537,9 @@ def ExamsPortfolio(request):
 @staff_member_required
 def PsychologicalPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -527,7 +553,9 @@ def PsychologicalPortfolio(request):
 @staff_member_required
 def ToxicologicalPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -541,7 +569,9 @@ def ToxicologicalPortfolio(request):
 @staff_member_required
 def MedicalPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -555,7 +585,9 @@ def MedicalPortfolio(request):
 @staff_member_required
 def PhysicalPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -569,7 +601,9 @@ def PhysicalPortfolio(request):
 @staff_member_required
 def SocioeconomicPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False
@@ -583,7 +617,9 @@ def SocioeconomicPortfolio(request):
 @staff_member_required
 def PolygraphPortfolio(request):
     user = request.user
-    if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+    if user.groups.filter(name=REGISTER_ENABLED_GROUPS[0]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[1]).exists() or \
+        user.groups.filter(name=REGISTER_ENABLED_GROUPS[2]).exists():
         is_register_enabled = True
     else:
         is_register_enabled = False

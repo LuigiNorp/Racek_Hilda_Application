@@ -11,3 +11,8 @@ PERMISOS = (
     (4, 'superboss'),
     (5, 'dbadmin'),
 )
+
+# Group names with special permissions
+REGISTER_ENABLED_GROUPS = ['Admin', 'Superboss', 'Manager']
+DB_DELETE_ENABLED_GROUPS = ['Admin','Superboss']
+SUPERUSER_GROUPS = ['Superboss']
