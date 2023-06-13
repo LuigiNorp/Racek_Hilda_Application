@@ -3,8 +3,8 @@
 {% block right %}
     <h1>Nuevo Tipo de Usuario</h1>
     <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" name="save_group" value="Save Group">Save Group</button>
     </form>
 {% endblock %}

@@ -166,6 +166,18 @@ class UserDeleteForm(forms.Form):
         widget=forms.CheckboxSelectMultiple,
     )
 
+class AddGroupForm(forms.ModelForm):
+    name = forms.CharField(label=("Name"), max_length=150)
+    permissions = forms.ModelMultipleChoiceField(
+        label=("Permissions"), required=False,
+        queryset=Permission.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    class Meta:
+        model = Group
+        fields = ('name', 'permissions')
+     
 
 class UserGroupForm(forms.ModelForm):
     class Meta:

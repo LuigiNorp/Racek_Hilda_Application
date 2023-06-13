@@ -58,7 +58,14 @@
         </tbody>
         </table>
         <div class="buttons-container">
-            <a href="/add-group/" class="btn btn-main">Crear Grupo</a>
+            <a 
+                href="/add-group/" 
+                target="_blank" 
+                onclick="window.open('/add-group/', 'newwindow', 'width=850,height=400'); return false;" 
+                class="btn btn-main"
+            >
+                Crear Grupo
+            </a>
             <button type="submit" class="btn btn-danger">Eliminar seleccionados</button>
         </div>
     </form>
