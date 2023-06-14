@@ -374,12 +374,12 @@ def delete_selected_users(request):
 @staff_member_required
 def AddGroup(request):
     if request.method == 'POST':
-        form = AddGroupForm(request.POST)
+        form = GroupForm(request.POST)
         if form.is_valid():
             group = form.save()
             return redirect('groups')
     else:
-        form = AddGroupForm()
+        form = GroupForm()
     return render(request, 'user/add-group.html', {'form': form})
 
 
