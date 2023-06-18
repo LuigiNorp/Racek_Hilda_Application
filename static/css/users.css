@@ -31,7 +31,9 @@
 
 .buttons-container {
     position: relative;
-    align-items: center;
+    align-items: center;    
+    padding-top: 25px;
+    padding-bottom: 25px;
 }
 
 .table {
@@ -50,16 +52,29 @@
     -ms-overflow-style: -ms-autohiding-scrollbar;
   }
 
-  .container {
+.container {
     position: relative;
     margin-top: 20px;
+    margin-left: 0px;
+    margin-right: 0px;
   }
   
-  .search-form {
+.search-form {
     position: relative;
     left: 45%;
   }
   
-  .form-control {
+.form-control {
     width: 50%;
   }
+
+.floating-bg {
+  justify-content: space-between;
+  overflow-y: auto;
+  overflow-x: hidden; /* Add this line to hide the horizontal scrollbar */
+}
+
+.container {
+  flex-wrap: wrap;
+  padding-right: 15px; /* Add this line to account for the scrollbar width */
+}

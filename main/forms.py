@@ -7,7 +7,6 @@ from django.contrib.auth.forms import UserChangeForm
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Group
 
-from django import forms
 from .models import CustomUser
 
 # For regular website
@@ -167,20 +166,21 @@ class UserDeleteForm(forms.Form):
     )
 
 
-class GroupForm(forms.ModelForm):
+class AddGroupForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = '__all__'
-
+    name = forms.CharField(widget=forms.TextInput
+        (attrs={'class': 'form-control'}))
     permissions = forms.ModelMultipleChoiceField(
         queryset=None,
-        widget=forms.SelectMultiple(attrs={'class': 'add_to_group'}),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['permissions'].queryset = Permission.objects.all()
-     
+        self.fields['permissions'].help_text = '<div class="help">Mantenga presionado "Control" o "Comando" en una Mac, para seleccionar más de uno.</div>'
 
 class UserGroupForm(forms.ModelForm):
     class Meta:
@@ -190,3 +190,14 @@ class UserGroupForm(forms.ModelForm):
     widgets = {
         'name': forms.TextInput(attrs={'class': 'form-control'}),
     }
+
+class EditGroupForm(forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
+    class Meta:
+        model = Group
+        fields = ['name', 'permissions']

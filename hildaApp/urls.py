@@ -36,9 +36,9 @@ urlpatterns = [
     path('user/<int:pk>/profile/', CustomUserProfileView.as_view(), name="profile"),
     path('user/<int:pk>/edit/', EditUserView.as_view(), name="edit_user"),
     path('delete-selected-user/', delete_selected_users, name='delete_selected_users'),
-    path('groups/', UserGroups.as_view(), name='groups'),
-    path('add-group/', AddGroup, name='add_group'),
-    path('edit-group/<int:pk>/', ChangeUserGroup, name='edit_group'),
+    path('groups/', UserGroupsView.as_view(), name='groups'),
+    path('add-group/', AddGroupView.as_view(), name='add_group'),
+    path('edit-group/<int:pk>/', EditGroupView.as_view(), name='edit_group'),
     path('delete-groups/', DeleteGroups, name='delete_groups'),
 
     path('clients/', Users.as_view(), name="clients"),

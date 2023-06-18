@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, FormView
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -357,20 +357,31 @@ def delete_selected_users(request):
     return redirect('users')
 
 
-@login_required
-@staff_member_required
-def AddGroup(request):
-    if request.method == 'POST':
-        form = GroupForm(request.POST)
+class AddGroupView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        user = self.request.user
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+            return True
+        return False
+
+    def get(self, request):
+        form = AddGroupForm()
+        is_register_enabled = self.test_func()
+        context = {
+            'form': form,
+            'is_register_enabled': is_register_enabled,
+        }
+        return render(request, 'user/add-group.html', context)
+
+    def post(self, request):
+        form = AddGroupForm(request.POST)
         if form.is_valid():
             group = form.save()
             return redirect('groups')
-    else:
-        form = GroupForm()
-    return render(request, 'user/add-group.html', {'form': form})
+        return render(request, 'user/add-group.html', {'form': form})
 
 
-class UserGroups(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+class UserGroupsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     login_url = '/login/'
     template_name = 'user/user-groups.html'
 
@@ -402,13 +413,19 @@ class UserGroups(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         return context
 
 
-@login_required
-@staff_member_required
-def ChangeUserGroup(request):
-    form = UserGroupForm()
-    context = {'form': form}
-    return render(request, 'user/user-group.html', context)
+class EditGroupView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    login_url = '/login/'
+    template_name = 'user/user-group.html'
+    form_class = EditGroupForm
 
+    def test_func(self):
+        return self.request.user.groups.filter(name__in=['Admin', 'Superboss', 'Manager']).exists()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['group_pk'] = self.kwargs.get('pk')
+        return context
+    
 
 @login_required
 @staff_member_required
