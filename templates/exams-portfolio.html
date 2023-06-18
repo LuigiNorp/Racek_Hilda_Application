@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es-mx">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        {% load static %}
+       
+        <!-- Enlace a tus estilos personalizados -->        
+        <link 
+            rel="stylesheet" 
+            type="text/css"
+            href="{% static 'css/base2.css' %}"
+        >
+        
+        <link 
+            rel="stylesheet" 
+            type="text/css"
+            href="{% static 'css/home2.css' %}"
+        >
+
+        {% block extrahead %} {% endblock %}
+
+    </head>
+    
+    <body>
+        {% if user.is_authenticated %}
+            {% include "navigation/main-menu-with-register.html" %}
+        {% endif %}
+        <div class="workspace">
+            <div class="left">
+            {% if user.is_authenticated %}
+                {% include 'navigation/buttons-box.html'%}
+            {% endif %}
+            </div>
+                <div class="right">
+                    <div class="floating-bg">
+                        {% include pages.user_selection %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

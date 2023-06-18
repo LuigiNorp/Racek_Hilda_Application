@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block extrahead %}
+  {% load tz %}
+  {% load static %}
+
+  <!-- Enlace a tus estilos personalizados -->        
+  <link 
+      rel="stylesheet" 
+      type="text/css"
+      href="{% static 'css/users.css' %}"
+  >
+
+{% endblock %}
+
+
+{% block right %}
+  <div class="container">
+    <h1>Usuarios Racek</h1>
+    <form 
+      method="get" 
+      action="{% url 'users' %}"
+      class="d-flex search-form" 
+    >
+      <input 
+        type="text" 
+        name="q" 
+        value="{{ filter_text }}" 
+        placeholder="Search..."
+        class="form-control"
+      >
+      <button type="submit" class="btn btn-outline-secondary btn-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+        </svg>
+      </button>
+    </form>
+    <form 
+      method="post" 
+      action="{% url 'delete_selected_users' %}" 
+      onsubmit="return confirm('¿Deseas eliminar los usuarios seleccionados?');"
+    >
+      {% csrf_token %}
+      <table class="table table-striped table-responsive">
+        <thead>
+          <tr>
+              <th>Select</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Nombre</th>
+              <th>Apellido Paterno</th>
+              <th>Apellido Materno</th>
+              <th>Departamento</th>
+              <th>Superuser</th>
+              <th>Staff</th>
+              <th>Active</th>
+              <th>Tipo Usuario</th>
+              <th>Date Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+            <tr>
+              <td><input type="checkbox" name="selected_users" value="{{ user.id }}"></td>
+              <td><a href="{% url 'edit_user' pk=user.pk %}">{{ user.username }}</a></td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.nombre }}</td>
+              <td>{{ user.apellido_paterno }}</td>
+              <td>{{ user.apellido_materno }}</td>
+              <td>{{ user.get_departamento_display }}</td>
+              <td>{{ user.is_superuser }}</td>
+              <td>{{ user.is_staff }}</td>
+              <td>{{ user.is_active }}</td>
+              {% for group in user.groups.all %}
+                <td>{{ group.name }}</td>
+              {% endfor %}
+              <td>{{ user.date_joined|localtime|date:"Y-m-d H:i:s" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="buttons-container">
+        <button type="submit" class="btn btn-danger">Eliminar seleccionados</button>
+        <a href="/add-user/" class="btn btn-main">Agregar Usuario</a>
+        <a href="/groups/" class="btn btn-main">Permisos Usuario</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}
