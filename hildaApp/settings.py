@@ -73,7 +73,7 @@ ROOT_URLCONF = 'hildaApp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -189,3 +189,6 @@ LOGIN_REDIRECT_URL = 'home'
 
 # Group names with special permissions
 REGISTER_ENABLED_GROUPS = ['Admin', 'Superboss', 'Manager']
+
+# To enable use iframes and django admin
+X_FRAME_OPTIONS = 'SAMEORIGIN'

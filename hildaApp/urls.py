@@ -24,7 +24,6 @@ urlpatterns = [
     path('', HomeView.as_view(), name="home"),
     path('login/', LoginView.as_view() , name="login"),\
     path('register/', Register.as_view(), name="register"),
-    path('add-user/', AddUser.as_view(), name="add_user"),
     path('forget-password/', ForgetPasswordView.as_view() , name="forget_password"),
     path('change-password/<token>/', ChangePasswordView.as_view() , name="change_password"),
     path('logout/' , LogoutView.as_view() , name="logout"),
@@ -32,29 +31,11 @@ urlpatterns = [
     # path('api/', include('main.urls')),
 
     # If you want to create a page with all users in a table
+
     path('users/', Users.as_view(), name='users'),
     path('user/<int:pk>/profile/', CustomUserProfileView.as_view(), name="profile"),
-    path('user/<int:pk>/edit/', EditUserView.as_view(), name="edit_user"),
-    path('delete-selected-user/', delete_selected_users, name='delete_selected_users'),
-    path('groups/', UserGroups.as_view(), name='groups'),
-    path('add-group/', AddGroup, name='add_group'),
-    path('edit-group/<int:pk>/', ChangeUserGroup, name='edit_group'),
-    path('delete-groups/', DeleteGroups, name='delete_groups'),
-
-    path('clients/', Users.as_view(), name="clients"),
-    # path('client/', ClientProfileView.as_view(), name="client-profile"),
-
-    path('employment-portfolio/', EmploymentPortfolio, name="employment-portfolio"),
-    path('general-portfolio/', GeneralPortfolio, name="general-portfolio"),
-    path('references-portfolio/', ReferencesPortfolio, name="references-portfolio"),
-    path('dependents-portfolio/', DependentsPortfolio, name="dependents-portfolio"),
-    path('exams-portfolio/', ExamsPortfolio, name="exams-portfolio"),
-    path('psychological-portfolio/', PsychologicalPortfolio, name="psychological-portfolio"),
-    path('toxicological-portfolio/', ToxicologicalPortfolio, name="toxicological-portfolio"),
-    path('medical-portfolio/', MedicalPortfolio, name="medical-portfolio"),
-    path('physical-portfolio/', PhysicalPortfolio, name="physical-portfolio"),
-    path('socioeconomic-portfolio/', SocioeconomicPortfolio, name="socioeconomic-portfolio"),
-    path('polygraph-portfolio/', PolygraphPortfolio, name="polygraph-portfolio"),
-    
+    path('clients/', Clients.as_view(), name="clients"),
+    path('employees/', Personal.as_view(), name="employees"),
+    path('user/<int:pk>/history/', UserHistory.as_view(), name="history"),
 ]
 

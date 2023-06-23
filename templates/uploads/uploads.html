@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block extrahead %}
+  {% load tz %}
+  {% load static %}
+
+  <!-- Enlace a tus estilos personalizados -->        
+  <link 
+      rel="stylesheet" 
+      type="text/css"
+      href="{% static 'css/users.css' %}"
+  >
+
+  <title>Cargar Archivos</title>
+
+{% endblock %}
+
+
+{% block right %}
+<iframe 
+  src="/admin/data/documentosdigitales/"
+  width="100%" 
+  height="100%"
+  style="border: none;"
+>
+</iframe>
+{% endblock %}
