@@ -10,14 +10,14 @@
       href="{% static 'css/users.css' %}"
   >
 
-  <title>Usuarios</title>
+  <title>Historial de Usuario</title>
 
 {% endblock %}
 
 
 {% block right %}
 <iframe 
-  src="{% url 'admin:main_customuser_changelist' %}"
+  src="{% url 'admin:main_customuser_history' request.user.pk %}"
   width="100%" 
   height="100%"
   style="border: none;"

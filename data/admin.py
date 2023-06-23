@@ -7,93 +7,129 @@ from .models import *
 class CurpAdmin(admin.ModelAdmin):
     list_display = ('id','curp','nombre','apellido_materno','apellido_paterno','iniciales','fecha_nacimiento','sexo')
 
+
 @admin.register(Rfc)
 class RfcAdmin(admin.ModelAdmin):
     list_display = ('id','rfc','razon_social','correo_contacto','validez','tipo',)
 
+
+
+
+
+
+class SedeInline(admin.StackedInline):
+    model = Sede
+class CarpetaClienteGeneralesInline(admin.StackedInline):
+    model = CarpetaClienteGenerales
+class CarpetaClientePagosInline(admin.StackedInline):
+    model = CarpetaClientePagos
+class CarpetaClienteContactosInline(admin.StackedInline):
+    model = CarpetaClienteContactos
+
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
     list_display = ('id','nombre_comercial','razon_social','activo',)
+    inlines = [SedeInline, CarpetaClienteGeneralesInline, CarpetaClientePagosInline, CarpetaClienteContactosInline]
 
-@admin.register(Sede)
-class SedeAdmin(admin.ModelAdmin):
-     list_display = ('id','clave_sede', 'nombre_sede', 'cliente')
 
-@admin.register(CarpetaClienteGenerales)
-class CarpetaClienteGeneralesAdmin(admin.ModelAdmin):
-     list_display = ('id','cliente', 'rfc', 'reg_estatal', 'reg_federal', 'telefono_1', 'representante_legal', 'registro_patronal')
 
-@admin.register(CarpetaClientePagos)
-class CarpetaClientePagosAdmin(admin.ModelAdmin):
-    list_display = ('id','cliente','encargado_pagos','telefono_oficina', 'rfc', 'factura_subtotal', 'factura_iva','factura_total')
 
-@admin.register(CarpetaClienteContactos)
-class CarpetaClienteContactosAdmin(admin.ModelAdmin):
-    list_display = ('id','cliente','nombre_contacto','puesto','telefono_1','email_1',)
+
+
+
+class CarpetaLaboralAdmin(admin.StackedInline):
+    model = CarpetaLaboral
+
+class CarpetaGeneralesAdmin(admin.StackedInline):
+    model = CarpetaGenerales
+
+class CarpetaReferenciasAdmin(admin.StackedInline):
+    model = CarpetaReferencias
+
+class CarpetaDependientesAdmin(admin.StackedInline):
+    model = CarpetaDependientes
+    
+class CarpetaExamenFisicoInline(admin.StackedInline):
+    model = CarpetaExamenFisico
+
+class CarpetaExamenMedicoInline(admin.StackedInline):
+    model = CarpetaExamenMedico
+
+class CarpetaExamenPsicologicoInline(admin.StackedInline):
+    model = CarpetaExamenPsicologico
+
+class CarpetaExamenToxicologicoInline(admin.StackedInline):
+    model = CarpetaExamenToxicologico
+
+class CarpetaExamenSocioeconomicoInline(admin.StackedInline):
+    model = CarpetaExamenSocioeconomico
+
+class CarpetaExamenPoligrafoInline(admin.StackedInline):
+    model = CarpetaExamenPoligrafo
+
+class CarpetaEmpleoAnteriorSeguridadPublicaAdmin(admin.StackedInline):
+    model = CarpetaEmpleoAnteriorSeguridadPublica
+
+class CarpetaEmpleoAnteriorAdmin(admin.StackedInline):
+    model = CarpetaEmpleoAnterior
+
+class CarpetaCapacitacionAdmin(admin.StackedInline):
+    model = CarpetaCapacitacion
+
+class CarpetaMediaFilicacionAdmin(admin.StackedInline):
+    model = CarpetaMediaFiliacion
+
+
+class DocumentosDigitalesAdmin(admin.StackedInline):
+    model = DocumentosDigitales
 
 @admin.register(Personal)
 class PersonalAdmin(admin.ModelAdmin):
-    list_display = ('id','cliente',)
+    list_display = ('id', 'get_full_name', 'cliente',)
+    inlines =     inlines = [
+        CarpetaExamenFisicoInline,
+        CarpetaExamenMedicoInline,
+        CarpetaExamenPsicologicoInline,
+        CarpetaExamenToxicologicoInline,
+        CarpetaExamenSocioeconomicoInline,
+        CarpetaExamenPoligrafoInline,
+        CarpetaLaboralAdmin,
+        CarpetaGeneralesAdmin,
+        CarpetaReferenciasAdmin,
+        CarpetaDependientesAdmin,
+        CarpetaEmpleoAnteriorSeguridadPublicaAdmin,
+        CarpetaEmpleoAnteriorAdmin,
+        CarpetaCapacitacionAdmin,
+        CarpetaMediaFilicacionAdmin,
+        DocumentosDigitalesAdmin,
+    ]
+    
+    def get_full_name(self, obj):
+        return f"{obj.curp.nombre} {obj.curp.apellido_paterno} {obj.curp.apellido_materno}"
+
+    get_full_name.short_description = 'Full Name'
+
+
+
+
+
+
 
 @admin.register(Evaluador)
 class EvaluadorAdmin(admin.ModelAdmin):
     list_display = ('id','evaluador', 'personal')
 
-@admin.register(CarpetaLaboral)
-class CarpetaLaboralAdmin(admin.ModelAdmin):
-    list_display = ('id','personal','estatus_empleado','proceso_racek','estatus_empleado','cedula','rango',)
-
 @admin.register(Puesto)
 class PuestoAdmin(admin.ModelAdmin):
     list_display = ('id','nombre_puesto','carpeta_laboral')
-
-@admin.register(CarpetaGenerales)
-class CarpetaGeneralesAdmin(admin.ModelAdmin):
-    list_display = ('numero_elemento','personal','email_empleado','telefono_domicilio','estado_civil','cuip','clave_ine','nss')
-
-@admin.register(CarpetaReferencias)
-class CarpetaReferenciasAdmin(admin.ModelAdmin):
-    list_display = ('id','personal')
 
 @admin.register(Referencia)
 class ReferenciaAdmin(admin.ModelAdmin):
     list_display = ('id','nombre','apellido_paterno','apellido_materno','tipo_referencia', 'parentesco')
 
-@admin.register(CarpetaDependientes)
-class CarpetasDependientesAdmin(admin.ModelAdmin):
-    list_display = ('id','personal','cantidad_dependientes_economicos')
-
 @admin.register(Dependiente)
 class DependienteAdmin(admin.ModelAdmin):
     list_display = ('id','nombre','apellido_paterno','apellido_materno','parentesco')
-
-@admin.register(CarpetaExamenPsicologico)
-class CarpetaExamenPsicologicoAdmin(admin.ModelAdmin):
-    list_display = ('id','personal','resultado_psicologico')
-
-@admin.register(CarpetaExamenToxicologico)
-class CarpetaExamenToxicologicoAdmin(admin.ModelAdmin):
-    list_display = ('id','personal','resultado_toxicologico')
-
-@admin.register(CarpetaExamenMedico)
-class CarpetaExamenMedicoAdmin(admin.ModelAdmin):
-    list_display = ('id','personal','medico_resultado','ishihara_resultado')
-
-@admin.register(CarpetaExamenFisico)
-class CarpetaExamenFisicoAdmin(admin.ModelAdmin):
-    list_display = ('id','personal','resultado')
-
-@admin.register(CarpetaExamenSocioeconomico)
-class CarpetaExamenSocioeconomicoAdmin(admin.ModelAdmin):
-    list_display = ('id','personal','supervisor','telefono_recados')
-
-@admin.register(CarpetaExamenPoligrafo)
-class CarpetaExamenPoligrafoAdmin(admin.ModelAdmin):
-    list_display = ('id','resultado_aspirante', 'personal')
-
-@admin.register(CarpetaEmpleoAnteriorSeguridadPublica)
-class CarpetaEmpleoAnteriorSeguridadPublicaAdmin(admin.ModelAdmin):
-    list_display = ('id','personal')
 
 @admin.register(EmpleoAnteriorSeguridadPublica)
 class EmpleoAnteriorSeguridadPublicaAdmin(admin.ModelAdmin):
@@ -107,10 +143,6 @@ class PuestoFuncionalAdmin(admin.ModelAdmin):
 class TipoBajaAdmin(admin.ModelAdmin):
     list_display = ('id','emp_ant_seg_pub','motivo')
 
-@admin.register(CarpetaEmpleoAnterior)
-class CarpetaEmpleoAnteriorAdmin(admin.ModelAdmin):
-    list_display = ('id','personal')
-
 @admin.register(EmpleoAnterior)
 class EmpleoAnteriorAdmin(admin.ModelAdmin):
     list_display = ('id','emp_ant','empresa')
@@ -118,10 +150,6 @@ class EmpleoAnteriorAdmin(admin.ModelAdmin):
 @admin.register(MotivoSeparacion)
 class MotivoSeparacionAdmin(admin.ModelAdmin):
     list_display = ('id','motivo')
-
-@admin.register(CarpetaCapacitacion)
-class CarpetaCapacitacionAdmin(admin.ModelAdmin):
-    list_display = ('id','personal')
 
 @admin.register(Capacitacion)
 class CapacitacionPreviaAdmin(admin.ModelAdmin):
@@ -147,13 +175,6 @@ class IdiomaAdmin(admin.ModelAdmin):
 # class HabilidadPersonalizadaAdmin(admin.ModelAdmin):
 #     list_display = ('id','habilidad','nombre_habilidad')
 
-@admin.register(CarpetaMediaFiliacion)
-class CarpetaMediaFilicacionAdmin(admin.ModelAdmin):
-    list_display = ('id','personal')
-
-@admin.register(DocumentosDigitales)
-class DocumentosDigitalesAdmin(admin.ModelAdmin):
-    list_display = ('id','personal')
 
 @admin.register(CapacitacionCliente)
 class CapacitacionClienteAdmin(admin.ModelAdmin):

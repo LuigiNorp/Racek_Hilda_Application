@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
-from .choices import DEPARTAMENTO, PERMISOS
+from .choices import DEPARTAMENTO
 from django.contrib.auth import get_user_model
 
 

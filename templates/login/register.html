@@ -3,17 +3,12 @@
 {% block extrahead %}
     {% load static %}
 
-    <!-- Enlace a tus estilos personalizados -->
-    <link 
+  <!-- Enlace a tus estilos personalizados -->        
+  <link 
       rel="stylesheet" 
       type="text/css"
-      href="{% static 'css/base.css' %}"
-    >
-    <link 
-      rel="stylesheet" 
-      type="text/css" 
-      href="{% static 'css/register.css' %}"
-    >
+      href="{% static 'css/users.css' %}"
+  >
 
     <title>
       Nuevo Usuario
@@ -22,26 +17,11 @@
 {% endblock %}
 
 {% block right %}
-  <div class="container">
-    <div class="right-container">
-      <form method="post" class="form" id="form">
-        <h1>Nuevo Usuario</h1>
-        {% csrf_token %}
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert alert-info">
-              {{ message }}
-            </div>
-          {% endfor %}
-        {% endif %}
-        <div class="form-group">
-          {{ form.as_p }}
-        </div>
-        <button class="btn btn-success mt-3" type="submit">
-          Registrar
-        </button>
-      </form>
-    </div>
-  </div>
-
+<iframe 
+  src="{% url 'admin:main_customuser_add' %}" 
+  width="100%" 
+  height="100%"
+  style="border: none;"
+>
+</iframe>
 {% endblock %}

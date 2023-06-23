@@ -189,3 +189,6 @@ LOGIN_REDIRECT_URL = 'home'
 
 # Group names with special permissions
 REGISTER_ENABLED_GROUPS = ['Admin', 'Superboss', 'Manager']
+
+# To enable use iframes and django admin
+X_FRAME_OPTIONS = 'SAMEORIGIN'

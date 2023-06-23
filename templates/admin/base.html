@@ -1,6 +1,6 @@
 {% load i18n static %}<!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
-<html lang="{{ LANGUAGE_CODE|default:"es-mx" }}" dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr,auto' }}">
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr,auto' }}">
 <head>
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}">
@@ -31,7 +31,7 @@
     {% if not is_popup %}
     <!-- Header -->
     {% block header %}
-    <div id="header">
+    <div id="header" style="display: none;">
         <div id="branding">
         {% block branding %}{% endblock %}
         </div>
@@ -67,20 +67,20 @@
     </div>
     {% endblock %}
     <!-- END Header -->
-    {% block breadcrumbs %}
+    {% comment %} {% block breadcrumbs %}
     <div class="breadcrumbs">
     <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
     {% if title %} &rsaquo; {{ title }}{% endif %}
     </div>
-    {% endblock %}
+    {% endblock %} {% endcomment %}
     {% endif %}
 
     <div class="main" id="main">
-      {% if not is_popup and is_nav_sidebar_enabled %}
+      {% comment %} {% if not is_popup and is_nav_sidebar_enabled %}
         {% block nav-sidebar %}
           {% include "admin/nav_sidebar.html" %}
         {% endblock %}
-      {% endif %}
+      {% endif %} {% endcomment %}
       <div class="content">
         {% block messages %}
           {% if messages %}
