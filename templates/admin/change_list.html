@@ -4,14 +4,17 @@
     {{ block.super }}
 
     {% if request.path == '/admin/main/customuser/' %}
-      {% comment %} <li>
-        <a href="/register/" class="addlink"target="_top">
-          {% translate 'Agregar Usuario' %}
-        </a>
-      </li> {% endcomment %}
       <li>
         <a href="{% url 'admin:auth_group_changelist' %}" class="link">
           {% translate 'Ver Grupos' %}
+        </a>
+      </li>
+    {% endif %}
+
+    {% if '/admin/data/cliente/' == request.path %}
+      <li>
+        <a href="/admin/data/capacitacioncliente/" class="link">
+          {% translate 'Ver Capacitaciones' %}
         </a>
       </li>
     {% endif %}
