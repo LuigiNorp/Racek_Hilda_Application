@@ -194,7 +194,7 @@ class DocumentosDigitalesViewSet(BaseViewSet):
 
 class CapacitacionClienteViewSet(BaseViewSet):
     serializer_class = CapacitacionClienteSerializer
-    model_class = CapacitacionCliente
+    model_class = Capacitacion
 
 class PersonalPorCapacitarViewSet(BaseViewSet):
     serializer_class = PersonalPorCapacitarSerializer

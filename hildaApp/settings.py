@@ -52,6 +52,7 @@ PROJECT_APPS = [
 THIRD_PARTY_APPS = [
     'django_extensions',
     'corsheaders',
+    'nested_admin',
     'rest_framework',
     # 'import_export',
 ]
@@ -192,3 +193,6 @@ REGISTER_ENABLED_GROUPS = ['Admin', 'Superboss', 'Manager']
 
 # To enable use iframes and django admin
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# to disable the check of the number of fields in a form
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None

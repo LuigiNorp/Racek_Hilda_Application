@@ -1,4 +1,5 @@
 asgiref==3.6.0
+beautifulsoup4==4.12.2
 charset-normalizer==3.0.1
 darkdetect==0.5.1
 defusedxml==0.7.1
@@ -9,6 +10,8 @@ django-db-multitenant==0.3.2
 django-environ==0.9.0
 django-extensions==3.2.1
 django-import-export==3.0.2
+django-nested-admin==4.0.2
+django-toggle-switch-widget==0.1.1
 djangorestframework==3.13.1
 et-xmlfile==1.1.0
 exceptiongroup==1.0.0rc5
@@ -36,10 +39,12 @@ pyflakes==3.0.1
 PyGObject==3.42.2
 pygraphviz==1.10
 python-dateutil==2.8.2
+python-monkey-business==1.0.0
 pytz==2022.6
 PyYAML==6.0
 requests==2.28.2
 six==1.16.0
+soupsieve==2.4.1
 sqlparse==0.4.2
 style==1.1.0
 tablib==3.3.0

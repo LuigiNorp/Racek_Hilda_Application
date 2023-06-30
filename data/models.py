@@ -78,8 +78,8 @@ class Curp(models.Model):
 class Rfc(models.Model):
     # Hacer conexiones con API RFC desde FrontEnd
 
-    rfc_regex = r'/^([A-ZÑ&]{3,4}) ?(?:- ?)?(\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])) ?(?:- ?)?([A-Z\d]{2})([A\d])$/'
-    rfc = models.CharField(max_length=13, validators=[RegexValidator(rfc_regex, 'La CURP no es válida')])
+    rfc_regex = r'^[A-Za-z]{3,4}(\d{6})([A-Za-z]\d{2}|(\D|\d){3})?$'
+    rfc = models.CharField(max_length=13, validators=[RegexValidator(rfc_regex, 'El RFC ingresado no es válido')])
     rfc_digital = models.FileField(upload_to="temp/documentos", blank=True, unique=True)
     razon_social  = models.CharField(max_length=255, blank=True, null=True)
     estatus = models.CharField(max_length=20, blank=True, null=True)
@@ -94,6 +94,83 @@ class Rfc(models.Model):
     class Meta:
         verbose_name_plural = 'RFC'
 
+
+
+
+
+
+
+
+class Pais(models.Model):
+    pais = models.CharField(max_length=100, default='México')
+    clave_pais_racek = models.CharField(max_length=4, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.pais}'
+    
+    class Meta:
+        verbose_name_plural = 'Paises'
+
+class Estado(models.Model):
+    estado = models.CharField(max_length=100)
+    clave_estado_racek = models.CharField(max_length=2, blank=True, null=True)
+    pais = models.OneToOneField(Pais, on_delete=models.RESTRICT)
+
+    def __str__(self):
+        return f'{self.estado}'
+    
+    class Meta:
+        verbose_name_plural = 'Estados'
+
+class Municipio(models.Model):
+    municipio = models.CharField(max_length=100)
+    clave_municipio_racek = models.CharField(max_length=4, blank=True, null=True)
+    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT, null=True)
+
+    def __str__(self):
+        return f'{self.municipio}'
+    
+    class Meta:
+        verbose_name_plural = 'Municipios'
+
+class Colonia(models.Model):
+    colonia = models.CharField(max_length=100)
+    municipio = models.ForeignKey(Municipio, on_delete=models.RESTRICT)
+
+    def __str__(self):
+        return f'{self.colonia}'
+    
+    class Meta:
+        verbose_name_plural = 'Colonias'
+
+class CodigoPostal(models.Model):
+    codigo_postal = models.CharField(max_length=5, blank=True, null=True)
+    colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT)
+
+    def __str__(self):
+        return f'{self.codigo_postal}'
+    
+    class Meta:
+        verbose_name_plural = 'Codigos Postales'
+
+class Domicilio(models.Model):
+    calle = models.CharField(max_length=100)
+    numero_exterior = models.CharField(max_length=20)
+    numero_interior = models.CharField(max_length=20, blank=True, null=True)
+    entre_calle = models.CharField(max_length=100, null=True, blank=True)
+    y_calle = models.CharField(max_length=100, null=True, blank=True)
+    ciudad = models.CharField(max_length=50)
+    colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT)
+    municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
+    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT, null=True)
+    codigo_postal = models.OneToOneField(CodigoPostal, on_delete=models.RESTRICT)
+    pais = models.OneToOneField(Pais, on_delete=models.RESTRICT)
+    
+    class Meta:
+        verbose_name_plural = 'Domicilios'
+
+
+
 class Cliente(models.Model):
     nombre_comercial = models.CharField(max_length=200)
     razon_social = models.CharField(max_length=200, blank=True)
@@ -105,9 +182,10 @@ class Cliente(models.Model):
     class Meta:
         verbose_name_plural = 'Clientes'
 
+
 class Sede(models.Model):
     clave_sede = models.CharField(max_length=6, blank=True, null=True)
-    nombre_sede = models.CharField(max_length=100)
+    nombre_sede = models.CharField(max_length=100, blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -130,7 +208,8 @@ class CarpetaClienteGenerales(models.Model):
     coordinador = models.CharField(max_length=300, blank=True)
     registro_patronal = models.CharField(max_length=30, blank=True)
     cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
-    
+    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
+
     def __str__(self):
         return f'{self.rfc}: {self.cliente}'
     
@@ -151,6 +230,7 @@ class CarpetaClientePagos(models.Model):
     factura_iva = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     factura_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
+    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f'{self.cliente}: {self.encargado_pagos}'
@@ -175,16 +255,23 @@ class CarpetaClienteContactos(models.Model):
     class Meta:
         verbose_name_plural = 'Clientes Contactos'
 
+class Evaluador(models.Model):
+    evaluador = models.CharField(max_length=300)
+    class Meta:
+        verbose_name_plural = 'Evaluadores'
+
 class Personal(models.Model):
     folio = models.CharField(max_length=10, default='SIN FOLIO', blank=True, null=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    curp = models.OneToOneField(Curp, on_delete=models.RESTRICT, null=True)
+    rfc = models.OneToOneField(Rfc, on_delete=models.RESTRICT, null=True, blank=True)
+    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
     origen = models.PositiveSmallIntegerField(choices=ORIGEN_ASPIRANTE, blank=True, null=True)
     fecha = models.DateField(auto_now=True)
     es_empleado = models.BooleanField(default=False, blank=True)
-    curp = models.OneToOneField(Curp, on_delete=models.RESTRICT, null=True)
-    rfc = models.OneToOneField(Rfc, on_delete=models.RESTRICT, null=True, blank=True)
     observaciones = models.TextField(blank=True, null=True)
     resultado = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    evaluador = models.OneToOneField(Evaluador, on_delete=models.RESTRICT, null=True, blank=True,)
 
     def __str__(self):
         return f'{self.curp.nombre if self.curp else ""} {self.curp.apellido_materno if self.curp else ""} {self.curp.apellido_paterno if self.curp else ""}'
@@ -192,9 +279,15 @@ class Personal(models.Model):
     class Meta:
         verbose_name_plural = 'Personal'
 
-class Evaluador(models.Model):
-    evaluador = models.CharField(max_length=300)
-    personal = models.OneToOneField(Personal, on_delete=models.RESTRICT)
+class Puesto(models.Model):
+    nombre_puesto = models.CharField(max_length=30)
+
+    def __str__(self):
+        return f'{self.carpeta_laboral}: {self.nombre_puesto}'
+    
+    class Meta:
+        verbose_name_plural = 'Puestos'
+
 
 class CarpetaLaboral(models.Model):
     modalidad = models.PositiveSmallIntegerField(choices=MODALIDAD, blank=True)
@@ -247,22 +340,14 @@ class CarpetaLaboral(models.Model):
     lic_part_col = models.CharField(max_length=25, blank=True)
     comentarios = models.TextField(blank=True, null=True)
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
-    
+    puesto = models.OneToOneField(Puesto, on_delete=models.RESTRICT)
+
     def __str__(self):
         return f'{self.personal}: {self.proceso_racek}'
     
     class Meta:
         verbose_name_plural = 'Carpetas Laborales'
 
-class Puesto(models.Model):
-    nombre_puesto = models.CharField(max_length=30)
-    carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.carpeta_laboral}: {self.nombre_puesto}'
-    
-    class Meta:
-        verbose_name_plural = 'Puestos'
 
 class CarpetaGenerales(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
@@ -326,6 +411,7 @@ class Referencia(models.Model):
     telefono_contacto = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     opinion = models.TextField(blank=True, null=True)
     carpeta_referencia = models.ForeignKey(CarpetaReferencias, on_delete=models.CASCADE)
+    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'Referencias'
@@ -567,9 +653,28 @@ class CarpetaExamenPoligrafo(models.Model):
 # Consultar con Hilda si es así
 class CarpetaEmpleoAnteriorSeguridadPublica(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
+    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'Carpeta Empresas Anteriores Seguridad Publica'
+
+class MotivoSeparacion(models.Model):
+    motivo = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = 'Motivos Separacion'
+
+class PuestoFuncional(models.Model):
+    nombre_puesto = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = 'Puestos Funcionales'
+
+class TipoBaja(models.Model):
+    motivo = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = 'Tipos Baja'
 
 class EmpleoAnteriorSeguridadPublica(models.Model):
     dependencia = models.CharField(max_length=100, blank=True, null=True)
@@ -594,26 +699,19 @@ class EmpleoAnteriorSeguridadPublica(models.Model):
     cuip_jefe_inmediato = models.CharField(max_length=20, blank=True, null=True)
     comentarios = models.CharField(max_length=150, blank=True, null=True)
     carp_emp_ant_seg_pub = models.ForeignKey(CarpetaEmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE)
+    puesto_funcional = models.OneToOneField(PuestoFuncional, on_delete=models.RESTRICT, null=True, blank=True)
+    tipo_baja = models.OneToOneField(TipoBaja, on_delete=models.RESTRICT, null=True, blank=True)
+    motivo_separacion = models.OneToOneField(MotivoSeparacion, on_delete=models.RESTRICT, null=True, blank=True)
+
 
     class Meta:
         verbose_name_plural = 'Empresas Anteriores Seguridad Publica'
 
-class PuestoFuncional(models.Model):
-    nombre_puesto = models.CharField(max_length=50, blank=True, null=True)
-    emp_ant_seg_pub = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.RESTRICT)
 
-    class Meta:
-        verbose_name_plural = 'Puestos Funcionales'
-
-class TipoBaja(models.Model):
-    motivo = models.CharField(max_length=50, blank=True, null=True)
-    emp_ant_seg_pub = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.RESTRICT)
-
-    class Meta:
-        verbose_name_plural = 'Tipos Baja'
 
 class CarpetaEmpleoAnterior(models.Model):
     personal = models.ForeignKey(Personal, on_delete=models.CASCADE)
+    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'Carpeta Empleos Anteriores'
@@ -634,18 +732,11 @@ class EmpleoAnterior(models.Model):
     puesto_informante = models.CharField(max_length=50, blank=True, null=True)
     desempenio = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
-    emp_ant = models.OneToOneField(CarpetaEmpleoAnterior, on_delete=models.CASCADE)
+    carp_emp_ant = models.OneToOneField(CarpetaEmpleoAnterior, on_delete=models.CASCADE)
+    motivo_separacion = models.OneToOneField(MotivoSeparacion, on_delete=models.RESTRICT, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'Empleos Anteriores'
-
-class MotivoSeparacion(models.Model):
-    motivo = models.CharField(max_length=50, blank=True, null=True)
-    emp_ant_seg_pub = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.RESTRICT, null=True)
-    emp_ant = models.OneToOneField(EmpleoAnterior, on_delete=models.RESTRICT, null=True)
-
-    class Meta:
-        verbose_name_plural = 'Motivos Separacion'
 
 class CarpetaCapacitacion(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
@@ -855,80 +946,3 @@ class PersonalPorCapacitar(models.Model):
     class Meta:
         verbose_name_plural = 'Personal Por Capacitar'
 
-class Domicilio(models.Model):
-    calle = models.CharField(max_length=100)
-    numero_exterior = models.CharField(max_length=20)
-    numero_interior = models.CharField(max_length=20, blank=True, null=True)
-    entre_calle = models.CharField(max_length=100, null=True, blank=True)
-    y_calle = models.CharField(max_length=100, null=True, blank=True)
-    ciudad = models.CharField(max_length=50)
-    personal = models.OneToOneField(Personal, on_delete=models.CASCADE, null=True, blank=True)
-    cliente_generales = models.OneToOneField(CarpetaClienteGenerales, on_delete=models.CASCADE, null=True, blank=True)
-    cliente_pagos = models.OneToOneField(CarpetaClientePagos, on_delete=models.CASCADE, null=True, blank=True)
-    referencia = models.OneToOneField(Referencia, on_delete=models.CASCADE, null=True, blank=True)
-    carp_emp_ant_seg_pub = models.OneToOneField(CarpetaEmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE, null=True, blank=True)
-    carp_emp_ant = models.OneToOneField(CarpetaEmpleoAnterior, on_delete=models.CASCADE, null=True, blank=True)
-
-    def __str__(self):
-        if self.personal is not None:
-            return f'{self.personal}'
-        if self.cliente_generales is not None:
-            return f'{self.cliente_generales}'
-        if self.cliente_pagos is not None:
-            return f'{self.cliente_pagos}'
-
-    class Meta:
-        verbose_name_plural = 'Domicilios'
-
-class CodigoPostal(models.Model):
-    codigo_postal = models.CharField(max_length=5, blank=True, null=True)
-    domicilio = models.OneToOneField(Domicilio, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.codigo_postal}'
-    
-    class Meta:
-        verbose_name_plural = 'Codigos Postales'
-
-class Colonia(models.Model):
-    colonia = models.CharField(max_length=100)
-    codigo_postal = models.ForeignKey(CodigoPostal, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.colonia}'
-    
-    class Meta:
-        verbose_name_plural = 'Colonias'
-
-class Municipio(models.Model):
-    municipio = models.CharField(max_length=100)
-    clave_municipio_racek = models.CharField(max_length=4, blank=True, null=True)
-    colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT, null=True)
-
-    def __str__(self):
-        return f'{self.municipio}'
-    
-    class Meta:
-        verbose_name_plural = 'Municipios'
-
-class Estado(models.Model):
-    estado = models.CharField(max_length=100)
-    clave_estado_racek = models.CharField(max_length=2, blank=True, null=True)
-    municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.estado}'
-    
-    class Meta:
-        verbose_name_plural = 'Estados'
-
-class Pais(models.Model):
-    pais = models.CharField(max_length=100, default='México')
-    clave_pais_racek = models.CharField(max_length=4, blank=True, null=True)
-    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return f'{self.pais}'
-    
-    class Meta:
-        verbose_name_plural = 'Paises'
