@@ -3,6 +3,13 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+import os
+
+def get_upload_path(instance, filename):
+    cliente_nombre = instance.personal.cliente.nombre_comercial
+    modelo = instance.__class__.__name__
+    return os.path.join('Documentos', cliente_nombre, modelo, filename)
+
 
 
 # Create your models here.
@@ -83,7 +90,7 @@ class Rfc(models.Model):
 
     rfc_regex = r'^[A-Za-z]{3,4}(\d{6})([A-Za-z]\d{2}|(\D|\d){3})?$'
     rfc = models.CharField(max_length=13, validators=[RegexValidator(rfc_regex, 'El RFC ingresado no es válido')])
-    rfc_digital = models.FileField(upload_to="temp/documentos", blank=True, unique=True)
+    rfc_digital = models.FileField(upload_to=get_upload_path, blank=True, unique=True)
     razon_social = models.CharField(max_length=255, blank=True, null=True)
     estatus = models.CharField(max_length=20, blank=True, null=True)
     fecha_efectiva = models.DateField(blank=True, null=True)
@@ -929,35 +936,35 @@ class CarpetaMediaFiliacion(models.Model):
 
 
 class DocumentosDigitales(models.Model):
-    hoja_datos = models.FileField(upload_to="temp/documentos", blank=True, null=True)
-    solicitud = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
-    ine = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
-    acta_nacimiento = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    hoja_datos = models.FileField(upload_to=get_upload_path, blank=True, null=True)
+    solicitud = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+    ine = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+    acta_nacimiento = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
     folio_acta_nacimiento = models.CharField(max_length=20, blank=True, null=True)
-    huellas_digitales = models.FileField(upload_to="temp/documentos", blank=True, null=True)
-    curp = models.FileField(upload_to="temp/documentos", blank=True, null=True)
-    comprobante_domicilio = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    huellas_digitales = models.FileField(upload_to=get_upload_path, blank=True, null=True)
+    curp = models.FileField(upload_to=get_upload_path, blank=True, null=True)
+    comprobante_domicilio = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
     fecha_comprobante_domicilio = models.DateField(blank=True, null=True)
-    antecedentes_no_penales = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
+    antecedentes_no_penales = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
     fecha_antecedentes_no_penales = models.DateField(blank=True, null=True)
-    comprobante_estudios = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
-    cartilla_smn = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
-    nss = models.FileField(upload_to="temp/documentos", blank=True, null=True)
-    carta_recomendacion = models.FileField(upload_to="temp/documentos", blank=True, null=True)
-    contrato = models.FileField(upload_to="temp/documentos", blank=True, null=True)
-    socioeconomico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    comprobante_estudios = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+    cartilla_smn = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+    nss = models.FileField(upload_to=get_upload_path, blank=True, null=True)
+    carta_recomendacion = models.FileField(upload_to=get_upload_path, blank=True, null=True)
+    contrato = models.FileField(upload_to=get_upload_path, blank=True, null=True)
+    socioeconomico = models.FileField(upload_to=get_upload_path, blank=True, null=True)
     fecha_socioeconomico = models.DateField(blank=True, null=True)
-    foto_socioeconomico = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
-    psicologico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    foto_socioeconomico = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+    psicologico = models.FileField(upload_to=get_upload_path, blank=True, null=True)
     fecha_psicologico = models.DateField(blank=True, null=True)
-    medico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    medico = models.FileField(upload_to=get_upload_path, blank=True, null=True)
     fecha_medico = models.DateField(blank=True, null=True)
-    toxicologico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    toxicologico = models.FileField(upload_to=get_upload_path, blank=True, null=True)
     fecha_toxicologico = models.DateField(blank=True, null=True)
-    fisico = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    fisico = models.FileField(upload_to=get_upload_path, blank=True, null=True)
     fecha_fisico = models.DateField(blank=True, null=True)
-    croquis = models.ImageField(upload_to="temp/documentos", blank=True, null=True)
-    curriculum = models.FileField(upload_to="temp/documentos", blank=True, null=True)
+    croquis = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+    curriculum = models.FileField(upload_to=get_upload_path, blank=True, null=True)
     check_acta_nacimiento = models.BooleanField(default=False, blank=True)
     check_ine = models.BooleanField(default=False, blank=True)
     check_comprobante_domicilio = models.BooleanField(default=False, blank=True)
@@ -972,6 +979,56 @@ class DocumentosDigitales(models.Model):
 
     def __str__(self):
         return f'{self.personal}'
+
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        campos_documentos = {
+            'hoja_datos': self.hoja_datos,
+            'solicitud': self.solicitud,
+            'ine': self.ine,
+            'acta_nacimiento': self.acta_nacimiento,
+            'folio_acta_nacimiento': self.folio_acta_nacimiento,
+            'huellas_digitales': self.huellas_digitales,
+            'curp': self.curp,
+            'comprobante_domicilio': self.comprobante_domicilio,
+            'fecha_comprobante_domicilio': self.fecha_comprobante_domicilio,
+            'antecedentes_no_penales': self.antecedentes_no_penales,
+            'fecha_antecedentes_no_penales': self.fecha_antecedentes_no_penales,
+            'comprobante_estudios': self.comprobante_estudios,
+            'cartilla_smn': self.cartilla_smn,
+            'nss': self.nss,
+            'carta_recomendacion': self.carta_recomendacion,
+            'contrato': self.contrato,
+            'socioeconomico': self.socioeconomico,
+            'fecha_socioeconomico': self.fecha_socioeconomico,
+            'foto_socioeconomico': self.foto_socioeconomico,
+            'psicologico': self.psicologico,
+            'fecha_psicologico': self.fecha_psicologico,
+            'medico': self.medico,
+            'fecha_medico': self.fecha_medico,
+            'toxicologico': self.toxicologico,
+            'fecha_toxicologico': self.fecha_toxicologico,
+            'fisico': self.fisico,
+            'fecha_fisico': self.fecha_fisico,
+            'croquis': self.croquis,
+            'curriculum': self.curriculum,
+            'check_acta_nacimiento': self.check_acta_nacimiento,
+            'check_ine': self.check_ine,
+            'check_comprobante_domicilio': self.check_comprobante_domicilio,
+            'check_comprobante_estudios': self.check_comprobante_estudios,
+            'check_curp': self.check_curp,
+            'check_rfc': self.check_rfc,
+            'check_cartilla': self.check_cartilla,
+            'check_nss': self.check_nss,
+            'check_huellas_digitales': self.check_huellas_digitales,
+            'check_fotografias': self.check_fotografias,
+        }
+
+        for campo, archivo in campos_documentos.items():
+            if isinstance(archivo, (models.FileField, models.ImageField)) and archivo:
+                archivo.name = get_upload_path(self, archivo.name)
+                super().save(update_fields=[campo])
 
     class Meta:
         verbose_name_plural = 'Documentos Personales'

@@ -2,6 +2,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=react,django
 
 users/migrations/__pycache__/
+.idea/
 
 ### Django ###
 *.pot

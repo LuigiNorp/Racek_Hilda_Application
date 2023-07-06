@@ -196,3 +196,6 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # to disable the check of the number of fields in a form
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
+
+# to use SMB
+MEDIA_ROOT = '/volume1/BASE DE DATOS/'
