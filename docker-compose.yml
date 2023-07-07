@@ -11,6 +11,7 @@ services:
         volumes:
             - ./default.conf.template:/etc/nginx/templates/default.conf.template
             - ./conf/:/etc/nginx/conf.d/:ro
+            - media:/app/media
         networks:
             - backend
     app:
@@ -35,3 +36,11 @@ services:
 
 networks:
     backend:   
+
+volumes:
+  media:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /volume1/BASE DE DATOS/

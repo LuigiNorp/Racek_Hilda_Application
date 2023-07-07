@@ -3,6 +3,9 @@
 
 users/migrations/__pycache__/
 .idea/
+data/migrations/0001_initial.py
+main/migrations/0001_initial.py
+
 
 ### Django ###
 *.pot

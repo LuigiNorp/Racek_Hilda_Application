@@ -10,14 +10,15 @@ def get_upload_path(instance, filename):
     modelo = instance.__class__.__name__
     return os.path.join('Documentos', cliente_nombre, modelo, filename)
 
-
+def get_rfc_upload_path(instance, filename):
+    return f'rfc/{filename}'
 
 # Create your models here.
 class Curp(models.Model):
     # Implementar Curp Api desde Frontend
     curp_regex = r'^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$'
     curp = models.CharField(max_length=18, blank=True, unique=True,
-                            validators=[RegexValidator(curp_regex, 'La CURP no es válida')])
+        validators=[RegexValidator(curp_regex, 'La CURP no es válida')])
     nombre = models.CharField(max_length=100)
     apellido_paterno = models.CharField(max_length=100)
     apellido_materno = models.CharField(max_length=100)
@@ -90,7 +91,7 @@ class Rfc(models.Model):
 
     rfc_regex = r'^[A-Za-z]{3,4}(\d{6})([A-Za-z]\d{2}|(\D|\d){3})?$'
     rfc = models.CharField(max_length=13, validators=[RegexValidator(rfc_regex, 'El RFC ingresado no es válido')])
-    rfc_digital = models.FileField(upload_to=get_upload_path, blank=True, unique=True)
+    rfc_digital = models.FileField(upload_to=get_rfc_upload_path, blank=True, unique=True)
     razon_social = models.CharField(max_length=255, blank=True, null=True)
     estatus = models.CharField(max_length=20, blank=True, null=True)
     fecha_efectiva = models.DateField(blank=True, null=True)
@@ -206,15 +207,15 @@ class Sede(models.Model):
 class CarpetaClienteGenerales(models.Model):
     reg_estatal = models.CharField(max_length=30, blank=True)
     reg_federal = models.CharField(max_length=30, blank=True)
-    rfc = models.CharField(max_length=13, blank=True)
+    rfc = models.OneToOneField(Rfc, on_delete=models.RESTRICT, null=True, blank=True)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
     telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     representante_legal = models.CharField(max_length=300, blank=True)
     encargado_operativo = models.CharField(max_length=300, blank=True)
     encargado_rh = models.CharField(max_length=300, blank=True)
@@ -233,11 +234,11 @@ class CarpetaClienteGenerales(models.Model):
 class CarpetaClientePagos(models.Model):
     encargado_pagos = models.CharField(max_length=150, blank=True)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
     telefono_oficina = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     email = models.CharField(max_length=200, blank=True)
     rfc = models.CharField(max_length=13, blank=True)
     facturacion_tipo = models.PositiveSmallIntegerField(choices=FACTURACION_TIPO, blank=True)
@@ -259,13 +260,13 @@ class CarpetaClientePagos(models.Model):
 class CarpetaClienteContactos(models.Model):
     nombre_contacto = models.CharField(max_length=300)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
     telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     puesto = models.CharField(max_length=30)
     email_1 = models.CharField(max_length=200, blank=True)
     email_2 = models.CharField(max_length=200, blank=True)
@@ -379,13 +380,13 @@ class CarpetaGenerales(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
     email_empleado = models.CharField(max_length=200, blank=True)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
     telefono_domicilio = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                          help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     numero_elemento = models.PositiveIntegerField(blank=True)
     transporte = models.CharField(max_length=50, blank=True)
     tiempo_trayecto = models.CharField(max_length=15, blank=True, null=True)
@@ -555,22 +556,22 @@ class CarpetaExamenFisico(models.Model):
     """
     fecha_examen = models.DateField(blank=True)
     elasticidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                              default=0)
+        default=0)
     velocidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                            default=0)
+        default=0)
     resistencia = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                              default=0)
+        default=0)
     condicion_fisica = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                                   default=0)
+        default=0)
     reflejos = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                           default=0)
+        default=0)
     locomocion = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                             default=0)
+        default=0)
     prueba_esfuerzo = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                                  default=0)
+        default=0)
     resultado = models.CharField(max_length=100, blank=True, null=True)
     resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,
-                                                           null=True)
+        null=True)
     observacion = models.TextField(blank=True, null=True)
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
 
@@ -648,9 +649,9 @@ class CarpetaExamenSocioeconomico(models.Model):
     embarazada = models.CharField(max_length=100, blank=True, null=True)
     contacto_emergencia = models.CharField(max_length=100, blank=True, null=True)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
     telefono_emergencia = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True,
-                                           help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     parentesco_contacto = models.CharField(max_length=100, blank=True, null=True)
     actividates_fin_semana = models.PositiveSmallIntegerField(choices=ACTIVIDADES_FIN_SEMANA, blank=True, null=True)
     actividades_culturales_deportes = models.CharField(max_length=100, blank=True, null=True)
@@ -695,7 +696,7 @@ class CarpetaExamenSocioeconomico(models.Model):
     parentesco = models.CharField(max_length=30, blank=True, null=True)
     nombre_recados = models.CharField(max_length=300, blank=True, null=True)
     telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     comentario = models.CharField(max_length=300, blank=True, null=True)
 
     class Meta:
@@ -785,9 +786,9 @@ class CarpetaEmpleoAnterior(models.Model):
 class EmpleoAnterior(models.Model):
     empresa = models.CharField(max_length=100, blank=True, null=True)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
     telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                help_text='Ingrese número telefónico a 10 dígitos')
+        help_text='Ingrese número telefónico a 10 dígitos')
     fecha_ingreso = models.DateField(blank=True, null=True)
     fecha_separacion = models.DateField(blank=True, null=True)
     salario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
