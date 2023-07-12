@@ -114,7 +114,7 @@ class PersonalAdmin(NestedModelAdmin):
         CarpetaDependientesAdmin,
         CarpetaEmpleoAnteriorSeguridadPublicaAdmin,
         CarpetaEmpleoAnteriorAdmin,
-        CarpetaCapacitacionAdmin, 
+        CarpetaCapacitacionAdmin,
         CarpetaMediaFilicacionAdmin,
         DocumentosDigitalesAdmin,
     ]

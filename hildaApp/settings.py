@@ -16,7 +16,7 @@ import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# read th .env file
+# read the .env file
 environ.Env.read_env()
 
 # environ init
@@ -199,3 +199,4 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 # to use SMB
 MEDIA_ROOT = '/app/media'
+MEDIA_URL = '/media/'

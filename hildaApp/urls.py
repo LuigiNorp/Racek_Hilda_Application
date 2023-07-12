@@ -18,6 +18,7 @@ from django.urls import path, include
 from data.views import *
 from main.views import *
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('data.urls')),
@@ -38,4 +39,3 @@ urlpatterns = [
     path('employees/', Personal.as_view(), name="employees"),
     path('user/<int:pk>/history/', UserHistory.as_view(), name="history"),
 ]
-

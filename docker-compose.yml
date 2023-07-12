@@ -35,7 +35,7 @@ services:
             - backend
 
 networks:
-    backend:   
+    backend:
 
 volumes:
   media:
@@ -43,4 +43,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /volume1/BASE DE DATOS/
+      device: /volume1/docker/Hilda_App/media/
