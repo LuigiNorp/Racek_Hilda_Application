@@ -1,41 +1,44 @@
 version: "3.9"
+
 services:
-    web:
-        image: nginx:stable
-        restart: always
-        ports:
-            - 8080:80
-            - 4343:443
-        environment:
-            - DJANGO_HOST=app
-        volumes:
-            - ./default.conf.template:/etc/nginx/templates/default.conf.template
-            - ./conf/:/etc/nginx/conf.d/:ro
-            - media:/app/media
-        networks:
-            - backend
-    app:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        restart: always
-        ports:
-            - 20001:20001
-        command: python manage.py runserver 0.0.0.0:20001
-        environment:
-            NAME: ${NAME}
-            USER: ${USER}
-            PASSWORD: ${PASSWORD}
-            HOST: ${HOST}
-            PORT: ${PORT}
-        volumes:
-            - .:/app
-            - ./conf/:/etc/nginx/conf.d/:ro
-        networks:
-            - backend
+  web:
+    image: nginx:stable
+    restart: always
+    ports:
+      - 8080:80
+      - 4343:443
+    environment:
+      - DJANGO_HOST=app
+    volumes:
+      - ./default.conf.template:/etc/nginx/templates/default.conf.template
+      - ./conf:/etc/nginx/conf.d/:ro
+      - media:/app/media
+      - static:/app/staticfiles
+    networks:
+      - backend
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 20001:20001
+    command: sh -c "python manage.py collectstatic --no-input && python manage.py runserver 0.0.0.0:20001"
+    environment:
+      NAME: ${NAME}
+      USER: ${USER}
+      PASSWORD: ${PASSWORD}
+      HOST: ${HOST}
+      PORT: ${PORT}
+    volumes:
+      - .:/app
+      - static:/app/staticfiles
+    networks:
+      - backend
 
 networks:
-    backend:
+  backend:
 
 volumes:
   media:
@@ -44,3 +47,4 @@ volumes:
       type: none
       o: bind
       device: /volume1/docker/Hilda_App/media/
+  static:

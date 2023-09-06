@@ -88,9 +88,9 @@ class CarpetaGeneralesViewSet(BaseViewSet):
     serializer_class = CarpetaGeneralesSerializer
     model_class = CarpetaGenerales
 
-class CarpetaReferenciasViewSet(BaseViewSet):
-    serializer_class = CarpetaReferenciasSerializer
-    model_class = CarpetaReferencias
+class ReferenciaViewSet(BaseViewSet):
+    serializer_class = ReferenciaSerializer
+    model_class = Referencia
 
 class ReferenciaViewSet(BaseViewSet):
     serializer_class = ReferenciaSerializer
@@ -127,7 +127,7 @@ class CarpetaExamenSocioeconomicoViewSet(BaseViewSet):
 class CarpetaExamenPoligrafoViewSet(BaseViewSet):
     serializer_class = CarpetaExamenPoligrafoSerializer
     model_class = CarpetaExamenPoligrafo
-
+    
 class CarpetaEmpleoAnteriorSeguridadPublicaViewSet(BaseViewSet):
     serializer_class = CarpetaEmpleoAnteriorSeguridadPublicaSerializer
     model_class = CarpetaEmpleoAnteriorSeguridadPublica
