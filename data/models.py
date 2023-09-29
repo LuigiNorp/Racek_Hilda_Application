@@ -1093,3 +1093,13 @@ class AreaCurso(models.Model):
     
     class Meta:
         verbose_name_plural = 'Areas Curso'
+        
+        
+class Ocupacion(models.Model):
+    nombre_ocupacion = models.CharField(max_length=100, blank=True, null=True)
+    
+    def __str__(self):
+        return f'{self.nombre_area}'
+    
+    class Meta:
+        verbose_name_plural = 'Ocupaciones'       
