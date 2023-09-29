@@ -1072,3 +1072,24 @@ class PersonalPorCapacitar(models.Model):
 
     class Meta:
         verbose_name_plural = 'Personal Por Capacitar'
+
+
+class Capacitador(models.Model):
+    nombre_capacitador = models.CharField(max_length=300, blank=True, null=True)
+    numero_registro = models.CharField(max_length=14, blank=True, null=True)
+    
+    def __str__(self):
+        return f'{self.nombre_capacitador}'
+    
+    class Meta:
+        verbose_name_plural = 'Capacitadores'
+
+
+class AreaCurso(models.Model):
+    nombre_area = models.CharField(max_length=100, blank=True, null=True)
+    
+    def __str__(self):
+        return f'{self.nombre_area}'
+    
+    class Meta:
+        verbose_name_plural = 'Areas Curso'
