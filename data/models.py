@@ -270,7 +270,7 @@ class CarpetaClienteContactos(models.Model):
                                   help_text='Ingrese número telefónico a 10 dígitos')
     telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
                                   help_text='Ingrese número telefónico a 10 dígitos')
-    puesto = models.CharField(max_length=30)
+    puesto = models.CharField(max_length=30, blank=True)
     email_1 = models.CharField(max_length=200, blank=True)
     email_2 = models.CharField(max_length=200, blank=True)
 
@@ -309,6 +309,7 @@ class Personal(models.Model):
 
        
 class CarpetaLaboral(models.Model):
+    personal = models.OneToOneField(Personal, on_delete=models.CASCADE, null=True, blank=True)
     modalidad = models.PositiveSmallIntegerField(choices=MODALIDAD, blank=True)
     estatus_empleado = models.PositiveSmallIntegerField(choices=ESTATUS_EMPLEADO, blank=True)
     proceso_racek = models.PositiveSmallIntegerField(choices=PROCESO_RACEK, blank=True)
@@ -358,7 +359,6 @@ class CarpetaLaboral(models.Model):
     oficio_registro_sedena = models.CharField(max_length=25, blank=True)
     lic_part_col = models.CharField(max_length=25, blank=True)
     comentarios = models.TextField(blank=True, null=True)
-    personal = models.OneToOneField(Personal, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f'{self.personal}: {self.proceso_racek}'

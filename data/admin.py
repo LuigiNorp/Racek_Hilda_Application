@@ -33,7 +33,7 @@ class ClienteAdmin(admin.ModelAdmin):
     list_display = ('id','nombre_comercial','razon_social','activo',)
     inlines = [SedeInline, CarpetaClienteGeneralesInline, CarpetaClientePagosInline, CarpetaClienteContactosInline]
 
-class DomicilioAdmin(NestedStackedInline):
+class DomicilioInLine(NestedStackedInline):
     model = Domicilio
     
 @admin.register(Puesto)
@@ -64,7 +64,7 @@ class CarpetaGeneralesAdmin(NestedStackedInline):
 
 class ReferenciaAdmin(NestedStackedInline):
     model = Referencia
-    inline = [DomicilioAdmin]
+    inline = [DomicilioInLine]
 
 class CarpetaReferenciasAdmin(NestedStackedInline):
     model = CarpetaReferencias
@@ -238,7 +238,7 @@ class EvaluadorAdmin(admin.ModelAdmin):
 
 
 @admin.register(Domicilio)
-class DomicilioAdmin(admin.ModelAdmin):
+class DomicilioInLine(admin.ModelAdmin):
     list_display = ('id','calle','numero_exterior','ciudad','codigo_postal',)
 
 @admin.register(CodigoPostal)
