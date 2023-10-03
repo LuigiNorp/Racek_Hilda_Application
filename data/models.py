@@ -131,7 +131,7 @@ class Estado(models.Model):
 class Municipio(models.Model):
     municipio = models.CharField(max_length=100)
     clave_municipio_racek = models.CharField(max_length=4, blank=True, null=True)
-    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT, null=True)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT, null=True)
 
     def __str__(self):
         return f'{self.municipio}'
