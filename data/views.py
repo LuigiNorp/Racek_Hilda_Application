@@ -76,6 +76,18 @@ class EvaluadorViewSet(BaseViewSet):
     serializer_class = EvaluadorSerializer
     model_class = Evaluador
 
+class OcupacionViewSet(BaseViewSet):
+    serializer_class = OcupacionSerializer
+    model_class = Ocupacion
+    
+class AreaCursoViewSet(BaseViewSet):
+    serializer_class = AreaCursoSerializer
+    model_class = AreaCurso
+    
+class CapacitadorViewSet(BaseViewSet):
+    serializer_class = CapacitadorSerializer
+    model_class = Capacitador
+
 class CarpetaLaboralViewSet(BaseViewSet):
     serializer_class = CarpetaLaboralSerializer
     model_class = CarpetaLaboral

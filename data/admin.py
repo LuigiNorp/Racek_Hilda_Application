@@ -1,28 +1,60 @@
 from nested_admin import NestedStackedInline, NestedModelAdmin
+from django.http import HttpResponse
 from django.contrib import admin
 from .models import *
+from docx import Document
 
+# Create django admin action for reports
+
+def generate_dc3(modeladmin, request, queryset):
+    document = Document('media/file_templates/DC3.dot')
+    
+    for paragraph in document.paragraphs:
+        paragraph.text = paragraph.text.replace('[nombre]', 'Juan')
+    
+generate_dc3.short_description = "Generar el archivo DC-3"
+    
 # Register your models here.
 
 class SedeInline(admin.StackedInline):
     model = Sede
+    
 class CarpetaClienteGeneralesInline(admin.StackedInline):
     model = CarpetaClienteGenerales
+    
 class CarpetaClientePagosInline(admin.StackedInline):
     model = CarpetaClientePagos
+    
 class CarpetaClienteContactosInline(admin.StackedInline):
-    model = CarpetaClienteContactos
-
+    model = CarpetaClienteContactos   
+     
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
     list_display = ('id','nombre_comercial','razon_social','activo',)
     inlines = [SedeInline, CarpetaClienteGeneralesInline, CarpetaClientePagosInline, CarpetaClienteContactosInline]
 
-
-
-
 class DomicilioAdmin(NestedStackedInline):
     model = Domicilio
+    
+@admin.register(Puesto)
+class PuestoAdmin(admin.ModelAdmin):
+    list_display = ('id','nombre_puesto',)
+
+@admin.register(Ocupacion)
+class OcupacionAdmin(admin.ModelAdmin):
+    list_display = ('id','nombre_ocupacion',)
+    
+@admin.register(Capacitador)
+class CapacitadorAdmin(admin.ModelAdmin):
+    list_display = ('id','nombre_capacitador', 'numero_registro',)
+    
+@admin.register(AreaCurso)
+class AreaCursoAdmin(admin.ModelAdmin):
+    list_display = ('id','nombre_area',)
+
+@admin.register(PuestoFuncional)
+class PuestoFuncionalAdmin(admin.ModelAdmin):
+    list_display = ('id','nombre_puesto',)
 
 class CarpetaLaboralAdmin(NestedStackedInline):
     model = CarpetaLaboral
@@ -38,99 +70,126 @@ class CarpetaReferenciasAdmin(NestedStackedInline):
     model = CarpetaReferencias
     inlines = [ReferenciaAdmin]
 
-class DependienteAdmin(NestedStackedInline):
+class DependienteInline(NestedStackedInline):
     model = Dependiente
 
-class CarpetaDependientesAdmin(NestedStackedInline):
-    model = CarpetaDependientes
-    inlines = [DependienteAdmin]
+@admin.register(CarpetaDependientes)
+class CarpetaDependientesAdmin(admin.ModelAdmin):
+    inlines = [DependienteInline]
+
+@admin.register(CarpetaExamenFisico)
+class CarpetaExamenFisicoAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(CarpetaExamenMedico)
+class CarpetaExamenMedicoAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(CarpetaExamenPsicologico)
+class CarpetaExamenPsicologicoAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(CarpetaExamenToxicologico)
+class CarpetaExamenToxicologicoAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(CarpetaExamenSocioeconomico)
+class CarpetaExamenSocioeconomicoAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(CarpetaExamenPoligrafo)
+class CarpetaExamenPoligrafoAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(EmpleoAnteriorSeguridadPublica)
+class EmpleoAnteriorSeguridadPublicaAdmin(admin.ModelAdmin):
+    pass
+   
+
+@admin.register(EmpleoAnterior)
+class EmpleoAnteriorAdmin(admin.ModelAdmin):
+    pass
     
-class CarpetaExamenFisicoInline(NestedStackedInline):
-    model = CarpetaExamenFisico
 
-class CarpetaExamenMedicoInline(NestedStackedInline):
-    model = CarpetaExamenMedico
+@admin.register(TipoCurso)
+class TipoCursoAdmin(admin.ModelAdmin):
+    pass
 
-class CarpetaExamenPsicologicoInline(NestedStackedInline):
-    model = CarpetaExamenPsicologico
+@admin.register(CarpetaMediaFiliacion)
+class CarpetaMediaFilicacionAdmin(admin.ModelAdmin):
+    pass
 
-class CarpetaExamenToxicologicoInline(NestedStackedInline):
-    model = CarpetaExamenToxicologico
+@admin.register(DocumentosDigitales)
+class DocumentosDigitalesAdmin(admin.ModelAdmin):
+    pass
 
-class CarpetaExamenSocioeconomicoInline(NestedStackedInline):
-    model = CarpetaExamenSocioeconomico
+import openpyxl
 
-class CarpetaExamenPoligrafoInline(NestedStackedInline):
-    model = CarpetaExamenPoligrafo
+def generate_xlsx(modeladmin, request, queryset):
+    # Define the path to the original XLSX file
+    original_file_path = "./media/file_templates/Mis archivos/DC3 ACTUALIZADO.xlsx"
 
-class EmpleoAnteriorSeguridadPublicaAdmin(NestedStackedInline):
-    model = EmpleoAnteriorSeguridadPublica
-    
-class CarpetaEmpleoAnteriorSeguridadPublicaAdmin(NestedStackedInline):
-    model = CarpetaEmpleoAnteriorSeguridadPublica
-    inlines = [EmpleoAnteriorSeguridadPublicaAdmin]
+    # Load the original XLSX file
+    wb = openpyxl.load_workbook(original_file_path)
 
+    # Get the first sheet of the workbook
+    sheet = wb.active
 
-# Puedes mejor convertirlo en boton
-class EmpleoAnteriorAdmin(NestedStackedInline):
-    model = EmpleoAnterior
+    for personal in queryset:
+        # Define the data to be replaced in the cells for each 'personal' object
+        data = {
+            'nombre_apellidos': f"{personal.curp.nombre if personal.curp else ''} {personal.curp.apellido_paterno if personal.curp else ''} {personal.curp.apellido_materno if personal.curp else ''}",
+            'curp': personal.curp.curp if personal.curp else '',
+            'ocupacion': personal.carpetalaboral.ocupacion.nombre_ocupacion if personal.carpetalaboral.ocupacion else '',
+            # 'puesto': personal.carpetalaboral.puesto.nombre_puesto if personal.carpetalaboral.puesto else '',
+            # 'razon_social': personal.cliente.razon_social if personal.cliente else '',
+            # 'rfc': personal.rfc.rfc if personal.rfc else '',
+            # 'nombre_curso': personal.carpetacapacitacion.curso if personal.carpetacapacitacion else '',
+            # 'horas_curso': personal.carpetacapacitacion.duracion if personal.carpetacapacitacion else '',
+            # 'fecha_inicial_capacitacion': personal.carpetacapacitacion.inicio if personal.carpetacapacitacion else '',
+            # 'fecha_final_capacitacion': personal.carpetacapacitacion.conclusion if personal.carpetacapacitacion else '',
+            # 'area_curso': personal.carpetacapacitacion.area_curso.nombre_area if personal.carpetacapacitacion and personal.carpetacapacitacion.area_curso else '',
+            # 'nombre_capacitador': personal.carpetacapacitacion.capacitador.nombre_capacitador if personal.carpetacapacitacion and personal.carpetacapacitacion.capacitador else '',
+            # 'registro_capacitador': personal.carpetacapacitacion.capacitador.numero_registro if personal.carpetacapacitacion and personal.carpetacapacitacion.capacitador else '',
+        }
 
-class CarpetaEmpleoAnteriorAdmin(NestedStackedInline):
-    model = CarpetaEmpleoAnterior
-    inlines = [EmpleoAnteriorAdmin]
+        # Replace the values in the specified cells with the data dictionary
+        cell_mapping = {
+            'AJ4': data['nombre_apellidos'],
+            'AJ5': data['curp'],
+            'AJ6': data['ocupacion'],
+        #     'AJ7': data['puesto'],
+        #     'AJ20': data['razon_social'],
+        #     'AJ21': data['rfc'],
+        #     'AJ8': data['nombre_curso'],
+        #     'AJ9': data['horas_curso'],
+        #     'AJ10': data['fecha_inicial_capacitacion'],
+        #     'AJ11': data['fecha_final_capacitacion'],
+        #     'AJ12': data['area_curso'],
+        #     'AJ13': data['nombre_capacitador'],
+        #     'AJ14': data['registro_capacitador'],
+        }
 
-class IdiomaAdmin(NestedStackedInline):
-    model = Idioma
+        for cell, value in cell_mapping.items():
+            sheet[cell].value = value
 
-class TipoCursoAdmin(NestedStackedInline):
-    model = TipoCurso
+    # Create a response with the modified XLSX file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=modified_dc3.xlsx'
+    wb.save(response)
+    return response
 
-class CapacitacionAdmin(NestedStackedInline):
-    model= Capacitacion
+generate_xlsx.short_description = "Generar DC-3"
 
-class CarpetaCapacitacionAdmin(NestedStackedInline):
-    model = CarpetaCapacitacion
-    inlines = [CapacitacionAdmin, IdiomaAdmin]
-
-class CarpetaMediaFilicacionAdmin(NestedStackedInline):
-    model = CarpetaMediaFiliacion
-
-class DocumentosDigitalesAdmin(NestedStackedInline):
-    model = DocumentosDigitales
 
 @admin.register(Personal)
-class PersonalAdmin(NestedModelAdmin):
+class PersonalAdmin(admin.ModelAdmin):
     list_display = ('id', 'get_full_name', 'cliente',)
-    inlines =  [
-        CarpetaExamenFisicoInline,
-        CarpetaExamenMedicoInline,
-        CarpetaExamenPsicologicoInline,
-        CarpetaExamenToxicologicoInline,
-        CarpetaExamenSocioeconomicoInline,
-        CarpetaExamenPoligrafoInline,
-        CarpetaLaboralAdmin,
-        CarpetaGeneralesAdmin,
-        CarpetaReferenciasAdmin,
-        CarpetaDependientesAdmin,
-        CarpetaEmpleoAnteriorSeguridadPublicaAdmin,
-        CarpetaEmpleoAnteriorAdmin,
-        CarpetaCapacitacionAdmin, 
-        CarpetaMediaFilicacionAdmin,
-        DocumentosDigitalesAdmin,
-    ]
-    
+    actions = [generate_xlsx]    
     def get_full_name(self, obj):
         return f"{obj.curp.nombre} {obj.curp.apellido_paterno} {obj.curp.apellido_materno}"
 
     get_full_name.short_description = 'Full Name'
-
-@admin.register(Puesto)
-class PuestoAdmin(admin.ModelAdmin):
-    list_display = ('id','nombre_puesto',)
-
-@admin.register(PuestoFuncional)
-class PuestoFuncionalAdmin(admin.ModelAdmin):
-    list_display = ('id','nombre_puesto',)
 
 @admin.register(TipoBaja)
 class TipoBajaAdmin(admin.ModelAdmin):
@@ -144,9 +203,13 @@ class MotivoSeparacionAdmin(admin.ModelAdmin):
 class CapacitacionClienteAdmin(admin.ModelAdmin):
     list_display = ('id','cliente', 'estatus_capacitacion', 'comentarios', 'fecha_realizacion')
 
+@admin.register(Idioma)
+class IdiomaAdmin(admin.ModelAdmin):
+    pass
+
 @admin.register(Capacitacion)
 class CapacitacionAdmin(admin.ModelAdmin):
-    list_display = ('id','institucion_empresa', 'curso', 'impartido_recibido', 'eficiencia_terminal', 'inicio', 'conclusion', 'duracion')
+    pass
 
 @admin.register(Curp)
 class CurpAdmin(admin.ModelAdmin):
@@ -156,7 +219,9 @@ class CurpAdmin(admin.ModelAdmin):
 class RfcAdmin(admin.ModelAdmin):
     list_display = ('id','rfc','razon_social','correo_contacto','validez','tipo',)
 
-
+@admin.register(Evaluador)
+class EvaluadorAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nombre_completo')
 
 # @admin.register(CapacitacionEnCurso)
 # class CapacitacionEnCursoAdmin(admin.ModelAdmin):

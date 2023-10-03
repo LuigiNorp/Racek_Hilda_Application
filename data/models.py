@@ -168,16 +168,19 @@ class Domicilio(models.Model):
     numero_interior = models.CharField(max_length=20, blank=True, null=True)
     entre_calle = models.CharField(max_length=100, null=True, blank=True)
     y_calle = models.CharField(max_length=100, null=True, blank=True)
-    ciudad = models.CharField(max_length=50)
+    codigo_postal = models.OneToOneField(CodigoPostal, on_delete=models.RESTRICT)
+    ciudad = models.CharField(max_length=50, null=True, blank=True)
     colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT)
     municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
-    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT, null=True)
-    codigo_postal = models.OneToOneField(CodigoPostal, on_delete=models.RESTRICT)
+    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT)
     pais = models.OneToOneField(Pais, on_delete=models.RESTRICT)
+
+    def __str__(self):
+        return f'{self.calle} No.{self.numero_exterior} Int.{self.numero_interior}, {self.colonia}, {self.codigo_postal}, {self.municipio}, {self.estado}, {self.pais}'
 
     class Meta:
         verbose_name_plural = 'Domicilios'
-
+        
 
 class Cliente(models.Model):
     nombre_comercial = models.CharField(max_length=200)
@@ -204,6 +207,7 @@ class Sede(models.Model):
 
 
 class CarpetaClienteGenerales(models.Model):
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     reg_estatal = models.CharField(max_length=30, blank=True)
     reg_federal = models.CharField(max_length=30, blank=True)
     rfc = models.CharField(max_length=13, blank=True)
@@ -220,7 +224,6 @@ class CarpetaClienteGenerales(models.Model):
     encargado_rh = models.CharField(max_length=300, blank=True)
     coordinador = models.CharField(max_length=300, blank=True)
     registro_patronal = models.CharField(max_length=30, blank=True)
-    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
@@ -231,6 +234,7 @@ class CarpetaClienteGenerales(models.Model):
 
 
 class CarpetaClientePagos(models.Model):
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     encargado_pagos = models.CharField(max_length=150, blank=True)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
                                             message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
@@ -246,7 +250,6 @@ class CarpetaClientePagos(models.Model):
     factura_subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     factura_iva = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     factura_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
@@ -257,6 +260,7 @@ class CarpetaClientePagos(models.Model):
 
 
 class CarpetaClienteContactos(models.Model):
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     nombre_contacto = models.CharField(max_length=300)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
                                             message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
@@ -269,7 +273,6 @@ class CarpetaClienteContactos(models.Model):
     puesto = models.CharField(max_length=30)
     email_1 = models.CharField(max_length=200, blank=True)
     email_2 = models.CharField(max_length=200, blank=True)
-    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.cliente}: {self.nombre_contacto}'
@@ -279,7 +282,7 @@ class CarpetaClienteContactos(models.Model):
 
 
 class Evaluador(models.Model):
-    evaluador = models.CharField(max_length=300)
+    nombre_completo = models.CharField(max_length=300)
 
     class Meta:
         verbose_name_plural = 'Evaluadores'
@@ -297,24 +300,14 @@ class Personal(models.Model):
     observaciones = models.TextField(blank=True, null=True)
     resultado = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
     evaluador = models.OneToOneField(Evaluador, on_delete=models.RESTRICT, null=True, blank=True, )
-
+    
     def __str__(self):
         return f'{self.curp.nombre if self.curp else ""} {self.curp.apellido_materno if self.curp else ""} {self.curp.apellido_paterno if self.curp else ""}'
 
     class Meta:
         verbose_name_plural = 'Personal'
 
-
-class Puesto(models.Model):
-    nombre_puesto = models.CharField(max_length=30)
-
-    def __str__(self):
-        return f'{self.carpeta_laboral}: {self.nombre_puesto}'
-
-    class Meta:
-        verbose_name_plural = 'Puestos'
-
-
+       
 class CarpetaLaboral(models.Model):
     modalidad = models.PositiveSmallIntegerField(choices=MODALIDAD, blank=True)
     estatus_empleado = models.PositiveSmallIntegerField(choices=ESTATUS_EMPLEADO, blank=True)
@@ -365,14 +358,58 @@ class CarpetaLaboral(models.Model):
     oficio_registro_sedena = models.CharField(max_length=25, blank=True)
     lic_part_col = models.CharField(max_length=25, blank=True)
     comentarios = models.TextField(blank=True, null=True)
-    personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
-    puesto = models.OneToOneField(Puesto, on_delete=models.RESTRICT)
+    personal = models.OneToOneField(Personal, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f'{self.personal}: {self.proceso_racek}'
 
     class Meta:
         verbose_name_plural = 'Carpetas Laborales'
+
+
+class Ocupacion(models.Model):
+    nombre_ocupacion = models.CharField(max_length=100, blank=True, null=True)
+    carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, null=True, blank=True)
+    
+    def __str__(self):
+        return f'{self.nombre_ocupacion}'
+    
+    class Meta:
+        verbose_name_plural = 'Ocupaciones'       
+        
+
+class Capacitador(models.Model):
+    nombre_capacitador = models.CharField(max_length=300, blank=True, null=True)
+    numero_registro = models.CharField(max_length=14, blank=True, null=True)
+    carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, null=True, blank=True)
+    
+    def __str__(self):
+        return f'{self.nombre_capacitador}'
+    
+    class Meta:
+        verbose_name_plural = 'Capacitadores'
+
+
+class AreaCurso(models.Model):
+    nombre_area = models.CharField(max_length=100, blank=True, null=True)
+    carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, null=True, blank=True)   
+    
+    def __str__(self):
+        return f'{self.nombre_area}'
+    
+    class Meta:
+        verbose_name_plural = 'Areas Curso'
+
+
+class Puesto(models.Model):
+    nombre_puesto = models.CharField(max_length=30)
+    carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.carpeta_laboral}: {self.nombre_puesto}'
+
+    class Meta:
+        verbose_name_plural = 'Puestos'
 
 
 class CarpetaGenerales(models.Model):
@@ -1074,32 +1111,3 @@ class PersonalPorCapacitar(models.Model):
         verbose_name_plural = 'Personal Por Capacitar'
 
 
-class Capacitador(models.Model):
-    nombre_capacitador = models.CharField(max_length=300, blank=True, null=True)
-    numero_registro = models.CharField(max_length=14, blank=True, null=True)
-    
-    def __str__(self):
-        return f'{self.nombre_capacitador}'
-    
-    class Meta:
-        verbose_name_plural = 'Capacitadores'
-
-
-class AreaCurso(models.Model):
-    nombre_area = models.CharField(max_length=100, blank=True, null=True)
-    
-    def __str__(self):
-        return f'{self.nombre_area}'
-    
-    class Meta:
-        verbose_name_plural = 'Areas Curso'
-        
-        
-class Ocupacion(models.Model):
-    nombre_ocupacion = models.CharField(max_length=100, blank=True, null=True)
-    
-    def __str__(self):
-        return f'{self.nombre_ocupacion}'
-    
-    class Meta:
-        verbose_name_plural = 'Ocupaciones'       
