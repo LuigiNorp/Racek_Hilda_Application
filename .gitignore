@@ -5,10 +5,6 @@ main/__pycache__
 data/__pycache__
 hildaApp/__pycache__
 .idea/
-db.sqlite3-app
-db.sqlite3-data
-data/migrations/
-main/migrations/
 
 ### Django ###
 *.pot
