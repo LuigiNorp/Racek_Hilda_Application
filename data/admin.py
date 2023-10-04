@@ -18,16 +18,13 @@ generate_dc3.short_description = "Generar el archivo DC-3"
 
 class SedeInline(admin.StackedInline):
     model = Sede
-    
 class CarpetaClienteGeneralesInline(admin.StackedInline):
     model = CarpetaClienteGenerales
-    
 class CarpetaClientePagosInline(admin.StackedInline):
     model = CarpetaClientePagos
-    
 class CarpetaClienteContactosInline(admin.StackedInline):
-    model = CarpetaClienteContactos   
-     
+    model = CarpetaClienteContactos
+
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
     list_display = ('id','nombre_comercial','razon_social','activo',)
