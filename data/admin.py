@@ -7,15 +7,65 @@ import openpyxl
 
 
 # Create django admin action for reports
+def generate_xlsx(modeladmin, request, queryset):
+    # Define the path to the original XLSX file
+    original_file_path = "./media/file_templates/Mis archivos/DC3 ACTUALIZADO.xlsx"
 
-def generate_dc3(modeladmin, request, queryset):
-    document = Document('media/file_templates/DC3.dot')
+    # Load the original XLSX file
+    wb = openpyxl.load_workbook(original_file_path)
 
-    for paragraph in document.paragraphs:
-        paragraph.text = paragraph.text.replace('[nombre]', 'Juan')
+    # Load the original XLSX file
+    wb = openpyxl.load_workbook(original_file_path)
 
+    # Get the first sheet of the workbook
+    sheet = wb.active
 
-generate_dc3.short_description = "Generar el archivo DC-3"
+    for personal in queryset:
+        data = {
+
+            # Define the data to be replaced in the cells for each 'personal' object
+            'nombre_apellidos': f"{personal.curp.nombre if personal.curp else ''} {personal.curp.apellido_paterno if personal.curp else ''} {personal.curp.apellido_materno if personal.curp else ''}",
+            'curp': personal.curp.curp if personal.curp else '',
+            'ocupacion': personal.carpetalaboral.ocupacion.nombre_ocupacion if personal.carpetalaboral.ocupacion else '',
+            # 'puesto': personal.carpetalaboral.puesto.nombre_puesto if personal.carpetalaboral.puesto else '',
+            # 'razon_social': personal.cliente.razon_social if personal.cliente else '',
+            # 'rfc': personal.rfc.rfc if personal.rfc else '',
+            # 'nombre_curso': personal.carpetacapacitacion.curso if personal.carpetacapacitacion else '',
+            # 'horas_curso': personal.carpetacapacitacion.duracion if personal.carpetacapacitacion else '',
+            # 'fecha_inicial_capacitacion': personal.carpetacapacitacion.inicio if personal.carpetacapacitacion else '',
+            # 'fecha_final_capacitacion': personal.carpetacapacitacion.conclusion if personal.carpetacapacitacion else '',
+            # 'area_curso': personal.carpetacapacitacion.area_curso.nombre_area if personal.carpetacapacitacion and personal.carpetacapacitacion.area_curso else '',
+            # 'nombre_capacitador': personal.carpetacapacitacion.capacitador.nombre_capacitador if personal.carpetacapacitacion and personal.carpetacapacitacion.capacitador else '',
+            # 'registro_capacitador': personal.carpetacapacitacion.capacitador.numero_registro if personal.carpetacapacitacion and personal.carpetacapacitacion.capacitador else '',
+        }
+
+        # Replace the values in the specified cells with the data dictionary
+        cell_mapping = {
+            'AJ4': data['nombre_apellidos'],
+            'AJ5': data['curp'],
+            'AJ6': data['ocupacion'],
+            #     'AJ7': data['puesto'],
+            #     'AJ20': data['razon_social'],
+            #     'AJ21': data['rfc'],
+            #     'AJ8': data['nombre_curso'],
+            #     'AJ9': data['horas_curso'],
+            #     'AJ10': data['fecha_inicial_capacitacion'],
+            #     'AJ11': data['fecha_final_capacitacion'],
+            #     'AJ12': data['area_curso'],
+            #     'AJ13': data['nombre_capacitador'],
+            #     'AJ14': data['registro_capacitador'],
+        }
+
+        for cell, value in cell_mapping.items():
+            sheet[cell].value = value
+
+    # Create a response with the modified XLSX file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=modified_dc3.xlsx'
+    wb.save(response)
+    return response
+
+generate_xlsx.short_description = "Generar DC-3"
 
 
 # Register your models here.
@@ -146,68 +196,6 @@ class DocumentosDigitalesInLine(NestedStackedInline):
     model = DocumentosDigitales
 
 
-def generate_xlsx(modeladmin, request, queryset):
-    # Define the path to the original XLSX file
-    original_file_path = "./media/file_templates/Mis archivos/DC3 ACTUALIZADO.xlsx"
-
-    # Load the original XLSX file
-    wb = openpyxl.load_workbook(original_file_path)
-
-    # Load the original XLSX file
-    wb = openpyxl.load_workbook(original_file_path)
-
-    # Get the first sheet of the workbook
-    sheet = wb.active
-
-    for personal in queryset:
-        data = {
-
-            # Define the data to be replaced in the cells for each 'personal' object
-            'nombre_apellidos': f"{personal.curp.nombre if personal.curp else ''} {personal.curp.apellido_paterno if personal.curp else ''} {personal.curp.apellido_materno if personal.curp else ''}",
-            'curp': personal.curp.curp if personal.curp else '',
-            'ocupacion': personal.carpetalaboral.ocupacion.nombre_ocupacion if personal.carpetalaboral.ocupacion else '',
-            # 'puesto': personal.carpetalaboral.puesto.nombre_puesto if personal.carpetalaboral.puesto else '',
-            # 'razon_social': personal.cliente.razon_social if personal.cliente else '',
-            # 'rfc': personal.rfc.rfc if personal.rfc else '',
-            # 'nombre_curso': personal.carpetacapacitacion.curso if personal.carpetacapacitacion else '',
-            # 'horas_curso': personal.carpetacapacitacion.duracion if personal.carpetacapacitacion else '',
-            # 'fecha_inicial_capacitacion': personal.carpetacapacitacion.inicio if personal.carpetacapacitacion else '',
-            # 'fecha_final_capacitacion': personal.carpetacapacitacion.conclusion if personal.carpetacapacitacion else '',
-            # 'area_curso': personal.carpetacapacitacion.area_curso.nombre_area if personal.carpetacapacitacion and personal.carpetacapacitacion.area_curso else '',
-            # 'nombre_capacitador': personal.carpetacapacitacion.capacitador.nombre_capacitador if personal.carpetacapacitacion and personal.carpetacapacitacion.capacitador else '',
-            # 'registro_capacitador': personal.carpetacapacitacion.capacitador.numero_registro if personal.carpetacapacitacion and personal.carpetacapacitacion.capacitador else '',
-        }
-
-        # Replace the values in the specified cells with the data dictionary
-        cell_mapping = {
-            'AJ4': data['nombre_apellidos'],
-            'AJ5': data['curp'],
-            'AJ6': data['ocupacion'],
-            #     'AJ7': data['puesto'],
-            #     'AJ20': data['razon_social'],
-            #     'AJ21': data['rfc'],
-            #     'AJ8': data['nombre_curso'],
-            #     'AJ9': data['horas_curso'],
-            #     'AJ10': data['fecha_inicial_capacitacion'],
-            #     'AJ11': data['fecha_final_capacitacion'],
-            #     'AJ12': data['area_curso'],
-            #     'AJ13': data['nombre_capacitador'],
-            #     'AJ14': data['registro_capacitador'],
-        }
-
-        for cell, value in cell_mapping.items():
-            sheet[cell].value = value
-
-    # Create a response with the modified XLSX file
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=modified_dc3.xlsx'
-    wb.save(response)
-    return response
-
-
-generate_xlsx.short_description = "Generar DC-3"
-
-
 @admin.register(Personal)
 class PersonalAdmin(NestedModelAdmin):
     list_display = ('id', 'get_full_name', 'cliente',)
@@ -228,6 +216,7 @@ class PersonalAdmin(NestedModelAdmin):
         CarpetaMediaFilicacionInLine,
         DocumentosDigitalesInLine,
     ]
+    actions = [generate_xlsx]
 
     def get_full_name(self, obj):
         return f"{obj.curp.nombre} {obj.curp.apellido_paterno} {obj.curp.apellido_materno}"
