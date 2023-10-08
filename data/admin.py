@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib import admin
 from .models import *
 from docx import Document
+import openpyxl
 
 
 # Create django admin action for reports
@@ -38,18 +39,23 @@ class CarpetaClienteContactosInline(admin.StackedInline):
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre_comercial', 'razon_social', 'activo',)
-    inlines = [SedeInline, CarpetaClienteGeneralesInline, CarpetaClientePagosInline, CarpetaClienteContactosInline]
+    inlines = [
+        SedeInline,
+        CarpetaClienteGeneralesInline,
+        CarpetaClientePagosInline,
+        CarpetaClienteContactosInline
+    ]
 
 
 class DomicilioAdmin(NestedStackedInline):
     model = Domicilio
 
 
-class CarpetaLaboralAdmin(NestedStackedInline):
+class CarpetaLaboralInLine(NestedStackedInline):
     model = CarpetaLaboral
 
 
-class CarpetaGeneralesAdmin(NestedStackedInline):
+class CarpetaGeneralesInLine(NestedStackedInline):
     model = CarpetaGenerales
 
 
@@ -58,7 +64,7 @@ class ReferenciaAdmin(NestedStackedInline):
     inline = [DomicilioAdmin]
 
 
-class CarpetaReferenciasAdmin(NestedStackedInline):
+class CarpetaReferenciasInLine(NestedStackedInline):
     model = CarpetaReferencias
     inlines = [ReferenciaAdmin]
 
@@ -67,7 +73,7 @@ class DependienteAdmin(NestedStackedInline):
     model = Dependiente
 
 
-class CarpetaDependientesAdmin(NestedStackedInline):
+class CarpetaDependientesInLine(NestedStackedInline):
     model = CarpetaDependientes
     inlines = [DependienteAdmin]
 
@@ -100,7 +106,7 @@ class EmpleoAnteriorSeguridadPublicaAdmin(NestedStackedInline):
     model = EmpleoAnteriorSeguridadPublica
 
 
-class CarpetaEmpleoAnteriorSeguridadPublicaAdmin(NestedStackedInline):
+class CarpetaEmpleoAnteriorSeguridadPublicaInLine(NestedStackedInline):
     model = CarpetaEmpleoAnteriorSeguridadPublica
     inlines = [EmpleoAnteriorSeguridadPublicaAdmin]
 
@@ -110,7 +116,7 @@ class EmpleoAnteriorAdmin(NestedStackedInline):
     model = EmpleoAnterior
 
 
-class CarpetaEmpleoAnteriorAdmin(NestedStackedInline):
+class CarpetaEmpleoAnteriorInLine(NestedStackedInline):
     model = CarpetaEmpleoAnterior
     inlines = [EmpleoAnteriorAdmin]
 
@@ -127,20 +133,17 @@ class CapacitacionAdmin(NestedStackedInline):
     model = Capacitacion
 
 
-class CarpetaCapacitacionAdmin(NestedStackedInline):
+class CarpetaCapacitacionInLine(NestedStackedInline):
     model = CarpetaCapacitacion
     inlines = [CapacitacionAdmin, IdiomaAdmin]
 
 
-class CarpetaMediaFilicacionAdmin(NestedStackedInline):
+class CarpetaMediaFilicacionInLine(NestedStackedInline):
     model = CarpetaMediaFiliacion
 
 
-class DocumentosDigitalesAdmin(NestedStackedInline):
+class DocumentosDigitalesInLine(NestedStackedInline):
     model = DocumentosDigitales
-
-
-import openpyxl
 
 
 def generate_xlsx(modeladmin, request, queryset):
@@ -158,7 +161,8 @@ def generate_xlsx(modeladmin, request, queryset):
 
     for personal in queryset:
         data = {
-        # Define the data to be replaced in the cells for each 'personal' object
+
+            # Define the data to be replaced in the cells for each 'personal' object
             'nombre_apellidos': f"{personal.curp.nombre if personal.curp else ''} {personal.curp.apellido_paterno if personal.curp else ''} {personal.curp.apellido_materno if personal.curp else ''}",
             'curp': personal.curp.curp if personal.curp else '',
             'ocupacion': personal.carpetalaboral.ocupacion.nombre_ocupacion if personal.carpetalaboral.ocupacion else '',
@@ -179,16 +183,16 @@ def generate_xlsx(modeladmin, request, queryset):
             'AJ4': data['nombre_apellidos'],
             'AJ5': data['curp'],
             'AJ6': data['ocupacion'],
-        #     'AJ7': data['puesto'],
-        #     'AJ20': data['razon_social'],
-        #     'AJ21': data['rfc'],
-        #     'AJ8': data['nombre_curso'],
-        #     'AJ9': data['horas_curso'],
-        #     'AJ10': data['fecha_inicial_capacitacion'],
-        #     'AJ11': data['fecha_final_capacitacion'],
-        #     'AJ12': data['area_curso'],
-        #     'AJ13': data['nombre_capacitador'],
-        #     'AJ14': data['registro_capacitador'],
+            #     'AJ7': data['puesto'],
+            #     'AJ20': data['razon_social'],
+            #     'AJ21': data['rfc'],
+            #     'AJ8': data['nombre_curso'],
+            #     'AJ9': data['horas_curso'],
+            #     'AJ10': data['fecha_inicial_capacitacion'],
+            #     'AJ11': data['fecha_final_capacitacion'],
+            #     'AJ12': data['area_curso'],
+            #     'AJ13': data['nombre_capacitador'],
+            #     'AJ14': data['registro_capacitador'],
         }
 
         for cell, value in cell_mapping.items():
@@ -199,6 +203,7 @@ def generate_xlsx(modeladmin, request, queryset):
     response['Content-Disposition'] = 'attachment; filename=modified_dc3.xlsx'
     wb.save(response)
     return response
+
 
 generate_xlsx.short_description = "Generar DC-3"
 
@@ -213,15 +218,15 @@ class PersonalAdmin(NestedModelAdmin):
         CarpetaExamenToxicologicoInline,
         CarpetaExamenSocioeconomicoInline,
         CarpetaExamenPoligrafoInline,
-        CarpetaLaboralAdmin,
-        CarpetaGeneralesAdmin,
-        CarpetaReferenciasAdmin,
-        CarpetaDependientesAdmin,
-        CarpetaEmpleoAnteriorSeguridadPublicaAdmin,
-        CarpetaEmpleoAnteriorAdmin,
-        CarpetaCapacitacionAdmin,
-        CarpetaMediaFilicacionAdmin,
-        DocumentosDigitalesAdmin,
+        CarpetaLaboralInLine,
+        CarpetaGeneralesInLine,
+        CarpetaReferenciasInLine,
+        CarpetaDependientesInLine,
+        CarpetaEmpleoAnteriorSeguridadPublicaInLine,
+        CarpetaEmpleoAnteriorInLine,
+        CarpetaCapacitacionInLine,
+        CarpetaMediaFilicacionInLine,
+        DocumentosDigitalesInLine,
     ]
 
     def get_full_name(self, obj):
@@ -258,14 +263,14 @@ class CapacitacionClienteAdmin(admin.ModelAdmin):
 @admin.register(Capacitacion)
 class CapacitacionAdmin(admin.ModelAdmin):
     list_display = (
-    'id', 'institucion_empresa', 'curso', 'impartido_recibido', 'eficiencia_terminal', 'inicio', 'conclusion',
-    'duracion')
+        'id', 'institucion_empresa', 'curso', 'impartido_recibido', 'eficiencia_terminal', 'inicio', 'conclusion',
+        'duracion')
 
 
 @admin.register(Curp)
 class CurpAdmin(admin.ModelAdmin):
     list_display = (
-    'id', 'curp', 'nombre', 'apellido_materno', 'apellido_paterno', 'iniciales', 'fecha_nacimiento', 'sexo')
+        'id', 'curp', 'nombre', 'apellido_materno', 'apellido_paterno', 'iniciales', 'fecha_nacimiento', 'sexo')
 
 
 @admin.register(Rfc)
