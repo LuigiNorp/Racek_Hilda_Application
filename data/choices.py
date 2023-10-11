@@ -1,6 +1,12 @@
 ORIGEN_ASPIRANTE = (
-    (1,"Presencial"),
-    (2,"Remoto"),
+    (1, "PRESENCIAL"),
+    (2, "REMOTO"),
+)
+
+SEXO_CURP_OPCIONES = (
+    (1, 'MUJER'),
+    (2, 'HOMBRE'),
+    (3, 'NO BINARIO'),
 )
 
 SEXO_OPCIONES = (
@@ -11,29 +17,29 @@ SEXO_OPCIONES = (
 
 PROCESO_RACEK = (
     (1, "CONTRATADO"),
-    (2,"APTO CON RESERVA"),
-    (3,"NO CONCLUYÓ"),
-    (4,"CANCELADO"),
-    (5,"EN EVALUACIÓN"),
-    (6,"APTO"),
-    (7,"NO APTO"),
-    (8,"BAJA"),
+    (2, "APTO CON RESERVA"),
+    (3, "NO CONCLUYÓ"),
+    (4, "CANCELADO"),
+    (5, "EN EVALUACIÓN"),
+    (6, "APTO"),
+    (7, "NO APTO"),
+    (8, "BAJA"),
 )
 
 MODALIDAD = (
-    (1,"ADMINISTRATIVO"),
-    (2,"EN LOS BIENES"),
-    (3,"EN EL TRASLADO DE BIENES"),
-    (4,"A PERSONAS"),
-    (5,"MANTENIMIENTO"),
+    (1, "ADMINISTRATIVO"),
+    (2, "EN LOS BIENES"),
+    (3, "EN EL TRASLADO DE BIENES"),
+    (4, "A PERSONAS"),
+    (5, "MANTENIMIENTO"),
 )
 
 ESTATUS_EMPLEADO = (
-    (1,"ACTIVO"),
-    (2,"BAJA SIN ENTREGAR UNIFORME"),
-    (3,"BAJA PROCESO COMPLETO"),
-    (4,"BAJA DEMANDÓ"),
-    (5,"BAJA DEMANDADO"),
+    (1, "ACTIVO"),
+    (2, "BAJA SIN ENTREGAR UNIFORME"),
+    (3, "BAJA PROCESO COMPLETO"),
+    (4, "BAJA DEMANDÓ"),
+    (5, "BAJA DEMANDADO"),
 )
 
 NIVEL_MANDO = (
@@ -316,16 +322,16 @@ ACTIVIDADES_FIN_SEMANA = (
 )
 
 ESTATUS_CURP = (
-    ('AN','Alta Normal'),
-    ('AH','Alta con Homonimia'),
-    ('RCC','Registro de cambio afectando a CURP'),
-    ('RCN','Registro de cambio no afectando a CURP'),
-    ('BD','Baja por defunción'),
-    ('BSU','Baja sin uso'),
-    ('BJD','Baja Judicial'),
-    ('BDM','Baja administrativa'),
-    ('BAP','Baja por documento apócrifo'),
-    ('BDP','Baja por adopción'),
+    ('AN','ALTA NORMAL'),
+    ('AH','ALTA CON HOMONIMIA'),
+    ('RCC','REGISTRO DE CAMBIO AFECTANDO A CURP'),
+    ('RCN','REGISTRO DE CAMBIO NO AFECTANDO A CURP'),
+    ('BD','BAJA POR DEFUNCIÓN'),
+    ('BSU','BAJA SIN USO'),
+    ('BJD','BAJA JUDICIAL'),
+    ('BDM','BAJA ADMINISTRATIVA'),
+    ('BAP','BAJA POR DOCUMENTO APÓCRIFO'),
+    ('BDP','BAJA POR ADOPCIÓN'),
 )
 
 RECOMENDABLE = (
@@ -347,6 +353,12 @@ TIPO_SEPARACION = (
     (3,"COMETER DELITO"),
     (4,"PENSIONADO(A)"),
     (5,"DEFUNCIÓN"),      
+)
+
+VALIDACION_RENAPO = (
+    (1, 'SI'),
+    (2, 'NO'),
+    (3, 'DESCONOCIDO'),
 )
 
 IMPARTIDO_RECIBIDO = (
