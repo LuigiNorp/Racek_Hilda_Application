@@ -765,6 +765,16 @@ class TipoCurso(models.Model):
         verbose_name_plural = 'Tipo Cursos'
 
 
+class RepresentanteTrabajadores(models.Model):
+    nombre_completo = models.CharField(max_length=300, blank=True, null=True)
+    firma = models.FileField(upload_to='firma-representantes', blank=True, null=True)
+    reglamento_interno = models.FileField(upload_to='reglamentos-trabajo', blank=True, null=True)
+    personal = models.OneToOneField(Personal, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    
+    class Meta:
+        verbose_name_plural = 'Representantes Trabajadores'
+
 # class CapacitacionEnCurso(models.Model):
 #     estudio_curso = models.CharField(max_length=100, blank=True, null=True)
 #     inicio = models.DateField(blank=True, null=True)

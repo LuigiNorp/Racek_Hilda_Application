@@ -40,6 +40,9 @@ class DomicilioInline(NestedStackedInline):
 
         return fields
 
+class RepresentanteTrabajadoresInline(NestedStackedInline):
+    model = RepresentanteTrabajadores
+
 
 class SedeInline(NestedStackedInline):
     model = Sede
@@ -70,6 +73,7 @@ class ClienteAdmin(NestedModelAdmin):
     list_display = ('id', 'nombre_comercial', 'razon_social', 'activo',)
     inlines = [
         SedeInline,
+        RepresentanteTrabajadoresInline,
         CarpetaClienteGeneralesInline,
         CarpetaClientePagosInline,
         CarpetaClienteContactosInline,
@@ -224,6 +228,7 @@ class PersonalAdmin(NestedModelAdmin):
         RfcInline,
         DomicilioInline,
         EvaluadorInline,
+        RepresentanteTrabajadoresInline,
         CarpetaExamenFisicoInline,
         CarpetaExamenMedicoInline,
         CarpetaExamenPsicologicoInline,

@@ -203,6 +203,10 @@ class CarpetaMediaFiliacionViewSet(BaseViewSet):
 class DocumentosDigitalesViewSet(BaseViewSet):
     serializer_class = DocumentosDigitalesSerializer
     model_class = DocumentosDigitales
+    
+class RepresentanteTrabajadoresViewSet(BaseViewSet):
+    serializer_class = RepresentanteTrabajadoresSerializer
+    model_class = RepresentanteTrabajadores
 
 class CapacitacionClienteViewSet(BaseViewSet):
     serializer_class = CapacitacionClienteSerializer
