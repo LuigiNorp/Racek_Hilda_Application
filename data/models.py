@@ -772,8 +772,12 @@ class RepresentanteTrabajadores(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE, blank=True, null=True, editable=False)
     cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE, blank=True, null=True, editable=False)
     
+    def __str__(self):
+        return self.nombre_completo
+    
     class Meta:
         verbose_name_plural = 'Representantes Trabajadores'
+    
 
 # class CapacitacionEnCurso(models.Model):
 #     estudio_curso = models.CharField(max_length=100, blank=True, null=True)
