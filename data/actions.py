@@ -81,6 +81,16 @@ def generate_xlsx(modeladmin, request, queryset):
             data['registro_capacitador'] = personal.carpetacapacitacion.capacitador.numero_registro
         except AttributeError:
             data['registro_capacitador'] = ''
+            
+        try:
+            data['representante_legal'] = personal.cliente.carpetaclientegenerales.representante_legal
+        except AttributeError:
+            data['representante_legal'] = ''
+            
+        try:
+            data['representante_trabajadores'] = personal.cliente.representantetrabajadores.nombre_completo
+        except AttributeError:
+            data['representante_trabajadores'] = ''
 
         # Define the data to be replaced in the cells for each 'personal' object
         cell_mapping = {
@@ -88,8 +98,6 @@ def generate_xlsx(modeladmin, request, queryset):
             'AJ5': data['curp'],
             'AJ6': data['ocupacion'],
             'AJ7': data['puesto'],
-            'AJ20': data['razon_social'],
-            'AJ21': data['rfc'],
             'AJ8': data['nombre_curso'],
             'AJ9': data['horas_curso'],
             'AJ10': data['fecha_inicial_capacitacion'],
@@ -97,6 +105,10 @@ def generate_xlsx(modeladmin, request, queryset):
             'AJ12': data['area_curso'],
             'AJ13': data['nombre_capacitador'],
             'AJ14': data['registro_capacitador'],
+            'AJ20': data['razon_social'],
+            'AJ21': data['rfc'],
+            'AJ22': data['representante_legal'],
+            'AJ23': data['representante_trabajadores'],
         }
 
         for cell, value in cell_mapping.items():
