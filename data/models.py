@@ -7,9 +7,13 @@ import os
 
 
 def get_upload_path(instance, filename):
-    cliente_nombre = instance.personal.cliente.nombre_comercial
-    modelo = instance.__class__.__name__
-    return os.path.join('Documentos', cliente_nombre, modelo, filename)
+    if isinstance(instance, DocumentosCliente):
+        cliente_nombre = instance.cliente.nombre_comercial
+        return os.path.join('Documentos', cliente_nombre, cliente_nombre, filename)
+    elif isinstance(instance, DocumentosDigitales):
+        cliente_nombre = instance.personal.cliente.nombre_comercial
+        folio_personal = instance.personal.folio
+        return os.path.join('Documentos', cliente_nombre, folio_personal, filename)
 
 
 # Create your models here.
@@ -92,6 +96,12 @@ class Sede(models.Model):
 
     class Meta:
         verbose_name_plural = 'Sedes'
+
+
+class DocumentosCliente(models.Model):
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
+    qr_code = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+    logotipo = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
 
 
 class CarpetaClienteGenerales(models.Model):
@@ -227,6 +237,9 @@ class Rfc(models.Model):
 class Evaluador(models.Model):
     nombre_completo = models.CharField(max_length=300)
     personal = models.OneToOneField(Personal, on_delete=models.RESTRICT, blank = True, null=True)
+
+    def __str__(self):
+        return f'{self.nombre_completo}'
 
     class Meta:
         verbose_name_plural = 'Evaluadores'
@@ -795,12 +808,12 @@ class Domicilio(models.Model):
     numero_interior = models.CharField(max_length=20, blank=True, null=True)
     entre_calle = models.CharField(max_length=100, null=True, blank=True)
     y_calle = models.CharField(max_length=100, null=True, blank=True)
-    codigo_postal = models.OneToOneField(CodigoPostal, on_delete=models.RESTRICT)
+    pais = models.OneToOneField(Pais, on_delete=models.RESTRICT)
+    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT)
+    municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
     ciudad = models.CharField(max_length=50, null=True, blank=True)
     colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT)
-    municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
-    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT)
-    pais = models.OneToOneField(Pais, on_delete=models.RESTRICT)
+    codigo_postal = models.OneToOneField(CodigoPostal, on_delete=models.RESTRICT)
     carpeta_cliente_generales = models.OneToOneField(CarpetaClienteGenerales, on_delete=models.CASCADE, blank=True, null=True, editable=False)
     carpeta_cliente_pagos = models.OneToOneField(CarpetaClientePagos, on_delete=models.CASCADE, blank=True, null=True, editable=False)
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE, blank=True, null=True, editable=False)

@@ -10,6 +10,7 @@ def create_serializer(model):
 CurpSerializer = create_serializer(Curp)
 RfcSerializer = create_serializer(Rfc)
 ClienteSerializer = create_serializer(Cliente)
+DocumentosClienteSerializer = create_serializer(DocumentosCliente)
 SedeSerializer = create_serializer(Sede)
 CarpetaClienteGeneralesSerializer = create_serializer(CarpetaClienteGenerales)
 CarpetaClientePagosSerializer = create_serializer(CarpetaClientePagos)

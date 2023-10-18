@@ -288,7 +288,7 @@ class Clients(TemplateView):
         return context
 
 
-class Personal(TemplateView):
+class Empleado(TemplateView):
     template_name = 'employee/personal.html'
     login_url = '/login/'
 

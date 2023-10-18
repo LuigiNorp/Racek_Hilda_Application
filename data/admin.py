@@ -6,7 +6,7 @@ from django.contrib import admin
 
 
 # Create django admin action for reports
-generate_xlsx.short_description = "Generar DC-3"
+generate_dc3.short_description = "Generar DC-3"
 
 
 # Register your models here.
@@ -40,6 +40,11 @@ class DomicilioInline(NestedStackedInline):
 
         return fields
 
+
+class DocumentosClienteInline(NestedStackedInline):
+    model = DocumentosCliente
+
+
 class RepresentanteTrabajadoresInline(NestedStackedInline):
     model = RepresentanteTrabajadores
 
@@ -72,6 +77,7 @@ class CapacitacionClienteInline(NestedStackedInline):
 class ClienteAdmin(NestedModelAdmin):
     list_display = ('id', 'nombre_comercial', 'razon_social', 'activo',)
     inlines = [
+        DocumentosClienteInline,
         SedeInline,
         RepresentanteTrabajadoresInline,
         CarpetaClienteGeneralesInline,
@@ -245,7 +251,7 @@ class PersonalAdmin(NestedModelAdmin):
         CarpetaMediaFilicacionInline,
         DocumentosDigitalesInline,
     ]
-    actions = [generate_xlsx]
+    actions = [generate_dc3]
 
     def get_full_name(self, obj):
         return f"{obj.curp.nombre} {obj.curp.apellido_paterno} {obj.curp.apellido_materno}"

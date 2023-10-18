@@ -52,6 +52,10 @@ class ClienteViewSet(BaseViewSet):
     serializer_class = ClienteSerializer
     model_class = Cliente
 
+class DocumentosClienteViewSet(BaseViewSet):
+    serializer_class = DocumentosClienteSerializer
+    model_class = DocumentosCliente
+
 class SedeViewSet(BaseViewSet):
     serializer_class = SedeSerializer
     model_class = Sede
