@@ -125,5 +125,30 @@ Para desplegar la aplicación, sigue estos pasos:
 
 Visita localhost:20001 en tu navegador para ver la aplicación en funcionamiento.
 
+## Migrations
+
+### Make migrations
+``` python
+python manage.py makemigrations
+```
+
+### Migrate app database
+
+```python
+python manage.py migrate
+```
+
+### Migrate data database
+
+```python
+python manage.py migrate data --database=hilda_data
+```
+
+## Create SuperUser
+
+```python
+python manage.py createsuperuser
+```
+
 # Licencia
 Este proyecto está licenciado bajo los términos de la licencia MIT.
