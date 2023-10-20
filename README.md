@@ -4,6 +4,32 @@
 
 Racek_Hilda_Application es una aplicación web desarrollada con Django Rest Framework que le pertenece a Racek, la cual permite registrar y disponer información de manera sencilla de los trámites para Empresas de Seguridad Privada que Racek tiene como clientes. Permite registrar usuarios de Racek (Gestores) y empleados de la empresa cliente, guardar sus documentos en una base de datos MariaDB; la aplicación utiliza dos bases de datos: una para almacenar todos los usuarios y datos de la aplicación, y otra para almacenar la información ingresada a través del sitio web.
 
+### Tipos de Usuarios
+
+#### 1) Gestor (Operative)
+
+Permisos limitados a **ingresar información a la base de datos**, estos cambios deben ser autorizados por el usuario Supervisor.
+
+#### 2) Supervisor
+
+Con permisos para **validar la información capturada por** el usuario **Operative**, **autorizar movimientos** en los rubros **de** **los equipos**, puede modificar la información ingresada por el usuario Operative. Solo puede acceder a las empresas que tiene asignadas.
+
+#### 3) Gerente (Manager)
+
+**Con permiso para crear usuarios** (Supervisor y Operative), validar la información capturada por los usuarios Administrativos.  autorizar movimientos en los rubros de los equipos, solo puede acceder y modificar la información de los proyectos que tiene asignados.
+
+#### 4) Superboss (SuperUser)
+
+**Con acceso completo** a modificar la base de datos (SuperUser), crear usuarios (Manager, Supervisor, Operative, Employee y Admin), autorizar movimientos de equipos, ****define quien puede tener acceso a información y privilegios**, ver la información completa, descargar la base de datos completa**. Con acceso al panel de control de pendientes.
+
+#### 5) Empleado (Employee)
+
+Permisos limitados a **ingresar información a la base de datos**, estos cambios deben ser autorizados por el usuario Supervisor. Solo puede acceder a los formularios del empleado.
+
+#### 6) Mantenimiento (Admin)
+
+**Con** casi **todos** los **permisos** para **modificar** la **base** de **datos** **excepto** para **crear** nuevos **usuarios** ni **borrar** la **base** de **datos**. Solicita permisos de modificación a SuperBoss
+
 ## Requisitos
 
 Asegúrate de tener las siguientes dependencias instaladas en tu entorno:
