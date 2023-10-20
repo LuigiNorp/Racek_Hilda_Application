@@ -8,8 +8,26 @@ from rest_framework import status
 # Create your views here.
 
 class BaseViewSet(viewsets.ModelViewSet):
+    """
+    A base ViewSet class that provides the standard actions for a Django model.
+
+    Attributes:
+        serializer_class: The serializer class to be used for this ViewSet.
+        model_class: The Django model for which the ViewSet is being created.
+        employee_serializer_class: The serializer to be used when the URL contains 'employees'.
+        previous_serializer_class: The serializer to be used when the URL contains 'previous'.
+
+    Methods:
+        list(self, request): Returns a list of all model instances.
+        create(self, request): Creates and returns a new model instance.
+        retrieve(self, request, pk=None): Retrieves and returns a specific model instance.
+        update(self, request, pk=None): Updates and returns a specific model instance.
+        destroy(self, request, pk=None): Deletes a specific model instance.
+    """
     serializer_class = None
     model_class = None
+    employee_serializer_class = None
+    previous_serializer_class = None
 
     def list(self, request):
         items = self.model_class.objects.all()
@@ -38,143 +56,79 @@ class BaseViewSet(viewsets.ModelViewSet):
         item = self.model_class.objects.get(id=pk)
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class CurpViewSet(BaseViewSet):
-    serializer_class = CurpSerializer
-    model_class = Curp
-
-class RfcViewSet(BaseViewSet):
-    serializer_class = RfcSerializer
-    model_class = Rfc
-
-class ClienteViewSet(BaseViewSet):
-    serializer_class = ClienteSerializer
-    model_class = Cliente
-
-class SedeViewSet(BaseViewSet):
-    serializer_class = SedeSerializer
-    model_class = Sede
-
-class CarpetaClienteGeneralesViewSet(BaseViewSet):
-    serializer_class = CarpetaClienteGeneralesSerializer
-    model_class = CarpetaClienteGenerales
-
-class CarpetaClientePagosViewSet(BaseViewSet):
-    serializer_class = CarpetaClientePagosSerializer
-    model_class = CarpetaClientePagos
-
-class CarpetaClienteContactosViewSet(BaseViewSet):
-    serializer_class = CarpetaClienteContactosSerializer
-    model_class = CarpetaClienteContactos
-
-class PersonalViewSet(BaseViewSet):
-    serializer_class = PersonalSerializer
-    model_class = Personal
-
-class EvaluadorViewSet(BaseViewSet):
-    serializer_class = EvaluadorSerializer
-    model_class = Evaluador
-
-class CarpetaLaboralViewSet(BaseViewSet):
-    serializer_class = CarpetaLaboralSerializer
-    model_class = CarpetaLaboral
-
-class PuestoViewSet(BaseViewSet):
-    serializer_class = PuestoSerializer
-    model_class = Puesto
-
-class CarpetaGeneralesViewSet(BaseViewSet):
-    serializer_class = CarpetaGeneralesSerializer
-    model_class = CarpetaGenerales
-
-class ReferenciaViewSet(BaseViewSet):
-    serializer_class = ReferenciaSerializer
-    model_class = Referencia
-
-class ReferenciaViewSet(BaseViewSet):
-    serializer_class = ReferenciaSerializer
-    model_class = Referencia
-
-class CarpetaDependientesViewSet(BaseViewSet):
-    serializer_class = CarpetaDependientesSerializer
-    model_class = CarpetaDependientes
-
-class DependienteViewSet(BaseViewSet):
-    serializer_class = DependienteSerializer
-    model_class = Dependiente
-
-class CarpetaExamenPsicologicoViewSet(BaseViewSet):
-    serializer_class = CarpetaExamenPsicologicoSerializer
-    model_class = CarpetaExamenPsicologico
-
-class CarpetaExamenToxicologicoViewSet(BaseViewSet):
-    serializer_class = CarpetaExamenToxicologicoSerializer
-    model_class = CarpetaExamenToxicologico
-
-class CarpetaExamenMedicoViewSet(BaseViewSet):
-    serializer_class = CarpetaExamenMedicoSerializer
-    model_class = CarpetaExamenMedico
-
-class CarpetaExamenFisicoViewSet(BaseViewSet):
-    serializer_class = CarpetaExamenFisicoSerializer
-    model_class = CarpetaExamenFisico
-
-class CarpetaExamenSocioeconomicoViewSet(BaseViewSet):
-    serializer_class = CarpetaExamenSocioeconomicoSerializer
-    model_class = CarpetaExamenSocioeconomico
-
-class CarpetaExamenPoligrafoViewSet(BaseViewSet):
-    serializer_class = CarpetaExamenPoligrafoSerializer
-    model_class = CarpetaExamenPoligrafo
     
-class CarpetaEmpleoAnteriorSeguridadPublicaViewSet(BaseViewSet):
-    serializer_class = CarpetaEmpleoAnteriorSeguridadPublicaSerializer
-    model_class = CarpetaEmpleoAnteriorSeguridadPublica
 
-class EmpleoAnteriorSeguridadPublicaViewSet(BaseViewSet):
-    serializer_class = EmpleoAnteriorSeguridadPublicaSerializer
-    model_class = EmpleoAnteriorSeguridadPublica
+def create_viewset(model, employee_serializer, previous_serializer=None):
+    """
+    Creates a ViewSet class for the provided model and serializers.
 
-class PuestoFuncionalViewSet(BaseViewSet):
-    serializer_class = PuestoFuncionalSerializer
-    model_class = PuestoFuncional
+    Args:
+        model: The Django model for which the ViewSet is being created.
+        employee_serializer: The serializer to be used when the URL contains 'employees'.
+        previous_serializer: The serializer to be used when the URL contains 'previous'. If not provided, employee_serializer will be used.
 
-class TipoBajaViewSet(BaseViewSet):
-    serializer_class = TipoBajaSerializer
-    model_class = TipoBaja
+    Returns:
+        A Django Rest Framework ViewSet class for the given model.
+    """
+    class_name = f"{model.__name__}ViewSet"
 
-class CarpetaEmpleoAnteriorViewSet(BaseViewSet):
-    serializer_class = CarpetaEmpleoAnteriorSerializer
-    model_class = CarpetaEmpleoAnterior
+    class MetaViewSet(BaseViewSet):
+        model_class = model
+        employee_serializer_class = employee_serializer
+        previous_serializer_class = previous_serializer
 
-class EmpleoAnteriorViewSet(BaseViewSet):
-    serializer_class = EmpleoAnteriorSerializer
-    model_class = EmpleoAnterior
+        def get_serializer_class(self):
+            if 'employees' in self.request.path:
+                return self.employee_serializer_class
+            elif 'previous' in self.request.path and self.previous_serializer_class is not None:
+                return self.previous_serializer_class
+            else:
+                return self.employee_serializer_class
 
-class MotivoSeparacionViewSet(BaseViewSet):
-    serializer_class = MotivoSeparacionSerializer
-    model_class = MotivoSeparacion
+    MetaViewSet.__name__ = class_name
+    return MetaViewSet
 
-class CarpetaCapacitacionViewSet(BaseViewSet):
-    serializer_class = CarpetaCapacitacionSerializer
-    model_class = CarpetaCapacitacion
 
-class CapacitacionPreviaViewSet(BaseViewSet):
-    serializer_class = CapacitacionPreviaSerializer
-    model_class = Capacitacion
-
-class TipoCursoViewSet(BaseViewSet):
-    serializer_class = TipoCursoSerializer
-    model_class = TipoCurso
+create_viewset(Curp, CurpEmpleadoSerializer, CurpPrevioSerializer)
+create_viewset(Rfc, RfcEmpleadoSerializer, RfcPrevioSerializer)
+create_viewset(Cliente, ClienteEmpleadoSerializer, ClientePrevioSerializer)
+create_viewset(DocumentosCliente, DocumentosClienteSerializer)
+create_viewset(Sede, SedeEmpleadoSerializer, SedePrevioSerializer)
+create_viewset(CarpetaClienteGenerales, CarpetaClienteGeneralesSerializer)
+create_viewset(CarpetaClientePagos, CarpetaClientePagosSerializer)
+create_viewset(CarpetaClienteContactos, CarpetaClienteContactosSerializer)
+create_viewset(Personal, PersonalEmpleadoSerializer, PersonalPrevioSerializer)
+create_viewset(Evaluador, EvaluadorEmpleadoSerializer, EvaluadorPrevioSerializer)
+create_viewset(Ocupacion, OcupacionSerializer)
+create_viewset(AreaCurso, AreaCursoSerializer)
+create_viewset(Capacitador, CapacitadorSerializer)
+create_viewset(CarpetaLaboral, CarpetaLaboralSerializer)
+create_viewset(Puesto, PuestoEmpladoSerializer, PuestoPrevioSerializer)
+create_viewset(CarpetaGenerales, CarpetaGeneralesEmpleadoSerializer, CarpetaGeneralesPrevioSerializer)
+create_viewset(CarpetaReferencias, CarpetaReferenciasSerializer)
+create_viewset(Referencia, ReferenciaSerializer)
+create_viewset(CarpetaDependientes, CarpetaDependientesSerializer)
+create_viewset(Dependiente, DependienteSerializer)
+create_viewset(CarpetaExamenPsicologico, CarpetaExamenPsicologicoEmpleadoSerializer, CarpetaExamenPsicologicoPrevioSerializer)
+create_viewset(CarpetaExamenToxicologico, CarpetaExamenToxicologicoEmpleadoSerializer, CarpetaExamenToxicologicoPrevioSerializer)
+create_viewset(CarpetaExamenMedico, CarpetaExamenMedicoEmpleadoSerializer, CarpetaExamenMedicoPrevioSerializer)
+create_viewset(CarpetaExamenFisico, CarpetaExamenFisicoEmpleadoSerializer, CarpetaExamenFisicoPrevioSerializer)
+create_viewset(CarpetaExamenSocioeconomico, CarpetaExamenSocioeconomicoEmpleadoSerializer, CarpetaExamenSocioeconomicoPrevioSerializer)
+create_viewset(CarpetaExamenPoligrafo, CarpetaExamenPoligrafoEmpleadoSerializer, CarpetaExamenPoligrafoPrevioSerializer)
+create_viewset(CarpetaEmpleoAnteriorSeguridadPublica, CarpetaEmpleoAnteriorSeguridadPublicaSerializer)
+create_viewset(EmpleoAnteriorSeguridadPublica, EmpleoAnteriorSeguridadPublicaSerializer)
+create_viewset(PuestoFuncional, PuestoFuncionalSerializer)
+create_viewset(TipoBaja, TipoBajaSerializer)
+create_viewset(CarpetaEmpleoAnterior, CarpetaEmpleoAnteriorSerializer)
+create_viewset(EmpleoAnterior, EmpleoAnteriorSerializer)
+create_viewset(MotivoSeparacion, MotivoSeparacionSerializer)
+create_viewset(CarpetaCapacitacion, CarpetaCapacitacionSerializer)
+create_viewset(Capacitacion, CapacitacionPreviaSerializer)
+create_viewset(TipoCurso, TipoCursoSerializer)
 
 # class CapacitacionEnCursoViewSet(BaseViewSet):
 #     serializer_class = CapacitacionEnCursoSerializer
 #     model_class = CapacitacionEnCurso
-
-class IdiomaViewSet(BaseViewSet):
-    serializer_class = IdiomaSerializer
-    model_class = Idioma
 
 # class HabilidadViewSet(BaseViewSet):
 #     serializer_class = HabilidadSerializer
@@ -184,42 +138,15 @@ class IdiomaViewSet(BaseViewSet):
 #     serializer_class = HabilidadPersonalizadaSerializer
 #     model_class = HabilidadPersonalizada
 
-class CarpetaMediaFiliacionViewSet(BaseViewSet):
-    serializer_class = CarpetaMediaFiliacionSerializer
-    model_class = CarpetaMediaFiliacion
-
-class DocumentosDigitalesViewSet(BaseViewSet):
-    serializer_class = DocumentosDigitalesSerializer
-    model_class = DocumentosDigitales
-
-class CapacitacionClienteViewSet(BaseViewSet):
-    serializer_class = CapacitacionClienteSerializer
-    model_class = Capacitacion
-
-class PersonalPorCapacitarViewSet(BaseViewSet):
-    serializer_class = PersonalPorCapacitarSerializer
-    model_class = PersonalPorCapacitar
-
-class DomicilioViewSet(BaseViewSet):
-    serializer_class = DomicilioSerializer
-    model_class = Domicilio
-
-class CodigoPostalViewSet(BaseViewSet):
-    serializer_class = CodigoPostalSerializer
-    model_class = CodigoPostal
-
-class ColoniaViewSet(BaseViewSet):
-    serializer_class = ColoniaSerializer
-    model_class = Colonia
-
-class MunicipioViewSet(BaseViewSet):
-    serializer_class = MunicipioSerializer
-    model_class = Municipio
-
-class EstadoViewSet(BaseViewSet):
-    serializer_class = EstadoSerializer
-    model_class = Estado
-
-class PaisViewSet(BaseViewSet):
-    serializer_class = PaisSerializer
-    model_class = Pais
+create_viewset(Idioma, IdiomaSerializer)
+create_viewset(CarpetaMediaFiliacion, CarpetaMediaFiliacionEmpleadoSerializer, CarpetaMediaFiliacionPrevioSerializer)
+create_viewset(DocumentosDigitales, DocumentosDigitalesEmpleadoSerializer, DocumentosDigitalesPrevioSerializer)
+create_viewset(RepresentanteTrabajadores, RepresentanteTrabajadoresSerializer)
+create_viewset(CapacitacionCliente, CapacitacionClienteSerializer)
+create_viewset(PersonalPorCapacitar, PersonalPorCapacitarSerializer)
+create_viewset(Domicilio, DomicilioSerializer)
+create_viewset(CodigoPostal, CodigoPostalSerializer)
+create_viewset(Colonia, ColoniaSerializer)
+create_viewset(Municipio, MunicipioSerializer)
+create_viewset(Estado, EstadoSerializer)
+create_viewset(Pais, PaisSerializer)

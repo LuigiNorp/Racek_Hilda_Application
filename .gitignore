@@ -1,19 +1,20 @@
 # Created by https://www.toptal.com/developers/gitignore/api/react,django
 # Edit at https://www.toptal.com/developers/gitignore?templates=react,django
 
-users/migrations/__pycache__/
+main/__pycache__
+data/__pycache__
+main/migrations/0*
+data/migrations/0*
+hildaApp/__pycache__
 .idea/
-data/migrations/0001_initial.py
 main/migrations/0001_initial.py
-
+data/migrations/0001_initial.py
 
 ### Django ###
 *.pot
 *.pyc
 __pycache__/
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
 media
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
