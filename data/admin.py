@@ -1,161 +1,289 @@
 from nested_admin import NestedStackedInline, NestedModelAdmin
-from django.contrib import admin
 from .models import *
+from .actions import *
+from django.contrib import admin
+
+
+
+# Create django admin action for reports
+generate_dc3.short_description = "Generar DC-3"
+
 
 # Register your models here.
+class DomicilioInline(NestedStackedInline):
+    model = Domicilio
+    extra = 0  # Establece el valor predeterminado de extra en 0
 
-class SedeInline(admin.StackedInline):
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        has_related_instance = False
+
+        if obj:
+            related_fields = {
+                'referencia': 'referencia',
+                'carpeta_cliente_generales': 'carpeta_cliente_generales',
+                'carpeta_cliente_pagos': 'carpeta_cliente_pagos',
+                'personal': 'personal',
+                'empleo_anterior_sp': 'empleo_anterior_sp',
+                'empleo_anterior': 'empleo_anterior'
+            }
+
+            for field, field_name in related_fields.items():
+                if hasattr(obj, field_name):
+                    fields = [field_name]
+                    has_related_instance = True
+                    break  # Rompe el bucle tan pronto como se encuentre una instancia relacionada
+
+            # Configura extra en función de si existe una instancia
+            # relacionada con alguno de los campos especificados
+            self.extra = 1 if has_related_instance else 0
+
+        return fields
+
+
+class DocumentosClienteInline(NestedStackedInline):
+    model = DocumentosCliente
+
+
+class RepresentanteTrabajadoresInline(NestedStackedInline):
+    model = RepresentanteTrabajadores
+
+
+class SedeInline(NestedStackedInline):
     model = Sede
-class CarpetaClienteGeneralesInline(admin.StackedInline):
+    extra = 1
+
+
+class CarpetaClienteGeneralesInline(NestedStackedInline):
     model = CarpetaClienteGenerales
-class CarpetaClientePagosInline(admin.StackedInline):
+    inlines = [DomicilioInline]
+
+
+class CarpetaClientePagosInline(NestedStackedInline):
     model = CarpetaClientePagos
-class CarpetaClienteContactosInline(admin.StackedInline):
+    inlines = [DomicilioInline]
+
+
+class CarpetaClienteContactosInline(NestedStackedInline):
     model = CarpetaClienteContactos
+    
+
+class CapacitacionClienteInline(NestedStackedInline):
+    model = CapacitacionCliente
+    extra = 1
+
 
 @admin.register(Cliente)
-class ClienteAdmin(admin.ModelAdmin):
-    list_display = ('id','nombre_comercial','razon_social','activo',)
-    inlines = [SedeInline, CarpetaClienteGeneralesInline, CarpetaClientePagosInline, CarpetaClienteContactosInline]
+class ClienteAdmin(NestedModelAdmin):
+    list_display = ('id', 'nombre_comercial', 'razon_social', 'activo',)
+    inlines = [
+        DocumentosClienteInline,
+        SedeInline,
+        RepresentanteTrabajadoresInline,
+        CarpetaClienteGeneralesInline,
+        CarpetaClientePagosInline,
+        CarpetaClienteContactosInline,
+        CapacitacionClienteInline,
+    ]
 
 
+class EvaluadorInline(NestedStackedInline):
+    model = Evaluador
 
 
-class DomicilioAdmin(NestedStackedInline):
-    model = Domicilio
+class CurpInline(NestedStackedInline):
+    model = Curp
 
-class CarpetaLaboralAdmin(NestedStackedInline):
+
+class RfcInline(NestedStackedInline):
+    model = Rfc
+
+
+class PuestoInline(NestedStackedInline):
+    model = Puesto
+    
+
+class CapacitadorInline(NestedStackedInline):
+    model = Capacitador
+
+
+class OcupacionInline(NestedStackedInline):
+    model = Ocupacion
+    
+
+class AreaCursoInline(NestedStackedInline):
+    model = AreaCurso
+
+
+class CarpetaLaboralInline(NestedStackedInline):
     model = CarpetaLaboral
+    extra = 1
+    inlines = [
+        PuestoInline, 
+        OcupacionInline, 
+        AreaCursoInline,
+        CapacitadorInline, 
+    ]
 
-class CarpetaGeneralesAdmin(NestedStackedInline):
+
+class CarpetaGeneralesInline(NestedStackedInline):
     model = CarpetaGenerales
 
-class ReferenciaAdmin(NestedStackedInline):
+
+class ReferenciaInline(NestedStackedInline):
     model = Referencia
-    inline = [DomicilioAdmin]
+    inlines = [DomicilioInline]
+    extra = 1
 
-class CarpetaReferenciasAdmin(NestedStackedInline):
+
+class CarpetaReferenciasInline(NestedStackedInline):
     model = CarpetaReferencias
-    inlines = [ReferenciaAdmin]
+    inlines = [ReferenciaInline]
 
-class DependienteAdmin(NestedStackedInline):
+
+class DependienteInline(NestedStackedInline):
     model = Dependiente
+    extra = 1
 
-class CarpetaDependientesAdmin(NestedStackedInline):
+
+class CarpetaDependientesInline(NestedStackedInline):
     model = CarpetaDependientes
-    inlines = [DependienteAdmin]
-    
+    inlines = [DependienteInline]
+
+
 class CarpetaExamenFisicoInline(NestedStackedInline):
     model = CarpetaExamenFisico
+
 
 class CarpetaExamenMedicoInline(NestedStackedInline):
     model = CarpetaExamenMedico
 
+
 class CarpetaExamenPsicologicoInline(NestedStackedInline):
     model = CarpetaExamenPsicologico
+
 
 class CarpetaExamenToxicologicoInline(NestedStackedInline):
     model = CarpetaExamenToxicologico
 
+
 class CarpetaExamenSocioeconomicoInline(NestedStackedInline):
     model = CarpetaExamenSocioeconomico
+
 
 class CarpetaExamenPoligrafoInline(NestedStackedInline):
     model = CarpetaExamenPoligrafo
 
-class EmpleoAnteriorSeguridadPublicaAdmin(NestedStackedInline):
+
+class EmpleoAnteriorSeguridadPublicaInline(NestedStackedInline):
     model = EmpleoAnteriorSeguridadPublica
-    
-class CarpetaEmpleoAnteriorSeguridadPublicaAdmin(NestedStackedInline):
+    inlines = [DomicilioInline]
+    extra = 1
+
+
+class CarpetaEmpleoAnteriorSeguridadPublicaInline(NestedStackedInline):
     model = CarpetaEmpleoAnteriorSeguridadPublica
-    inlines = [EmpleoAnteriorSeguridadPublicaAdmin]
+    inlines = [EmpleoAnteriorSeguridadPublicaInline]
 
 
-# Puedes mejor convertirlo en boton
+# TODO: Puedes mejor convertirlo en boton
 class EmpleoAnteriorAdmin(NestedStackedInline):
     model = EmpleoAnterior
+    inlines = [DomicilioInline]
 
-class CarpetaEmpleoAnteriorAdmin(NestedStackedInline):
+
+class CarpetaEmpleoAnteriorInline(NestedStackedInline):
     model = CarpetaEmpleoAnterior
     inlines = [EmpleoAnteriorAdmin]
+    extra = 1
 
-class IdiomaAdmin(NestedStackedInline):
+
+class IdiomaInline(NestedStackedInline):
     model = Idioma
+    extra = 1
 
-class TipoCursoAdmin(NestedStackedInline):
+
+class TipoCursoInline(NestedStackedInline):
     model = TipoCurso
 
-class CapacitacionAdmin(NestedStackedInline):
-    model= Capacitacion
 
-class CarpetaCapacitacionAdmin(NestedStackedInline):
+class CapacitacionInline(NestedStackedInline):
+    model = Capacitacion
+    inlines = [TipoCursoInline]
+    extra = 1
+
+
+class CarpetaCapacitacionInline(NestedStackedInline):
     model = CarpetaCapacitacion
-    inlines = [CapacitacionAdmin, IdiomaAdmin]
+    inlines = [CapacitacionInline, IdiomaInline]
 
-class CarpetaMediaFilicacionAdmin(NestedStackedInline):
+
+class CarpetaMediaFilicacionInline(NestedStackedInline):
     model = CarpetaMediaFiliacion
 
-class DocumentosDigitalesAdmin(NestedStackedInline):
+
+class DocumentosDigitalesInline(NestedStackedInline):
     model = DocumentosDigitales
+
 
 @admin.register(Personal)
 class PersonalAdmin(NestedModelAdmin):
     list_display = ('id', 'get_full_name', 'cliente',)
-    inlines =  [
+    inlines = [
+        CurpInline,
+        RfcInline,
+        DomicilioInline,
+        EvaluadorInline,
+        RepresentanteTrabajadoresInline,
         CarpetaExamenFisicoInline,
         CarpetaExamenMedicoInline,
         CarpetaExamenPsicologicoInline,
         CarpetaExamenToxicologicoInline,
         CarpetaExamenSocioeconomicoInline,
         CarpetaExamenPoligrafoInline,
-        CarpetaLaboralAdmin,
-        CarpetaGeneralesAdmin,
-        CarpetaReferenciasAdmin,
-        CarpetaDependientesAdmin,
-        CarpetaEmpleoAnteriorSeguridadPublicaAdmin,
-        CarpetaEmpleoAnteriorAdmin,
-        CarpetaCapacitacionAdmin, 
-        CarpetaMediaFilicacionAdmin,
-        DocumentosDigitalesAdmin,
+        CarpetaLaboralInline,
+        CarpetaGeneralesInline,
+        CarpetaReferenciasInline,
+        CarpetaDependientesInline,
+        CarpetaEmpleoAnteriorSeguridadPublicaInline,
+        CarpetaEmpleoAnteriorInline,
+        CarpetaCapacitacionInline,
+        CarpetaMediaFilicacionInline,
+        DocumentosDigitalesInline,
     ]
-    
+    actions = [generate_dc3]
+
     def get_full_name(self, obj):
         return f"{obj.curp.nombre} {obj.curp.apellido_paterno} {obj.curp.apellido_materno}"
 
     get_full_name.short_description = 'Full Name'
 
-@admin.register(Puesto)
-class PuestoAdmin(admin.ModelAdmin):
-    list_display = ('id','nombre_puesto',)
 
 @admin.register(PuestoFuncional)
 class PuestoFuncionalAdmin(admin.ModelAdmin):
-    list_display = ('id','nombre_puesto',)
+    list_display = ('id', 'nombre_puesto',)
+
 
 @admin.register(TipoBaja)
 class TipoBajaAdmin(admin.ModelAdmin):
-    list_display = ('id','motivo',)
+    list_display = ('id', 'motivo',)
+
 
 @admin.register(MotivoSeparacion)
 class MotivoSeparacionAdmin(admin.ModelAdmin):
-    list_display = ('id','motivo',)
+    list_display = ('id', 'motivo',)
+
 
 @admin.register(CapacitacionCliente)
-class CapacitacionClienteAdmin(admin.ModelAdmin):
-    list_display = ('id','cliente', 'estatus_capacitacion', 'comentarios', 'fecha_realizacion')
+class CapacitacionClienteInline(admin.ModelAdmin):
+    list_display = ('id', 'cliente', 'estatus_capacitacion', 'comentarios', 'fecha_realizacion')
+
 
 @admin.register(Capacitacion)
 class CapacitacionAdmin(admin.ModelAdmin):
-    list_display = ('id','institucion_empresa', 'curso', 'impartido_recibido', 'eficiencia_terminal', 'inicio', 'conclusion', 'duracion')
-
-@admin.register(Curp)
-class CurpAdmin(admin.ModelAdmin):
-    list_display = ('id','curp','nombre','apellido_materno','apellido_paterno','iniciales','fecha_nacimiento','sexo')
-
-@admin.register(Rfc)
-class RfcAdmin(admin.ModelAdmin):
-    list_display = ('id','rfc','razon_social','correo_contacto','validez','tipo',)
-
+    list_display = (
+        'id', 'institucion_empresa', 'curso', 'impartido_recibido', 'eficiencia_terminal', 'inicio', 'conclusion',
+        'duracion')
 
 
 # @admin.register(CapacitacionEnCurso)
@@ -172,26 +300,26 @@ class RfcAdmin(admin.ModelAdmin):
 #     list_display = ('id','habilidad','nombre_habilidad')
 
 
-@admin.register(Domicilio)
-class DomicilioAdmin(admin.ModelAdmin):
-    list_display = ('id','calle','numero_exterior','ciudad','codigo_postal',)
-
 @admin.register(CodigoPostal)
 class CodigoPostalAdmin(admin.ModelAdmin):
-    list_display = ('id','codigo_postal')
+    list_display = ('id', 'codigo_postal')
+
 
 @admin.register(Colonia)
 class ColoniaAdmin(admin.ModelAdmin):
-    list_display = ('id','colonia')
+    list_display = ('id', 'colonia')
+
 
 @admin.register(Municipio)
 class MunicipioAdmin(admin.ModelAdmin):
-    list_display = ('id','municipio')
+    list_display = ('id', 'municipio')
+
 
 @admin.register(Estado)
 class EstadoAdmin(admin.ModelAdmin):
-    list_display = ('id','estado')
+    list_display = ('id', 'estado')
+
 
 @admin.register(Pais)
 class PaisAdmin(admin.ModelAdmin):
-    list_display = ('id','pais')
+    list_display = ('id', 'pais')

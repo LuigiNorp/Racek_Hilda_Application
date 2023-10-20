@@ -2,110 +2,21 @@ from .choices import *
 from django.db import models
 from django.core.validators import RegexValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils import timezone
+# from django.utils import timezone
 import os
 
-def get_upload_path(instance, filename):
-    cliente_nombre = instance.personal.cliente.nombre_comercial
-    modelo = instance.__class__.__name__
-    return os.path.join('Documentos', cliente_nombre, modelo, filename)
 
-def get_rfc_upload_path(instance, filename):
-    return f'rfc/{filename}'
+def get_upload_path(instance, filename):
+    if isinstance(instance, DocumentosCliente):
+        cliente_nombre = instance.cliente.nombre_comercial
+        return os.path.join('Documentos', cliente_nombre, cliente_nombre, filename)
+    elif isinstance(instance, DocumentosDigitales):
+        cliente_nombre = instance.personal.cliente.nombre_comercial
+        folio_personal = instance.personal.folio
+        return os.path.join('Documentos', cliente_nombre, folio_personal, filename)
+
 
 # Create your models here.
-class Curp(models.Model):
-    # Implementar Curp Api desde Frontend
-    curp_regex = r'^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$'
-    curp = models.CharField(max_length=18, blank=True, unique=True,
-        validators=[RegexValidator(curp_regex, 'La CURP no es válida')])
-    nombre = models.CharField(max_length=100)
-    apellido_paterno = models.CharField(max_length=100)
-    apellido_materno = models.CharField(max_length=100)
-    iniciales = models.CharField(max_length=20, blank=True, null=True)
-    fecha_nacimiento = models.DateField(blank=True)
-    edad = models.PositiveIntegerField(blank=True, null=True)
-    anio_registro = models.PositiveIntegerField(blank=True, null=True)
-    numero_acta = models.CharField(max_length=20, blank=True, null=True)
-    validacion_renapo = models.BooleanField(default=False, blank=True, null=True)
-    sexo = models.CharField(max_length=10)
-    estatus_curp = models.CharField(max_length=20, choices=ESTATUS_CURP, blank=True, null=True)
-    clave_municipio_registro = models.CharField(max_length=5, blank=True, null=True)
-    municipio_registro = models.CharField(max_length=100, blank=True, null=True)
-    clave_entidad_registro = models.CharField(max_length=5, blank=True, null=True)
-    entidad_registro = models.CharField(max_length=100, blank=True, null=True)
-    transaction_id = models.CharField(max_length=100, blank=True, null=True)
-
-    def obtener_iniciales(self):
-        """Obtiene las iniciales del nombre y apellidos de la persona.
-
-        Returns:
-            str: Iniciales del nombre y apellidos de la persona.
-        """
-        # Obtenemos las iniciales de cada palabra en el nombre y apellidos
-        iniciales_nombre = ''.join([nombre[0] for nombre in self.nombre.split()])
-        iniciales_apellido_paterno = ''.join([apellido[0] for apellido in self.apellido_paterno.split()])
-        iniciales_apellido_materno = ''.join([apellido[0] for apellido in self.apellido_materno.split()])
-        # Concatenamos las iniciales
-        iniciales = f"{iniciales_nombre}{iniciales_apellido_paterno}{iniciales_apellido_materno}"
-        return iniciales
-
-    def calcular_edad(self):
-        """
-        Calcula la edad de la persona a partir de su fecha de nacimiento.
-        """
-        today = timezone.now().date()
-        age = today.year - self.fecha_nacimiento.year
-        if (today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day):
-            age -= 1
-        return age
-
-    def sexo_en_un_caracter(self):
-        if self.sexo.upper() in ["HOMBRE", "MASCULINO", "H", "h"]:
-            sexo = "H"
-        elif self.sexo.upper() in ["MUJER", "FEMENINO", "M", "m"]:
-            sexo = "M"
-        elif self.sexo.upper() in ["NO BINARIO", "X", "x"]:
-            sexo = "X"
-        else:
-            sexo = "UNKNOWN"
-        return sexo
-
-    def save(self, *args, **kwargs):
-        self.iniciales = self.obtener_iniciales()
-        self.edad = self.calcular_edad()
-        self.sexo = self.sexo_en_un_caracter()
-
-        # Llamamos al método save() original del modelo
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f'{self.curp}: {self.nombre} {self.apellido_paterno} {self.apellido_materno})'
-
-    class Meta:
-        verbose_name_plural = 'CURP'
-
-
-class Rfc(models.Model):
-    # Hacer conexiones con API RFC desde FrontEnd
-
-    rfc_regex = r'^[A-Za-z]{3,4}(\d{6})([A-Za-z]\d{2}|(\D|\d){3})?$'
-    rfc = models.CharField(max_length=13, validators=[RegexValidator(rfc_regex, 'El RFC ingresado no es válido')])
-    rfc_digital = models.FileField(upload_to=get_rfc_upload_path, blank=True, unique=True)
-    razon_social = models.CharField(max_length=255, blank=True, null=True)
-    estatus = models.CharField(max_length=20, blank=True, null=True)
-    fecha_efectiva = models.DateField(blank=True, null=True)
-    correo_contacto = models.CharField(max_length=200, blank=True, null=True)
-    validez = models.CharField(max_length=20, blank=True, null=True)
-    tipo = models.CharField(max_length=20, blank=True, null=True)
-
-    def __str__(self):
-        return f'{self.rfc}'
-
-    class Meta:
-        verbose_name_plural = 'RFC'
-
-
 class Pais(models.Model):
     pais = models.CharField(max_length=100, default='México')
     clave_pais_racek = models.CharField(max_length=4, blank=True, null=True)
@@ -132,7 +43,7 @@ class Estado(models.Model):
 class Municipio(models.Model):
     municipio = models.CharField(max_length=100)
     clave_municipio_racek = models.CharField(max_length=4, blank=True, null=True)
-    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT, null=True)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT, null=True)
 
     def __str__(self):
         return f'{self.municipio}'
@@ -163,23 +74,6 @@ class CodigoPostal(models.Model):
         verbose_name_plural = 'Codigos Postales'
 
 
-class Domicilio(models.Model):
-    calle = models.CharField(max_length=100)
-    numero_exterior = models.CharField(max_length=20)
-    numero_interior = models.CharField(max_length=20, blank=True, null=True)
-    entre_calle = models.CharField(max_length=100, null=True, blank=True)
-    y_calle = models.CharField(max_length=100, null=True, blank=True)
-    ciudad = models.CharField(max_length=50)
-    colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT)
-    municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
-    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT, null=True)
-    codigo_postal = models.OneToOneField(CodigoPostal, on_delete=models.RESTRICT)
-    pais = models.OneToOneField(Pais, on_delete=models.RESTRICT)
-
-    class Meta:
-        verbose_name_plural = 'Domicilios'
-
-
 class Cliente(models.Model):
     nombre_comercial = models.CharField(max_length=200)
     razon_social = models.CharField(max_length=200, blank=True)
@@ -204,25 +98,26 @@ class Sede(models.Model):
         verbose_name_plural = 'Sedes'
 
 
+class DocumentosCliente(models.Model):
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
+    qr_code = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+    logotipo = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+
+
 class CarpetaClienteGenerales(models.Model):
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     reg_estatal = models.CharField(max_length=30, blank=True)
     reg_federal = models.CharField(max_length=30, blank=True)
-    rfc = models.OneToOneField(Rfc, on_delete=models.RESTRICT, null=True, blank=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
+    rfc = models.CharField(max_length=13, blank=True)
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     representante_legal = models.CharField(max_length=300, blank=True)
     encargado_operativo = models.CharField(max_length=300, blank=True)
     encargado_rh = models.CharField(max_length=300, blank=True)
     coordinador = models.CharField(max_length=300, blank=True)
     registro_patronal = models.CharField(max_length=30, blank=True)
-    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
-    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f'{self.rfc}: {self.cliente}'
@@ -232,13 +127,11 @@ class CarpetaClienteGenerales(models.Model):
 
 
 class CarpetaClientePagos(models.Model):
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     encargado_pagos = models.CharField(max_length=150, blank=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_oficina = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_oficina = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     email = models.CharField(max_length=200, blank=True)
     rfc = models.CharField(max_length=13, blank=True)
     facturacion_tipo = models.PositiveSmallIntegerField(choices=FACTURACION_TIPO, blank=True)
@@ -247,8 +140,6 @@ class CarpetaClientePagos(models.Model):
     factura_subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     factura_iva = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     factura_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
-    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f'{self.cliente}: {self.encargado_pagos}'
@@ -258,19 +149,15 @@ class CarpetaClientePagos(models.Model):
 
 
 class CarpetaClienteContactos(models.Model):
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     nombre_contacto = models.CharField(max_length=300)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
-    puesto = models.CharField(max_length=30)
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    puesto = models.CharField(max_length=30, blank=True)
     email_1 = models.CharField(max_length=200, blank=True)
     email_2 = models.CharField(max_length=200, blank=True)
-    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.cliente}: {self.nombre_contacto}'
@@ -279,44 +166,87 @@ class CarpetaClienteContactos(models.Model):
         verbose_name_plural = 'Clientes Contactos'
 
 
-class Evaluador(models.Model):
-    evaluador = models.CharField(max_length=300)
-
-    class Meta:
-        verbose_name_plural = 'Evaluadores'
-
-
 class Personal(models.Model):
     folio = models.CharField(max_length=10, default='SIN FOLIO', blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    curp = models.OneToOneField(Curp, on_delete=models.RESTRICT, null=True)
-    rfc = models.OneToOneField(Rfc, on_delete=models.RESTRICT, null=True, blank=True)
-    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
     origen = models.PositiveSmallIntegerField(choices=ORIGEN_ASPIRANTE, blank=True, null=True)
     fecha = models.DateField(auto_now=True)
     es_empleado = models.BooleanField(default=False, blank=True)
     observaciones = models.TextField(blank=True, null=True)
     resultado = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
-    evaluador = models.OneToOneField(Evaluador, on_delete=models.RESTRICT, null=True, blank=True, )
 
     def __str__(self):
-        return f'{self.curp.nombre if self.curp else ""} {self.curp.apellido_materno if self.curp else ""} {self.curp.apellido_paterno if self.curp else ""}'
+        try:
+            return f'{self.curp.nombre if self.curp else ""} {self.curp.apellido_materno if self.curp else ""} {self.curp.apellido_paterno if self.curp else ""}'
+        except AttributeError:
+            return 'SIN CURP'
 
     class Meta:
         verbose_name_plural = 'Personal'
 
 
-class Puesto(models.Model):
-    nombre_puesto = models.CharField(max_length=30)
+class Curp(models.Model):
+    # Implementar Curp Api desde Frontend
+    personal = models.OneToOneField(Personal, on_delete=models.RESTRICT, blank=True, null=True)
+    curp_regex = r'^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$'
+    curp = models.CharField(max_length=18, unique=True, validators=[RegexValidator(curp_regex, 'La CURP no es válida')])
+    nombre = models.CharField(max_length=100)
+    apellido_paterno = models.CharField(max_length=100)
+    apellido_materno = models.CharField(max_length=100)
+    iniciales = models.CharField(max_length=20, blank=True, null=True)
+    fecha_nacimiento = models.DateField(blank=True, null=True)
+    edad = models.PositiveIntegerField(blank=True, null=True)
+    anio_registro = models.PositiveIntegerField(blank=True, null=True, verbose_name="Año registro")
+    numero_acta = models.CharField(max_length=20, blank=True, null=True)
+    validacion_renapo = models.PositiveSmallIntegerField(choices=VALIDACION_RENAPO, blank=True, null=True)
+    sexo = models.PositiveSmallIntegerField(choices=SEXO_CURP_OPCIONES, blank=True, null=True)
+    estatus_curp = models.CharField(max_length=20, choices=ESTATUS_CURP, blank=True, null=True)
+    clave_municipio_registro = models.CharField(max_length=5, blank=True, null=True)
+    municipio_registro = models.CharField(max_length=100, blank=True, null=True)
+    clave_entidad_registro = models.CharField(max_length=5, blank=True, null=True)
+    entidad_registro = models.CharField(max_length=100, blank=True, null=True)
+    transaction_id = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
-        return f'{self.carpeta_laboral}: {self.nombre_puesto}'
+        return f'{self.nombre} {self.apellido_paterno} {self.apellido_materno}'
 
     class Meta:
-        verbose_name_plural = 'Puestos'
+        verbose_name_plural = 'CURP'
+
+
+class Rfc(models.Model):
+    # Hacer conexiones con API RFC desde FrontEnd
+    personal = models.OneToOneField(Personal, on_delete=models.RESTRICT, blank=True, null=True)
+    rfc_regex = r'^[A-Za-z]{3,4}(\d{6})([A-Za-z]\d{2}|(\D|\d){3})?$'
+    rfc = models.CharField(max_length=13, validators=[RegexValidator(rfc_regex, 'El RFC ingresado no es válido')])
+    rfc_digital = models.FileField(upload_to=get_upload_path, blank=True, unique=True)
+    razon_social = models.CharField(max_length=255, blank=True, null=True)
+    estatus = models.CharField(max_length=20, blank=True, null=True)
+    fecha_efectiva = models.DateField(blank=True, null=True)
+    correo_contacto = models.CharField(max_length=200, blank=True, null=True)
+    validez = models.CharField(max_length=20, blank=True, null=True)
+    tipo = models.CharField(max_length=20, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.rfc}'
+
+    class Meta:
+        verbose_name_plural = 'RFC'
+
+
+class Evaluador(models.Model):
+    nombre_completo = models.CharField(max_length=300)
+    personal = models.OneToOneField(Personal, on_delete=models.RESTRICT, blank = True, null=True)
+
+    def __str__(self):
+        return f'{self.nombre_completo}'
+
+    class Meta:
+        verbose_name_plural = 'Evaluadores'
 
 
 class CarpetaLaboral(models.Model):
+    personal = models.OneToOneField(Personal, on_delete=models.CASCADE, null=True, blank=True)
     modalidad = models.PositiveSmallIntegerField(choices=MODALIDAD, blank=True)
     estatus_empleado = models.PositiveSmallIntegerField(choices=ESTATUS_EMPLEADO, blank=True)
     proceso_racek = models.PositiveSmallIntegerField(choices=PROCESO_RACEK, blank=True)
@@ -366,8 +296,6 @@ class CarpetaLaboral(models.Model):
     oficio_registro_sedena = models.CharField(max_length=25, blank=True)
     lic_part_col = models.CharField(max_length=25, blank=True)
     comentarios = models.TextField(blank=True, null=True)
-    personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
-    puesto = models.OneToOneField(Puesto, on_delete=models.RESTRICT)
 
     def __str__(self):
         return f'{self.personal}: {self.proceso_racek}'
@@ -376,17 +304,58 @@ class CarpetaLaboral(models.Model):
         verbose_name_plural = 'Carpetas Laborales'
 
 
+class Ocupacion(models.Model):
+    nombre_ocupacion = models.CharField(max_length=100, blank=True, null=True)
+    carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.nombre_ocupacion}'
+
+    class Meta:
+        verbose_name_plural = 'Ocupaciones'
+
+
+class Capacitador(models.Model):
+    nombre_capacitador = models.CharField(max_length=300, blank=True, null=True)
+    numero_registro = models.CharField(max_length=14, blank=True, null=True)
+    carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.nombre_capacitador}'
+
+    class Meta:
+        verbose_name_plural = 'Capacitadores'
+
+
+class AreaCurso(models.Model):
+    nombre_area = models.CharField(max_length=100, blank=True, null=True)
+    carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.nombre_area}'
+
+    class Meta:
+        verbose_name_plural = 'Areas Curso'
+
+
+class Puesto(models.Model):
+    nombre_puesto = models.CharField(max_length=30)
+    carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.nombre_puesto}'
+
+    class Meta:
+        verbose_name_plural = 'Puestos'
+
+
 class CarpetaGenerales(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
     email_empleado = models.CharField(max_length=200, blank=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_domicilio = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_domicilio = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     numero_elemento = models.PositiveIntegerField(blank=True)
     transporte = models.CharField(max_length=50, blank=True)
     tiempo_trayecto = models.CharField(max_length=15, blank=True, null=True)
@@ -403,8 +372,8 @@ class CarpetaGenerales(models.Model):
     especialidad_escuela = models.CharField(max_length=50, blank=True)
     cedula_profesional = models.CharField(max_length=20, blank=True)
     registro_sep = models.BooleanField(default=False, blank=True)
-    anio_inicio_escolaridad = models.DateField(blank=True)
-    anio_termino_escolaridad = models.DateField(blank=True)
+    anio_inicio_escolaridad = models.DateField(blank=True, verbose_name='Año inicio escolaridad')
+    anio_termino_escolaridad = models.DateField(blank=True, verbose_name='Año término escolaridad')
     comprobante_estudios = models.PositiveSmallIntegerField(choices=COMPROBANTE_ESTUDIOS, blank=True)
     folio_certificado = models.CharField(max_length=20, blank=True)
     promedio = models.DecimalField(max_digits=3, decimal_places=2, blank=True)
@@ -414,9 +383,6 @@ class CarpetaGenerales(models.Model):
     alergias = models.CharField(max_length=30, blank=True)
     inicio_trabajo = models.DateField(blank=True)
     fin_trabajo = models.DateField(blank=True)
-
-    def __str__(self):
-        return f'{self.personal.curp.nombre} {self.personal.curp.apellido_paterno} {self.personal.curp.apellido_materno}'
 
     class Meta:
         verbose_name_plural = 'Carpetas Generales'
@@ -440,13 +406,10 @@ class Referencia(models.Model):
     tiempo_de_conocerse = models.CharField(max_length=30, blank=True)
     direccion = models.CharField(max_length=100, blank=True)
     codigo_postal = models.CharField(max_length=5, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_contacto = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                         help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_contacto = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     opinion = models.TextField(blank=True, null=True)
     carpeta_referencia = models.ForeignKey(CarpetaReferencias, on_delete=models.CASCADE)
-    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'Referencias'
@@ -490,8 +453,7 @@ class CarpetaExamenPsicologico(models.Model):
     compromiso = models.PositiveSmallIntegerField(choices=OPCIONES_PSICOLOGICO, blank=True)
     habilidades_laborales = models.PositiveSmallIntegerField(choices=OPCIONES_PSICOLOGICO, blank=True)
     resultado_psicologico = models.PositiveSmallIntegerField(choices=RESULTADO_PSICOLOGICO, blank=True)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,
-                                                           null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
 
@@ -509,8 +471,7 @@ class CarpetaExamenToxicologico(models.Model):
     barbituricos = models.BooleanField(blank=True, default=False)
     benzodiacepinas = models.BooleanField(blank=True, default=False)
     resultado_toxicologico = models.BooleanField(blank=True, default=False)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADO_TOXICOLOGICO_ASPIRANTE, blank=True,
-                                                           null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADO_TOXICOLOGICO_ASPIRANTE, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
 
@@ -538,8 +499,7 @@ class CarpetaExamenMedico(models.Model):
     ishihara_tritanopia = models.CharField(max_length=30, blank=True, null=True)
     ishihara_acromatopsia = models.CharField(max_length=30, blank=True, null=True)
     ishihara_resultado = models.CharField(max_length=100, blank=True, null=True)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,
-                                                           null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
 
@@ -555,23 +515,15 @@ class CarpetaExamenFisico(models.Model):
         Alta: 7-10
     """
     fecha_examen = models.DateField(blank=True)
-    elasticidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-        default=0)
-    velocidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-        default=0)
-    resistencia = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-        default=0)
-    condicion_fisica = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-        default=0)
-    reflejos = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-        default=0)
-    locomocion = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-        default=0)
-    prueba_esfuerzo = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-        default=0)
+    elasticidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    velocidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    resistencia = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    condicion_fisica = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    reflejos = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    locomocion = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    prueba_esfuerzo = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
     resultado = models.CharField(max_length=100, blank=True, null=True)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,
-        null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
 
@@ -588,10 +540,10 @@ class CarpetaExamenSocioeconomico(models.Model):
     tipo_domicilio = models.PositiveSmallIntegerField(choices=TIPO_DOMICILIO, blank=True, null=True)
     titular_domicilio = models.CharField(max_length=300, blank=True, null=True)
     tipo_vivienda = models.PositiveSmallIntegerField(choices=TIPO_VIVIENDA, blank=True, null=True)
-    anios_residencia = models.CharField(max_length=10, blank=True, null=True)
+    anios_residencia = models.CharField(max_length=10, blank=True, null=True, verbose_name='Años residencia')
     niveles = models.CharField(max_length=4, blank=True, null=True)
     cuartos = models.CharField(max_length=5, blank=True, null=True)
-    banos = models.CharField(max_length=3, blank=True, null=True)
+    banos = models.CharField(max_length=3, blank=True, null=True, verbose_name='Baños')
     patios = models.CharField(max_length=3, blank=True, null=True)
     material_paredes = models.PositiveSmallIntegerField(choices=MATERIAL_PAREDES, blank=True, null=True)
     material_pisos = models.PositiveSmallIntegerField(choices=MATERIAL_PISOS, blank=True, null=True)
@@ -648,10 +600,8 @@ class CarpetaExamenSocioeconomico(models.Model):
     ultima_vez_enfermo = models.CharField(max_length=100, blank=True, null=True)
     embarazada = models.CharField(max_length=100, blank=True, null=True)
     contacto_emergencia = models.CharField(max_length=100, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_emergencia = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_emergencia = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
     parentesco_contacto = models.CharField(max_length=100, blank=True, null=True)
     actividates_fin_semana = models.PositiveSmallIntegerField(choices=ACTIVIDADES_FIN_SEMANA, blank=True, null=True)
     actividades_culturales_deportes = models.CharField(max_length=100, blank=True, null=True)
@@ -684,8 +634,7 @@ class CarpetaExamenSocioeconomico(models.Model):
     entorno_familiar = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
     situacion_economica = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
     experiencia_laboral = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,
-                                                           null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
     comentarios_generales = models.TextField(blank=True, null=True)
     ruta_acceso = models.CharField(max_length=200, blank=True, null=True)
     color_vivienda_porton = models.CharField(max_length=150, blank=True, null=True)
@@ -694,9 +643,7 @@ class CarpetaExamenSocioeconomico(models.Model):
     gasto = models.CharField(max_length=20, blank=True, null=True)
     nombre_recados = models.CharField(max_length=300, blank=True, null=True)
     parentesco = models.CharField(max_length=30, blank=True, null=True)
-    nombre_recados = models.CharField(max_length=300, blank=True, null=True)
-    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
     comentario = models.CharField(max_length=300, blank=True, null=True)
 
     class Meta:
@@ -712,13 +659,12 @@ class CarpetaExamenPoligrafo(models.Model):
         verbose_name_plural = 'Carpeta Examen Polígrafo'
 
 
-# Consultar con Hilda si es así
+# TODO: Consultar con Hilda si es así
 class CarpetaEmpleoAnteriorSeguridadPublica(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
-    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = 'Carpeta Empresas Anteriores Seguridad Publica'
+        verbose_name_plural = 'Carpeta Empleos Anteriores Seguridad Publica'
 
 
 class MotivoSeparacion(models.Model):
@@ -748,10 +694,8 @@ class EmpleoAnteriorSeguridadPublica(models.Model):
     direccion = models.CharField(max_length=150, blank=True, null=True)
     numero_exterior = models.CharField(max_length=20, blank=True, null=True)
     numero_interior = models.CharField(max_length=20, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     fecha_ingreso = models.DateField(blank=True, null=True)
     fecha_separacion = models.DateField(blank=True, null=True)
     funciones = models.CharField(max_length=100, blank=True, null=True)
@@ -772,12 +716,11 @@ class EmpleoAnteriorSeguridadPublica(models.Model):
     motivo_separacion = models.OneToOneField(MotivoSeparacion, on_delete=models.RESTRICT, null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = 'Empresas Anteriores Seguridad Publica'
+        verbose_name_plural = 'Empleos Anteriores Seguridad Publica'
 
 
 class CarpetaEmpleoAnterior(models.Model):
     personal = models.ForeignKey(Personal, on_delete=models.CASCADE)
-    domicilio = models.OneToOneField(Domicilio, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'Carpeta Empleos Anteriores'
@@ -785,10 +728,8 @@ class CarpetaEmpleoAnterior(models.Model):
 
 class EmpleoAnterior(models.Model):
     empresa = models.CharField(max_length=100, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-        message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-        help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     fecha_ingreso = models.DateField(blank=True, null=True)
     fecha_separacion = models.DateField(blank=True, null=True)
     salario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
@@ -830,12 +771,26 @@ class Capacitacion(models.Model):
 
 
 class TipoCurso(models.Model):
+    capacitacion = models.OneToOneField(Capacitacion, on_delete=models.RESTRICT)
     tipo_curso = models.CharField(max_length=100, blank=True, null=True)
-    capacitacion_previa = models.OneToOneField(Capacitacion, on_delete=models.RESTRICT)
 
     class Meta:
         verbose_name_plural = 'Tipo Cursos'
 
+
+class RepresentanteTrabajadores(models.Model):
+    nombre_completo = models.CharField(max_length=300, blank=True, null=True)
+    firma = models.FileField(upload_to='firma-representantes', blank=True, null=True)
+    reglamento_interno = models.FileField(upload_to='reglamentos-trabajo', blank=True, null=True)
+    personal = models.OneToOneField(Personal, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    
+    def __str__(self):
+        return self.nombre_completo
+    
+    class Meta:
+        verbose_name_plural = 'Representantes Trabajadores'
+    
 
 # class CapacitacionEnCurso(models.Model):
 #     estudio_curso = models.CharField(max_length=100, blank=True, null=True)
@@ -846,6 +801,32 @@ class TipoCurso(models.Model):
 
 #     class Meta:
 #         verbose_name_plural = 'Capacitaciones en Curso'
+
+class Domicilio(models.Model):
+    calle = models.CharField(max_length=100)
+    numero_exterior = models.CharField(max_length=20)
+    numero_interior = models.CharField(max_length=20, blank=True, null=True)
+    entre_calle = models.CharField(max_length=100, null=True, blank=True)
+    y_calle = models.CharField(max_length=100, null=True, blank=True)
+    pais = models.OneToOneField(Pais, on_delete=models.RESTRICT)
+    estado = models.OneToOneField(Estado, on_delete=models.RESTRICT)
+    municipio = models.OneToOneField(Municipio, on_delete=models.RESTRICT)
+    ciudad = models.CharField(max_length=50, null=True, blank=True)
+    colonia = models.OneToOneField(Colonia, on_delete=models.RESTRICT)
+    codigo_postal = models.OneToOneField(CodigoPostal, on_delete=models.RESTRICT)
+    carpeta_cliente_generales = models.OneToOneField(CarpetaClienteGenerales, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    carpeta_cliente_pagos = models.OneToOneField(CarpetaClientePagos, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    personal = models.OneToOneField(Personal, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    referencia = models.OneToOneField(Referencia, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    empleo_anterior_sp = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    empleo_anterior = models.OneToOneField(EmpleoAnterior, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+
+    def __str__(self):
+        return f'{self.calle} No.{self.numero_exterior} Int.{self.numero_interior}, {self.colonia}, {self.codigo_postal}, {self.municipio}, {self.estado}, {self.pais}'
+
+    class Meta:
+        verbose_name_plural = 'Domicilios'
+
 
 class Idioma(models.Model):
     idioma = models.CharField(max_length=50, blank=True, null=True)
@@ -898,16 +879,16 @@ class CarpetaMediaFiliacion(models.Model):
     cejas_direccion = models.PositiveSmallIntegerField(choices=CEJAS_DIRECCION, blank=True)
     cejas_implantacion = models.PositiveSmallIntegerField(choices=CEJAS_IMPLANTACION, blank=True)
     cejas_forma = models.PositiveSmallIntegerField(choices=CEJAS_FORMA, blank=True)
-    cejas_tamanio = models.PositiveSmallIntegerField(choices=CEJAS_TAMANIO, blank=True)
+    cejas_tamanio = models.PositiveSmallIntegerField(choices=CEJAS_TAMANIO, blank=True, verbose_name= 'Cejas tamaño')
     ojos_color = models.PositiveSmallIntegerField(choices=OJOS_COLOR, blank=True)
     ojos_forma = models.PositiveSmallIntegerField(choices=OJOS_FORMA, blank=True)
-    ojos_tamanio = models.PositiveSmallIntegerField(choices=OJOS_TAMANIO, blank=True)
+    ojos_tamanio = models.PositiveSmallIntegerField(choices=OJOS_TAMANIO, blank=True, verbose_name= 'Ojos tamaño')
     ojos_raiz = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, blank=True)
     nariz_dorso = models.PositiveSmallIntegerField(choices=NARIZ_DORSO, blank=True)
     nariz_ancho = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, blank=True)
     nariz_base = models.PositiveSmallIntegerField(choices=NARIZ_BASE, blank=True)
     nariz_altura = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, blank=True)
-    boca_tamanio = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, blank=True)
+    boca_tamanio = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, blank=True, verbose_name='Boca tamaño')
     boca_comisuras = models.PositiveSmallIntegerField(choices=BOCA_COMISURAS, blank=True)
     labios_espesor = models.PositiveSmallIntegerField(choices=LABIOS_ESPESOR, blank=True)
     altura_nasolabial = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, blank=True)
@@ -922,8 +903,7 @@ class CarpetaMediaFiliacion(models.Model):
     oreja_derecha_helix_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, blank=True)
     oreja_derecha_helix_contorno = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_HELIX_CONTORNO, blank=True)
     oreja_derecha_lobulo_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, blank=True)
-    oreja_derecha_lobulo_particularidad = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_LOBULO_PARTICULARIDAD,
-                                                                           blank=True)
+    oreja_derecha_lobulo_particularidad = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_LOBULO_PARTICULARIDAD, blank=True)
     oreja_derecha_lobulo_dimension = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, blank=True)
     sangre = models.PositiveSmallIntegerField(choices=SANGRE, blank=True)
     rh = models.PositiveSmallIntegerField(choices=RH, blank=True)
@@ -981,7 +961,6 @@ class DocumentosDigitales(models.Model):
     def __str__(self):
         return f'{self.personal}'
 
-    
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         campos_documentos = {
@@ -1069,7 +1048,10 @@ class PersonalPorCapacitar(models.Model):
     capacitacion_cliente = models.ForeignKey(CapacitacionCliente, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.personal.curp.nombre} {self.personal.curp.apellido_paterno} {self.personal.curp.apellido_materno}: {self.resultado_capacitacion}'
+        try:
+            return f'{self.personal.curp.nombre} {self.personal.curp.apellido_paterno} {self.personal.curp.apellido_materno}: {self.resultado_capacitacion}'
+        except AttributeError:
+            return f'SIN CURP'
 
     class Meta:
         verbose_name_plural = 'Personal Por Capacitar'

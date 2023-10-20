@@ -35,7 +35,7 @@ urlpatterns = [
     path('users/', Users.as_view(), name='users'),
     path('user/<int:pk>/profile/', CustomUserProfileView.as_view(), name="profile"),
     path('clients/', Clients.as_view(), name="clients"),
-    path('employees/', Personal.as_view(), name="employees"),
+    path('employees/', Empleado.as_view(), name="employees"),
     path('user/<int:pk>/history/', UserHistory.as_view(), name="history"),
 ]
 
