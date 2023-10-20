@@ -41,11 +41,11 @@ class BaseViewSet(viewsets.ModelViewSet):
 
 
 class CurpViewSet(BaseViewSet):
-    serializer_class = CurpSerializer
+    serializer_class = CurpEmpleadoSerializer
     model_class = Curp
 
 class RfcViewSet(BaseViewSet):
-    serializer_class = RfcSerializer
+    serializer_class = RfcEmpleadoSerializer
     model_class = Rfc
 
 class ClienteViewSet(BaseViewSet):
@@ -77,7 +77,7 @@ class PersonalViewSet(BaseViewSet):
     model_class = Personal
 
 class EvaluadorViewSet(BaseViewSet):
-    serializer_class = EvaluadorSerializer
+    serializer_class = EvaluadorEmpleadoSerializer
     model_class = Evaluador
 
 class OcupacionViewSet(BaseViewSet):

@@ -1,14 +1,26 @@
 from rest_framework import serializers
 from .models import *
 
-def create_serializer(model):
+def create_serializer(model, fields=None):
+    """
+    Creates a serializer for the given model.
+
+    Args:
+        model: The Django model for which the serializer is being created.
+        fields: A list or tuple of fields to be included in the serializer. If not provided, all fields will be included.
+
+    Returns:
+        A Django Rest Framework serializer for the given model.
+    """
     class_name = f"{model.__name__}Serializer"
-    fields = "__all__"
+    fields = fields if fields else "__all__"
     meta_class = type('Meta', (object,), {'model': model, 'fields': fields})
     return type(class_name, (serializers.ModelSerializer,), {'Meta': meta_class})
 
-CurpSerializer = create_serializer(Curp)
-RfcSerializer = create_serializer(Rfc)
+CurpEmpleadoSerializer = create_serializer(Curp)
+CurpPrevioSerializer = create_serializer(Curp, ['curp', 'nombre', 'apellido_paterno', 'apellido_materno','sexo', ])
+RfcEmpleadoSerializer = create_serializer(Rfc)
+RfcPrevioSerializer = create_serializer(Rfc, ['rfc',])
 ClienteSerializer = create_serializer(Cliente)
 DocumentosClienteSerializer = create_serializer(DocumentosCliente)
 SedeSerializer = create_serializer(Sede)
@@ -16,7 +28,8 @@ CarpetaClienteGeneralesSerializer = create_serializer(CarpetaClienteGenerales)
 CarpetaClientePagosSerializer = create_serializer(CarpetaClientePagos)
 CarpetaClienteContactosSerializer = create_serializer(CarpetaClienteContactos)
 PersonalSerializer = create_serializer(Personal)
-EvaluadorSerializer = create_serializer(Evaluador)
+EvaluadorEmpleadoSerializer = create_serializer(Evaluador)
+
 OcupacionSerializer = create_serializer(Ocupacion)
 AreaCursoSerializer = create_serializer(AreaCurso)
 CapacitadorSerializer = create_serializer(Capacitador)
