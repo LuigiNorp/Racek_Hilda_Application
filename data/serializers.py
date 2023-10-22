@@ -1,5 +1,58 @@
 from rest_framework import serializers
-from .models import *
+from data.models import *
+from main.models import *
+from django.contrib.auth import authenticate
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id','username','email', 'password','nombre','apellido_paterno','apellido_materno','departamento')
+        extra_kwargs = {'password': {'write_only': True}}
+    
+    def create(self, validated_data):
+        return CustomUser.objects.create_user(**validated_data)
+    
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password',None)
+        user = super().update(instance, validated_data)
+        
+        if password:
+            user.set_password(password)
+            user.save()
+        
+        return user
+
+
+class AuthTokenSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(style={'input_type': 'password'})
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+        user = authenticate(
+            request=self.context.get('request'),
+            username=username,
+            password=password
+        )
+
+        if not user:
+            raise serializers.ValidationError('No se pudo realizar la autenticación satisfactoriamente', code='authorization')
+
+        data['user'] = user
+        return data
+    
+
+class EditProfileSerializer(serializers.ModelSerializer):
+    nombre = serializers.CharField(max_length=100)
+    apellido_paterno = serializers.CharField(max_length=100)
+    apellido_materno = serializers.CharField(max_length=100)
+
+    class Meta:
+        model = CustomUser
+        fields = ('nombre', 'apellido_paterno', 'apellido_materno')
+
 
 def create_serializer(model, fields=None):
     """
@@ -29,13 +82,15 @@ SedePrevioSerializer = create_serializer(Sede, ['nombre_sede'])
 CarpetaClienteGeneralesSerializer = create_serializer(CarpetaClienteGenerales)
 CarpetaClientePagosSerializer = create_serializer(CarpetaClientePagos)
 CarpetaClienteContactosSerializer = create_serializer(CarpetaClienteContactos)
+
 PersonalEmpleadoSerializer = create_serializer(Personal)
 PersonalPrevioSerializer = create_serializer(Personal,['folio','origen','fecha','observaciones','resultado'])
+
 EvaluadorEmpleadoSerializer = create_serializer(Evaluador)
 EvaluadorPrevioSerializer = create_serializer(Evaluador, ['solicitante'])
 OcupacionSerializer = create_serializer(Ocupacion)
 AreaCursoSerializer = create_serializer(AreaCurso)
-CapacitadorSerializer = create_serializer(Capacitador)
+InstructorSerializer = create_serializer(Instructor)
 CarpetaLaboralSerializer = create_serializer(CarpetaLaboral)
 PuestoEmpladoSerializer = create_serializer(Puesto)
 PuestoPrevioSerializer = create_serializer(Puesto, ['nombre_puesto'])
@@ -65,10 +120,12 @@ CarpetaEmpleoAnteriorSerializer = create_serializer(CarpetaEmpleoAnterior)
 EmpleoAnteriorSerializer = create_serializer(EmpleoAnterior)
 MotivoSeparacionSerializer = create_serializer(MotivoSeparacion)
 CarpetaCapacitacionSerializer = create_serializer(CarpetaCapacitacion)
-CapacitacionPreviaSerializer = create_serializer(Capacitacion)
+CapacitacionSerializer = create_serializer(Capacitacion)
 TipoCursoSerializer = create_serializer(TipoCurso)
+# TODO: Verificar si se puede eliminar este serializador
 # CapacitacionEnCursoSerializer = create_serializer(CapacitacionEnCurso)
 IdiomaSerializer = create_serializer(Idioma)
+# TODO: Verificar si se puede eliminar este serializador
 # HabilidadSerializer = create_serializer(Habilidad)
 # HabilidadPersonalizadaSerializer = create_serializer(HabilidadPersonalizada)
 CarpetaMediaFiliacionEmpleadoSerializer = create_serializer(CarpetaMediaFiliacion)

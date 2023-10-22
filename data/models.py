@@ -235,11 +235,11 @@ class Rfc(models.Model):
 
 
 class Evaluador(models.Model):
-    nombre_completo = models.CharField(max_length=300)
+    solicitante = models.CharField(max_length=300)
     personal = models.OneToOneField(Personal, on_delete=models.RESTRICT, blank = True, null=True)
 
     def __str__(self):
-        return f'{self.nombre_completo}'
+        return f'{self.solicitante}'
 
     class Meta:
         verbose_name_plural = 'Evaluadores'
@@ -315,7 +315,7 @@ class Ocupacion(models.Model):
         verbose_name_plural = 'Ocupaciones'
 
 
-class Capacitador(models.Model):
+class Instructor(models.Model):
     nombre_capacitador = models.CharField(max_length=300, blank=True, null=True)
     numero_registro = models.CharField(max_length=14, blank=True, null=True)
     carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, blank=True, null=True)
@@ -791,7 +791,7 @@ class RepresentanteTrabajadores(models.Model):
     class Meta:
         verbose_name_plural = 'Representantes Trabajadores'
     
-
+# TODO: Consultar con Hilda si sigue en pie esta función
 # class CapacitacionEnCurso(models.Model):
 #     estudio_curso = models.CharField(max_length=100, blank=True, null=True)
 #     inicio = models.DateField(blank=True, null=True)
@@ -835,7 +835,7 @@ class Idioma(models.Model):
     conversacion = models.CharField(max_length=3, blank=True, null=True)
     carpeta_capacitacion = models.ForeignKey(CarpetaCapacitacion, on_delete=models.CASCADE)
 
-
+# TODO: Consultar con Hilda si sigue en pie esta función
 # class Habilidad(models.Model):
 #     computacion = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
 #     investigacion = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)

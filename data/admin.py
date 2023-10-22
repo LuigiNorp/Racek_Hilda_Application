@@ -103,8 +103,8 @@ class PuestoInline(NestedStackedInline):
     model = Puesto
     
 
-class CapacitadorInline(NestedStackedInline):
-    model = Capacitador
+class InstructorInline(NestedStackedInline):
+    model = Instructor
 
 
 class OcupacionInline(NestedStackedInline):
@@ -122,7 +122,7 @@ class CarpetaLaboralInline(NestedStackedInline):
         PuestoInline, 
         OcupacionInline, 
         AreaCursoInline,
-        CapacitadorInline, 
+        InstructorInline, 
     ]
 
 
@@ -286,6 +286,7 @@ class CapacitacionAdmin(admin.ModelAdmin):
         'duracion')
 
 
+# TODO: Verificar si se puede eliminar
 # @admin.register(CapacitacionEnCurso)
 # class CapacitacionEnCursoAdmin(admin.ModelAdmin):
 #     list_display = ('id','carpeta_capacitacion','estudio_curso')

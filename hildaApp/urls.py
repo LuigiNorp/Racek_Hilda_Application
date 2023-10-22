@@ -15,27 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from data.views import *
-from main.views import *
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('data.urls')),
-    path('', HomeView.as_view(), name="home"),
-    path('login/', LoginView.as_view() , name="login"),\
-    path('register/', Register.as_view(), name="register"),
-    path('forget-password/', ForgetPasswordView.as_view() , name="forget_password"),
-    path('change-password/<token>/', ChangePasswordView.as_view() , name="change_password"),
-    path('logout/' , LogoutView.as_view() , name="logout"),
-    # if you want to include the main app, uncomment the following line:
-    # path('api/', include('main.urls')),
-
-    # If you want to create a page with all users in a table
-
-    path('users/', Users.as_view(), name='users'),
-    path('user/<int:pk>/profile/', CustomUserProfileView.as_view(), name="profile"),
-    path('clients/', Clients.as_view(), name="clients"),
-    path('employees/', Empleado.as_view(), name="employees"),
-    path('user/<int:pk>/history/', UserHistory.as_view(), name="history"),
+    path('', include('main.urls')),
 ]
 

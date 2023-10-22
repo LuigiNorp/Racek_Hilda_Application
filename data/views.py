@@ -1,11 +1,44 @@
-from rest_framework import viewsets
-from .models import *
-from .serializers import *
+from data.models import *
+from data.serializers import *
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics, authentication, permissions
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework import viewsets
 
 
 # Create your views here.
+class CreateCustomUserView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+
+class CreateTokenView(ObtainAuthToken):
+    serializer_class = AuthTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'token': token.key})
+
+class RetrieveUpdateUserView(generics.RetrieveUpdateAPIView):
+    serializer_class = CustomUserSerializer
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+
+class EditProfileView(generics.UpdateAPIView):
+    serializer_class = EditProfileSerializer
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+
 
 class BaseViewSet(viewsets.ModelViewSet):
     """
@@ -89,64 +122,64 @@ def create_viewset(model, employee_serializer, previous_serializer=None):
     return MetaViewSet
 
 
-create_viewset(Curp, CurpEmpleadoSerializer, CurpPrevioSerializer)
-create_viewset(Rfc, RfcEmpleadoSerializer, RfcPrevioSerializer)
-create_viewset(Cliente, ClienteEmpleadoSerializer, ClientePrevioSerializer)
-create_viewset(DocumentosCliente, DocumentosClienteSerializer)
-create_viewset(Sede, SedeEmpleadoSerializer, SedePrevioSerializer)
-create_viewset(CarpetaClienteGenerales, CarpetaClienteGeneralesSerializer)
-create_viewset(CarpetaClientePagos, CarpetaClientePagosSerializer)
-create_viewset(CarpetaClienteContactos, CarpetaClienteContactosSerializer)
-create_viewset(Personal, PersonalEmpleadoSerializer, PersonalPrevioSerializer)
-create_viewset(Evaluador, EvaluadorEmpleadoSerializer, EvaluadorPrevioSerializer)
-create_viewset(Ocupacion, OcupacionSerializer)
-create_viewset(AreaCurso, AreaCursoSerializer)
-create_viewset(Capacitador, CapacitadorSerializer)
-create_viewset(CarpetaLaboral, CarpetaLaboralSerializer)
-create_viewset(Puesto, PuestoEmpladoSerializer, PuestoPrevioSerializer)
-create_viewset(CarpetaGenerales, CarpetaGeneralesEmpleadoSerializer, CarpetaGeneralesPrevioSerializer)
-create_viewset(CarpetaReferencias, CarpetaReferenciasSerializer)
-create_viewset(Referencia, ReferenciaSerializer)
-create_viewset(CarpetaDependientes, CarpetaDependientesSerializer)
-create_viewset(Dependiente, DependienteSerializer)
-create_viewset(CarpetaExamenPsicologico, CarpetaExamenPsicologicoEmpleadoSerializer, CarpetaExamenPsicologicoPrevioSerializer)
-create_viewset(CarpetaExamenToxicologico, CarpetaExamenToxicologicoEmpleadoSerializer, CarpetaExamenToxicologicoPrevioSerializer)
-create_viewset(CarpetaExamenMedico, CarpetaExamenMedicoEmpleadoSerializer, CarpetaExamenMedicoPrevioSerializer)
-create_viewset(CarpetaExamenFisico, CarpetaExamenFisicoEmpleadoSerializer, CarpetaExamenFisicoPrevioSerializer)
-create_viewset(CarpetaExamenSocioeconomico, CarpetaExamenSocioeconomicoEmpleadoSerializer, CarpetaExamenSocioeconomicoPrevioSerializer)
-create_viewset(CarpetaExamenPoligrafo, CarpetaExamenPoligrafoEmpleadoSerializer, CarpetaExamenPoligrafoPrevioSerializer)
-create_viewset(CarpetaEmpleoAnteriorSeguridadPublica, CarpetaEmpleoAnteriorSeguridadPublicaSerializer)
-create_viewset(EmpleoAnteriorSeguridadPublica, EmpleoAnteriorSeguridadPublicaSerializer)
-create_viewset(PuestoFuncional, PuestoFuncionalSerializer)
-create_viewset(TipoBaja, TipoBajaSerializer)
-create_viewset(CarpetaEmpleoAnterior, CarpetaEmpleoAnteriorSerializer)
-create_viewset(EmpleoAnterior, EmpleoAnteriorSerializer)
-create_viewset(MotivoSeparacion, MotivoSeparacionSerializer)
-create_viewset(CarpetaCapacitacion, CarpetaCapacitacionSerializer)
-create_viewset(Capacitacion, CapacitacionPreviaSerializer)
-create_viewset(TipoCurso, TipoCursoSerializer)
+CurpViewset = create_viewset(Curp, CurpEmpleadoSerializer, CurpPrevioSerializer)
+RfcViewset =  create_viewset(Rfc, RfcEmpleadoSerializer, RfcPrevioSerializer)
+ClienteViewset = create_viewset(Cliente, ClienteEmpleadoSerializer, ClientePrevioSerializer)
+DocumentosClienteViewset = create_viewset(DocumentosCliente, DocumentosClienteSerializer)
+SedeViewset = create_viewset(Sede, SedeEmpleadoSerializer, SedePrevioSerializer)
+CarpetaClienteGeneralesViewset = create_viewset(CarpetaClienteGenerales, CarpetaClienteGeneralesSerializer)
+CarpetaClientePagosViewset = create_viewset(CarpetaClientePagos, CarpetaClientePagosSerializer)
+CarpetaClienteContactosViewset = create_viewset(CarpetaClienteContactos, CarpetaClienteContactosSerializer)
+PersonalViewset = create_viewset(Personal, PersonalEmpleadoSerializer, PersonalPrevioSerializer)
+EvaluadorViewset = create_viewset(Evaluador, EvaluadorEmpleadoSerializer, EvaluadorPrevioSerializer)
+OcupacionViewset = create_viewset(Ocupacion, OcupacionSerializer)
+AreaCursoViewset = create_viewset(AreaCurso, AreaCursoSerializer)
+InstructorViewset = create_viewset(Instructor, InstructorSerializer)
+CarpetaLaboralViewset = create_viewset(CarpetaLaboral, CarpetaLaboralSerializer)
+PuestoViewset = create_viewset(Puesto, PuestoEmpladoSerializer, PuestoPrevioSerializer)
+CarpetaGeneralesViewset = create_viewset(CarpetaGenerales, CarpetaGeneralesEmpleadoSerializer, CarpetaGeneralesPrevioSerializer)
+CarpetaReferenciasViewset = create_viewset(CarpetaReferencias, CarpetaReferenciasSerializer)
+ReferenciaViewset = create_viewset(Referencia, ReferenciaSerializer)
+CarpetaDependienteViewset = create_viewset(CarpetaDependientes, CarpetaDependientesSerializer)
+DependienteViewset = create_viewset(Dependiente, DependienteSerializer)
+CarpetaExamenPsicologicoViewset = create_viewset(CarpetaExamenPsicologico, CarpetaExamenPsicologicoEmpleadoSerializer, CarpetaExamenPsicologicoPrevioSerializer)
+CarpetaExamenToxicologicoViewset = create_viewset(CarpetaExamenToxicologico, CarpetaExamenToxicologicoEmpleadoSerializer, CarpetaExamenToxicologicoPrevioSerializer)
+CarpetaExamenMedicoViewset = create_viewset(CarpetaExamenMedico, CarpetaExamenMedicoEmpleadoSerializer, CarpetaExamenMedicoPrevioSerializer)
+CarpetaExamenFisicoViewset = create_viewset(CarpetaExamenFisico, CarpetaExamenFisicoEmpleadoSerializer, CarpetaExamenFisicoPrevioSerializer)
+CarpetaExamenSocioeconomicoViewset = create_viewset(CarpetaExamenSocioeconomico, CarpetaExamenSocioeconomicoEmpleadoSerializer, CarpetaExamenSocioeconomicoPrevioSerializer)
+CarpetaExamenPoligrafoViewset = create_viewset(CarpetaExamenPoligrafo, CarpetaExamenPoligrafoEmpleadoSerializer, CarpetaExamenPoligrafoPrevioSerializer)
+CarpetaEmpleoAnteriorSeguridadPublicaViewset = create_viewset(CarpetaEmpleoAnteriorSeguridadPublica, CarpetaEmpleoAnteriorSeguridadPublicaSerializer)
+EmpleoAnteriorSeguridadPublicaViewset = create_viewset(EmpleoAnteriorSeguridadPublica, EmpleoAnteriorSeguridadPublicaSerializer)
+PuestoFuncionalViewset = create_viewset(PuestoFuncional, PuestoFuncionalSerializer)
+TipoBajaViewset = create_viewset(TipoBaja, TipoBajaSerializer)
+CarpetaEmpleoAnteriorViewset = create_viewset(CarpetaEmpleoAnterior, CarpetaEmpleoAnteriorSerializer)
+EmpleoAnteriorViewset = create_viewset(EmpleoAnterior, EmpleoAnteriorSerializer)
+MotivoSeparacionViewset = create_viewset(MotivoSeparacion, MotivoSeparacionSerializer)
+CarpetaCapacitacionViewset = create_viewset(CarpetaCapacitacion, CarpetaCapacitacionSerializer)
+CapacitacionViewset = create_viewset(Capacitacion, CapacitacionSerializer)
+TipoCursoViewset = create_viewset(TipoCurso, TipoCursoSerializer)
 
+# TODO: Verificar si sigue en pie esta función
 # class CapacitacionEnCursoViewSet(BaseViewSet):
 #     serializer_class = CapacitacionEnCursoSerializer
 #     model_class = CapacitacionEnCurso
-
+IdiomaViewset = create_viewset(Idioma, IdiomaSerializer)
+# TODO: Verificar si sigue en pie esta función
 # class HabilidadViewSet(BaseViewSet):
 #     serializer_class = HabilidadSerializer
 #     model_class = Habilidad
-
 # class HabilidadPersonalizadaViewSet(BaseViewSet):
 #     serializer_class = HabilidadPersonalizadaSerializer
 #     model_class = HabilidadPersonalizada
 
-create_viewset(Idioma, IdiomaSerializer)
-create_viewset(CarpetaMediaFiliacion, CarpetaMediaFiliacionEmpleadoSerializer, CarpetaMediaFiliacionPrevioSerializer)
-create_viewset(DocumentosDigitales, DocumentosDigitalesEmpleadoSerializer, DocumentosDigitalesPrevioSerializer)
-create_viewset(RepresentanteTrabajadores, RepresentanteTrabajadoresSerializer)
-create_viewset(CapacitacionCliente, CapacitacionClienteSerializer)
-create_viewset(PersonalPorCapacitar, PersonalPorCapacitarSerializer)
-create_viewset(Domicilio, DomicilioSerializer)
-create_viewset(CodigoPostal, CodigoPostalSerializer)
-create_viewset(Colonia, ColoniaSerializer)
-create_viewset(Municipio, MunicipioSerializer)
-create_viewset(Estado, EstadoSerializer)
-create_viewset(Pais, PaisSerializer)
+CarpetaMediaFiliacionViewset = create_viewset(CarpetaMediaFiliacion, CarpetaMediaFiliacionEmpleadoSerializer, CarpetaMediaFiliacionPrevioSerializer)
+DocumentosDigitalesViewset = create_viewset(DocumentosDigitales, DocumentosDigitalesEmpleadoSerializer, DocumentosDigitalesPrevioSerializer)
+RepresentanteTrabajadoresViewset = create_viewset(RepresentanteTrabajadores, RepresentanteTrabajadoresSerializer)
+CapacitacionClienteViewset = create_viewset(CapacitacionCliente, CapacitacionClienteSerializer)
+PersonalPorCapacitarViewset = create_viewset(PersonalPorCapacitar, PersonalPorCapacitarSerializer)
+DomicilioViewset = create_viewset(Domicilio, DomicilioSerializer)
+CodigoPostalViewset = create_viewset(CodigoPostal, CodigoPostalSerializer)
+ColoniaViewset = create_viewset(Colonia, ColoniaSerializer)
+MunicipioViewset = create_viewset(Municipio, MunicipioSerializer)
+EstadoViewset = create_viewset(Estado, EstadoSerializer)
+PaisViewset = create_viewset(Pais, PaisSerializer)
