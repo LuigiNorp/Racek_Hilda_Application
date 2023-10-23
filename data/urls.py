@@ -1,5 +1,5 @@
 from django.urls import include, path
-from .views import CreateCustomUserView, CreateTokenView, PersonalViewset, ClienteViewset, CurpViewset, RetrieveUpdateUserView, EditProfileView
+from .views import *
 from .models import *
 from rest_framework.routers import DefaultRouter
 

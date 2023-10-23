@@ -259,6 +259,14 @@ class PersonalAdmin(NestedModelAdmin):
     get_full_name.short_description = 'Full Name'
 
 
+class PersonalPreviosAdmin(PersonalAdmin):
+    exclude = ('es_empleado',)  # Excluir el campo 'es_empleado' en PreviosAdmin
+
+
+class PersonalEmpleadosAdmin(PersonalAdmin):
+    pass
+
+
 @admin.register(PuestoFuncional)
 class PuestoFuncionalAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre_puesto',)

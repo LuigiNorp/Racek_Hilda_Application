@@ -1,4 +1,5 @@
 import uuid
+from django.http import HttpRequest
 from django.shortcuts import render,redirect, get_object_or_404
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate,login,logout
@@ -261,35 +262,23 @@ class ClientesView(TemplateView):
         return context
 
 
-class PreviosView(TemplateView):
+class PersonalView(TemplateView):
     template_name = 'personal/personal.html'
     login_url = '/login/'
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if (
+                user.groups.filter(name='Superboss').exists() or
+                user.groups.filter(name='Manager').exists() or
+                user.groups.filter(name='Admin').exists()):
             return True
         return False
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_register_enabled'] = self.test_func()
-        return context
-
-
-class EmpleadosView(TemplateView):
-    template_name = 'personal/personal.html'
-    login_url = '/login/'
-
-    def test_func(self):
-        user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
-            return True
-        return False
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['is_register_enabled'] = self.test_func()
+        context['form'] = PersonalForm(self.request.POST or None, request=self.request)
         return context
 
 
