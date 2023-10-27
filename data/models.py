@@ -3,17 +3,36 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
 # from django.utils import timezone
+from django.core.files.storage import default_storage
 import os
+from uuid import uuid4
 
 
 def get_upload_path(instance, filename):
+    # Generate a unique filename using a UUID
+    _, ext = os.path.splitext(filename)
+    unique_filename = f"{uuid4().hex}{ext}"
+
+    directory = ""
     if isinstance(instance, DocumentosCliente):
+        # When it's a DocumentosCliente, use the cliente.nombre_comercial directly
         cliente_nombre = instance.cliente.nombre_comercial
-        return os.path.join('Documentos', cliente_nombre, cliente_nombre, filename)
+        directory = os.path.join('Documentos', cliente_nombre, cliente_nombre)
     elif isinstance(instance, DocumentosDigitales):
-        cliente_nombre = instance.personal.cliente.nombre_comercial
-        folio_personal = instance.personal.folio
-        return os.path.join('Documentos', cliente_nombre, folio_personal, filename)
+        if instance.personal.curp:
+            # When it's a DocumentosDigitales with a valid curp, access personal.cliente.nombre_comercial
+            personal_nombre = instance.personal.curp.get_full_name()
+            cliente_nombre = instance.personal.cliente.nombre_comercial
+            directory = os.path.join('Documentos', cliente_nombre, personal_nombre)
+        else:
+            # When it's a DocumentosDigitales with no curp, use a default value or directory
+            cliente_nombre = instance.personal.cliente.nombre_comercial
+            directory = os.path.join('Documentos', cliente_nombre, 'No Personal Name')
+
+    # Construct the full file path
+    full_path = os.path.join(directory, unique_filename)
+
+    return full_path
 
 
 # Create your models here.
@@ -128,18 +147,18 @@ class CarpetaClienteGenerales(models.Model):
 
 class CarpetaClientePagos(models.Model):
     cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
-    encargado_pagos = models.CharField(max_length=150, blank=True)
+    encargado_pagos = models.CharField(max_length=150, blank=True, null=True)
     validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_oficina = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
-    email = models.CharField(max_length=200, blank=True)
-    rfc = models.CharField(max_length=13, blank=True)
-    facturacion_tipo = models.PositiveSmallIntegerField(choices=FACTURACION_TIPO, blank=True)
-    revision = models.CharField(max_length=50, blank=True)
-    pagos = models.CharField(max_length=50, blank=True)
-    factura_subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    factura_iva = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    factura_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
+    telefono_oficina = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
+    email = models.CharField(max_length=200, blank=True, null=True)
+    rfc = models.CharField(max_length=13, blank=True, null=True)
+    facturacion_tipo = models.PositiveSmallIntegerField(choices=FACTURACION_TIPO, null=True, blank=True)
+    revision = models.CharField(max_length=50, blank=True, null=True)
+    pagos = models.CharField(max_length=50, blank=True, null=True)
+    factura_subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    factura_iva = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    factura_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     def __str__(self):
         return f'{self.cliente}: {self.encargado_pagos}'
@@ -207,8 +226,11 @@ class Curp(models.Model):
     entidad_registro = models.CharField(max_length=100, blank=True, null=True)
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
 
-    def __str__(self):
+    def get_full_name(self):
         return f'{self.nombre} {self.apellido_paterno} {self.apellido_materno}'
+
+    def __str__(self):
+        return self.get_full_name()
 
     class Meta:
         verbose_name_plural = 'CURP'
@@ -740,7 +762,7 @@ class EmpleoAnterior(models.Model):
     puesto_jefe_inmediato = models.CharField(max_length=50, blank=True, null=True)
     informante = models.CharField(max_length=300, blank=True, null=True)
     puesto_informante = models.CharField(max_length=50, blank=True, null=True)
-    desempenio = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True)
+    desempenio = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True, verbose_name= 'desempeño')
     observaciones = models.TextField(blank=True, null=True)
     carp_emp_ant = models.OneToOneField(CarpetaEmpleoAnterior, on_delete=models.CASCADE)
     motivo_separacion = models.OneToOneField(MotivoSeparacion, on_delete=models.RESTRICT, null=True, blank=True)
@@ -962,56 +984,31 @@ class DocumentosDigitales(models.Model):
         return f'{self.personal}'
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        campos_documentos = {
-            'hoja_datos': self.hoja_datos,
-            'solicitud': self.solicitud,
-            'ine': self.ine,
-            'acta_nacimiento': self.acta_nacimiento,
-            'folio_acta_nacimiento': self.folio_acta_nacimiento,
-            'huellas_digitales': self.huellas_digitales,
-            'curp': self.curp,
-            'comprobante_domicilio': self.comprobante_domicilio,
-            'fecha_comprobante_domicilio': self.fecha_comprobante_domicilio,
-            'antecedentes_no_penales': self.antecedentes_no_penales,
-            'fecha_antecedentes_no_penales': self.fecha_antecedentes_no_penales,
-            'comprobante_estudios': self.comprobante_estudios,
-            'cartilla_smn': self.cartilla_smn,
-            'nss': self.nss,
-            'carta_recomendacion': self.carta_recomendacion,
-            'contrato': self.contrato,
-            'socioeconomico': self.socioeconomico,
-            'fecha_socioeconomico': self.fecha_socioeconomico,
-            'foto_socioeconomico': self.foto_socioeconomico,
-            'psicologico': self.psicologico,
-            'fecha_psicologico': self.fecha_psicologico,
-            'medico': self.medico,
-            'fecha_medico': self.fecha_medico,
-            'toxicologico': self.toxicologico,
-            'fecha_toxicologico': self.fecha_toxicologico,
-            'fisico': self.fisico,
-            'fecha_fisico': self.fecha_fisico,
-            'croquis': self.croquis,
-            'curriculum': self.curriculum,
-            'check_acta_nacimiento': self.check_acta_nacimiento,
-            'check_ine': self.check_ine,
-            'check_comprobante_domicilio': self.check_comprobante_domicilio,
-            'check_comprobante_estudios': self.check_comprobante_estudios,
-            'check_curp': self.check_curp,
-            'check_rfc': self.check_rfc,
-            'check_cartilla': self.check_cartilla,
-            'check_nss': self.check_nss,
-            'check_huellas_digitales': self.check_huellas_digitales,
-            'check_fotografias': self.check_fotografias,
-        }
+        # Check if the instance already exists in the database
+        if self.pk:
+            # Get the existing instance to access old field values
+            existing_instance = DocumentosDigitales.objects.get(pk=self.pk)
 
-        for campo, archivo in campos_documentos.items():
-            if isinstance(archivo, (models.FileField, models.ImageField)) and archivo:
-                archivo.name = get_upload_path(self, archivo.name)
-                super().save(update_fields=[campo])
+            # Iterate through each file field
+            for field_name in [f.name for f in DocumentosDigitales._meta.get_fields() if
+                               isinstance(f, (models.FileField, models.ImageField))]:
+                old_file = getattr(existing_instance, field_name)
+                new_file = getattr(self, field_name)
+
+                if new_file and old_file != new_file:
+                    # If the new file is different from the old file, delete the old file
+                    if old_file:
+                        # Use the storage's delete method to remove the file
+                        default_storage.delete(old_file.name)
+                elif not new_file:
+                    # If the new file is empty, delete the old file
+                    if old_file:
+                        default_storage.delete(old_file.name)
+
+        super().save(*args, **kwargs)
 
     class Meta:
-        verbose_name_plural = 'Documentos Personales'
+        verbose_name_plural = 'Documentos Digitales'
 
 
 class CapacitacionCliente(models.Model):
