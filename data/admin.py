@@ -2,18 +2,15 @@ from nested_admin import NestedStackedInline, NestedModelAdmin
 from .models import *
 from .actions import *
 from django.contrib import admin
-
-
-
-# Create django admin action for reports
-generate_dc3.short_description = "Generar DC-3"
+from main.views import GenerateDC3View
 
 
 # Register your models here.
 class DomicilioInline(NestedStackedInline):
     model = Domicilio
-    extra = 0  # Establece el valor predeterminado de extra en 0
+    extra = 0
 
+    # Hide Domicilio when is not used (the get_fields is necessary)
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request, obj)
         has_related_instance = False
@@ -28,11 +25,12 @@ class DomicilioInline(NestedStackedInline):
                 'empleo_anterior': 'empleo_anterior'
             }
 
+            # Rompe el bucle tan pronto como se encuentre una instancia relacionada
             for field, field_name in related_fields.items():
                 if hasattr(obj, field_name):
                     fields = [field_name]
                     has_related_instance = True
-                    break  # Rompe el bucle tan pronto como se encuentre una instancia relacionada
+                    break
 
             # Configura extra en función de si existe una instancia
             # relacionada con alguno de los campos especificados
@@ -51,7 +49,7 @@ class RepresentanteTrabajadoresInline(NestedStackedInline):
 
 class SedeInline(NestedStackedInline):
     model = Sede
-    extra = 1
+    extra = 0
 
 
 class CarpetaClienteGeneralesInline(NestedStackedInline):
@@ -251,6 +249,12 @@ class PersonalAdmin(NestedModelAdmin):
         CarpetaMediaFilicacionInline,
         DocumentosDigitalesInline,
     ]
+
+    def generate_dc3(self, request, queryset):
+        for personal_instance in queryset:
+            generate_dc3_report(personal_instance)
+
+    generate_dc3.short_description = "Generar DC-3"
     actions = [generate_dc3]
 
     def get_full_name(self, obj):

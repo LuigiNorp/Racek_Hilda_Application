@@ -13,7 +13,7 @@ data/migrations/0001_initial.py
 *.pyc
 __pycache__/
 local_settings.py
-media
+media/file_templates/Erasable
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.
@@ -195,3 +195,5 @@ sketch
 test_racek.tar
 
 # End of https://www.toptal.com/developers/gitignore/api/react,django
+/appmap.yml
+/tmp/
