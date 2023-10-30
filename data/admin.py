@@ -2,7 +2,6 @@ from nested_admin import NestedStackedInline, NestedModelAdmin
 from .models import *
 from .actions import *
 from django.contrib import admin
-from main.views import GenerateDC3View
 
 
 # Register your models here.
@@ -250,12 +249,8 @@ class PersonalAdmin(NestedModelAdmin):
         DocumentosDigitalesInline,
     ]
 
-    def generate_dc3(self, request, queryset):
-        for personal_instance in queryset:
-            generate_dc3_report(personal_instance)
-
-    generate_dc3.short_description = "Generar DC-3"
-    actions = [generate_dc3]
+    generate_dc3_report.short_description = 'Generar DC-3'
+    actions = [generate_dc3_report]
 
     def get_full_name(self, obj):
         return f"{obj.curp.nombre} {obj.curp.apellido_paterno} {obj.curp.apellido_materno}"

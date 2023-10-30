@@ -1,8 +1,14 @@
 import uuid
+from openpyxl import load_workbook
+from openpyxl.drawing.image import Image as XlsxImage
+from openpyxl.worksheet.page import PageMargins
+from PIL import Image as PilImage
+import subprocess
+from unidecode import unidecode
 from django.http import FileResponse, HttpResponseNotFound, HttpResponse
-from django.shortcuts import render,redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.views import APIView
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import TemplateView
 from django.contrib.auth.models import User
@@ -13,30 +19,6 @@ from django.core.cache import cache
 from django.db.models import Q
 from .forms import *
 from .models import *
-from data.actions import *
-from openpyxl import load_workbook
-from openpyxl.worksheet.page import PageMargins
-from openpyxl.drawing.image import Image as XlsxImage
-from PIL import Image as PilImage
-import subprocess
-from unidecode import unidecode
-
-
-def scale_image_from_height(image_path, desired_height_cm):
-    # Load the image with PIL to get its size
-    with PilImage.open(image_path) as pil_img:
-        original_width, original_height = pil_img.size
-
-    # Convert the height from cm to pixels and set the height of the image
-    dpi = 96
-    cm_to_pixels = lambda cm: int(dpi * cm / 2.54)  # convert cm to pixels
-    desired_height_px = cm_to_pixels(desired_height_cm)
-
-    # Calculate the new width to maintain aspect ratio
-    scale_factor = desired_height_px / original_height
-    desired_width_px = int(original_width * scale_factor)
-
-    return desired_width_px, desired_height_px
 
 
 # Create your views here.
@@ -137,7 +119,7 @@ class ChangePasswordView(View):
         except Exception as e:
             print(e)
         return render(request, self.template_name)
-    
+
 
 class ServeFileView(View):
     def get(self, request, file_url):
@@ -158,7 +140,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
+                name='Manager').exists() or user.groups.filter(name='Admin').exists():
             return True
         return False
 
@@ -180,7 +163,8 @@ class RegisterView(LoginRequiredMixin, UserPassesTestMixin, APIView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
+                name='Manager').exists() or user.groups.filter(name='Admin').exists():
             return True
         return False
 
@@ -203,7 +187,7 @@ class RegisterView(LoginRequiredMixin, UserPassesTestMixin, APIView):
             return redirect('/')
         else:
             messages.error(request, form.errors)
- 
+
         is_register_enabled = self.test_func()
         context = {
             'form': form,
@@ -218,7 +202,8 @@ class CustomUserProfileView(LoginRequiredMixin, APIView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
+                name='Manager').exists() or user.groups.filter(name='Admin').exists():
             return True
         return False
 
@@ -240,7 +225,7 @@ class CustomUserProfileView(LoginRequiredMixin, APIView):
             return redirect('/')
         else:
             messages.error(request, form.errors)
-        
+
         is_register_enabled = self.is_register_enabled()
         context = {
             'form': form,
@@ -254,7 +239,8 @@ class UsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
+                name='Manager').exists() or user.groups.filter(name='Admin').exists():
             return True
         return False
 
@@ -287,7 +273,8 @@ class ClientesView(TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
+                name='Manager').exists() or user.groups.filter(name='Admin').exists():
             return True
         return False
 
@@ -323,7 +310,8 @@ class UserHistoryView(LoginRequiredMixin, TemplateView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
+                name='Manager').exists() or user.groups.filter(name='Admin').exists():
             return True
         return False
 
@@ -345,7 +333,7 @@ class UserHistoryView(LoginRequiredMixin, TemplateView):
             return redirect('/')
         else:
             messages.error(request, form.errors)
-        
+
         is_register_enabled = self.is_register_enabled()
         context = {
             'form': form,
@@ -359,22 +347,41 @@ class GenerateDC3View(View):
         # Use unidecode to remove accents and replace special characters
         return unidecode(text)
 
+
+    def scale_image_from_height(self, image_path, desired_height_cm):
+        # Load the image with PIL to get its size
+        with PilImage.open(image_path) as pil_img:
+            original_width, original_height = pil_img.size
+
+        # Convert the height from cm to pixels and set the height of the image
+        dpi = 96
+        cm_to_pixels = lambda cm: int(dpi * cm / 2.54)  # convert cm to pixels
+        desired_height_px = cm_to_pixels(desired_height_cm)
+
+        # Calculate the new width to maintain aspect ratio
+        scale_factor = desired_height_px / original_height
+        desired_width_px = int(original_width * scale_factor)
+
+        return desired_width_px, desired_height_px
+
+
     def add_image_to_worksheet(self, image_path, cell, activesheet, width, height):
         # Load and add the image with openpyxl
         img = XlsxImage(image_path)
         img.width = width
         img.height = height
 
-        # Add the image to the specified cell
+        # Add image to the specified cell
         activesheet.add_image(img, cell)
 
-    def convert_xlsx_to_pdf(self, xlsx_path):
-        # Specify the sheet index (0 for the first sheet)
-        sheet_index = 0
-        command = f"libreoffice --headless --convert-to pdf:writer_pdf_Export --outdir {os.path.dirname(xlsx_path)}"
+    def convert_xlsx_to_pdf(self, xlsx_path, pdf_path):
+        sheet_index = 0 # Especifica el índice de la hoja (0 para la primera hoja)
+        command = f"libreoffice --headless --convert-to pdf:writer_pdf_Export --outdir {os.path.dirname(pdf_path)} {xlsx_path}"
         subprocess.run(command, shell=True)
+        return pdf_path
 
-    def get(self, request, personal_id, desired_height_cm=3.5):
+
+    def get(self, personal_id, request, queryset,desired_height_cm=3.5):
         original_file_path = "./media/file_templates/DC3 ACTUALIZADO.xlsx"
         modified_xlsx_path = 'media/file_templates/modified_dc3.xlsx'
 
@@ -390,148 +397,157 @@ class GenerateDC3View(View):
             bottom=.2
         )
 
-        personal = get_object_or_404(Personal, id=personal_id)
+        for personal in queryset:
+            data = {
+                'nombre_completo': '',
+                'curp': '',
+                'ocupacion': '',
+                'puesto': '',
+                'razon_social': '',
+                'rfc': '',
+                'nombre_curso': '',
+                'horas_curso': '',
+                'fecha_inicial_capacitacion': '',
+                'fecha_final_capacitacion': '',
+                'area_curso': '',
+                'nombre_capacitador': '',
+                'registro_capacitador': '',
+                'representante_legal': '',
+                'representante_trabajadores': '',
+                'logotipo': None,
+                'qr_code': None,
+                }
 
-        data = {
-            'nombre_completo': '',
-            'curp': '',
-            'ocupacion': '',
-            'puesto': '',
-            'razon_social': '',
-            'rfc': '',
-            'nombre_curso': '',
-            'horas_curso': '',
-            'fecha_inicial_capacitacion': '',
-            'fecha_final_capacitacion': '',
-            'area_curso': '',
-            'nombre_capacitador': '',
-            'registro_capacitador': '',
-            'representante_legal': '',
-            'representante_trabajadores': '',
-            'logotipo': None,
-            'qr_code': None,
-        }
+            # Try to access each attribute individually and handle exceptions separately
+            try:
+                data['nombre_completo'] = personal.curp.get_full_name()
+            except AttributeError:
+                pass
 
-        # Try to access each attribute individually and handle exceptions separately
-        try:
-            data['nombre_completo'] = personal.curp.get_full_name()
-        except AttributeError:
-            pass
+            try:
+                data['curp'] = personal.curp.curp
+            except AttributeError:
+                pass
 
-        try:
-            data['curp'] = personal.curp.curp
-        except AttributeError:
-            pass
+            try:
+                data['ocupacion'] = personal.carpetalaboral.ocupacion.nombre_ocupacion
+            except AttributeError:
+                pass
 
-        # Update the attribute paths based on your models
-        try:
-            data['ocupacion'] = personal.carpetalaboral.ocupacion.nombre_ocupacion
-        except AttributeError:
-            pass
+            try:
+                data['puesto'] = personal.carpetalaboral.puesto.nombre_puesto
+            except AttributeError:
+                pass
 
-        try:
-            data['puesto'] = personal.carpetalaboral.puesto.nombre_puesto
-        except AttributeError:
-            pass
+            try:
+                data['razon_social'] = personal.cliente.razon_social
+            except AttributeError:
+                pass
 
-        try:
-            data['razon_social'] = personal.cliente.razon_social
-        except AttributeError:
-            pass
+            try:
+                data['rfc'] = personal.cliente.carpetaclientegenerales.rfc
+            except AttributeError:
+                pass
 
-        try:
-            data['rfc'] = personal.cliente.carpetaclientegenerales.rfc
-        except AttributeError:
-            pass
+            try:
+                data['nombre_curso'] = personal.carpetacapacitacion.curso
+            except AttributeError:
+                pass
 
-        try:
-            data['nombre_curso'] = personal.carpetacapacitacion.curso
-        except AttributeError:
-            pass
+            try:
+                data['horas_curso'] = personal.carpetacapacitacion.duracion
+            except AttributeError:
+                pass
 
-        try:
-            data['horas_curso'] = personal.carpetacapacitacion.duracion
-        except AttributeError:
-            pass
+            try:
+                data['fecha_inicial_capacitacion'] = personal.carpetacapacitacion.inicio
+            except AttributeError:
+                pass
 
-        try:
-            data['fecha_inicial_capacitacion'] = personal.carpetacapacitacion.inicio
-        except AttributeError:
-            pass
+            try:
+                data['fecha_final_capacitacion'] = personal.carpetacapacitacion.conclusion
+            except AttributeError:
+                pass
 
-        try:
-            data['fecha_final_capacitacion'] = personal.carpetacapacitacion.conclusion
-        except AttributeError:
-            pass
+            try:
+                data['area_curso'] = personal.carpetacapacitacion.area_curso.nombre_area
+            except AttributeError:
+                pass
 
-        try:
-            data['area_curso'] = personal.carpetacapacitacion.area_curso.nombre_area
-        except AttributeError:
-            pass
+            try:
+                data['nombre_capacitador'] = personal.carpetacapacitacion.capacitador.nombre_capacitador
+            except AttributeError:
+                pass
 
-        try:
-            data['nombre_capacitador'] = personal.carpetacapacitacion.capacitador.nombre_capacitador
-        except AttributeError:
-            pass
+            try:
+                data['registro_capacitador'] = personal.carpetacapacitacion.capacitador.numero_registro
+            except AttributeError:
+                pass
 
-        try:
-            data['registro_capacitador'] = personal.carpetacapacitacion.capacitador.numero_registro
-        except AttributeError:
-            pass
+            try:
+                data['representante_legal'] = personal.cliente.carpetaclientegenerales.representante_legal
+            except AttributeError:
+                pass
 
-        try:
-            data['representante_legal'] = personal.cliente.carpetaclientegenerales.representante_legal
-        except AttributeError:
-            pass
+            try:
+                data['representante_trabajadores'] = personal.cliente.representantetrabajadores.nombre_completo
+            except AttributeError:
+                pass
 
-        try:
-            data['representante_trabajadores'] = personal.cliente.representantetrabajadores.nombre_completo
-        except AttributeError:
-            pass
+            try:
+                data['logotipo'] = personal.cliente.documentoscliente.logotipo.path
+            except ValueError:
+                pass
 
-        try:
-            data['logotipo'] = personal.cliente.documentoscliente.logotipo.path
-        except ValueError:
-            pass
+            try:
+                data['qr_code'] = personal.cliente.documentoscliente.qr_code.path
+            except ValueError:
+                pass
 
-        try:
-            data['qr_code'] = personal.cliente.documentoscliente.qr_code.path
-        except ValueError:
-            pass
+            cell_mapping = {
+                'AJ5': data['nombre_completo'],
+                'AJ6': data['curp'],
+                'AJ7': data['ocupacion'],
+                'AJ8': data['puesto'],
+                'AJ9': data['nombre_curso'],
+                'AJ10': data['horas_curso'],
+                'AJ11': data['fecha_inicial_capacitacion'],
+                'AJ12': data['fecha_final_capacitacion'],
+                'AJ13': data['area_curso'],
+                'AJ14': data['nombre_capacitador'],
+                'AJ15': data['registro_capacitador'],
+                'AJ21': data['razon_social'],
+                'AJ22': data['rfc'],
+                'AJ23': data['representante_legal'],
+                'AJ24': data['representante_trabajadores'],
+            }
 
-        cell_mapping = {
-            'AJ5': data['nombre_completo'],
-            'AJ6': data['curp'],
-            'AJ7': data['ocupacion'],
-            'AJ8': data['puesto'],
-            'AJ9': data['nombre_curso'],
-            'AJ10': data['horas_curso'],
-            'AJ11': data['fecha_inicial_capacitacion'],
-            'AJ12': data['fecha_final_capacitacion'],
-            'AJ13': data['area_curso'],
-            'AJ14': data['nombre_capacitador'],
-            'AJ15': data['registro_capacitador'],
-            'AJ21': data['razon_social'],
-            'AJ22': data['rfc'],
-            'AJ23': data['representante_legal'],
-            'AJ24': data['representante_trabajadores'],
-        }
+            for cell, value in cell_mapping.items():
+                sheet[cell].value = value
 
-        for cell, value in cell_mapping.items():
-            sheet[cell].value = value
+            if data['logotipo']:
+                img_path = data['logotipo']
+                width, height = self.scale_image_from_height(img_path, desired_height_cm)
+                self.add_image_to_worksheet(img_path, 'B1', sheet, width, height)
+
+            if data['qr_code']:
+                img_path = data['qr_code']
+                width, height = self.scale_image_from_height(img_path, desired_height_cm)
+                self.add_image_to_worksheet(img_path, 'AC1', sheet, width, height)
 
         wb.save(modified_xlsx_path)
 
         # Build the PDF filename using attributes from the first object in the queryset
+        first_personal = queryset.first()
         pdf_filename = 'modified_dc3.pdf'
         pdf_path = os.path.join('media/file_templates', pdf_filename)
 
         # Convert the modified XLSX to PDF using LibreOffice
-        self.convert_xlsx_to_pdf(modified_xlsx_path)
+        self.convert_xlsx_to_pdf(modified_xlsx_path, pdf_path)
 
         # Return the PDF as a response with the desired filename
         with open(pdf_path, 'rb') as pdf_file:
-            filename = f'{personal.curp.get_full_name()}-dc3.pdf'
+            filename = f'{first_personal.curp.get_full_name()}-dc3.pdf'
             pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
             pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
 
