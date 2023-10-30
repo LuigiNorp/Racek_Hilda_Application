@@ -5,9 +5,12 @@ main/__pycache__/
 data/__pycache__/
 hildaApp/__pycache__
 .idea/
-main/migrations/0001_initial.py
-data/migrations/0001_initial.py
-
+main/migrations/*[0-9]*[a-zA-Z]*.py
+data/migrations/*[0-9]*[a-zA-Z]*.py
+db.sqlite3-app
+db.sqlite3-data
+media/Documentos/*
+media/file_templates/modified_*[a-zA-Z]*.*
 ### Django ###
 *.pot
 *.pyc
