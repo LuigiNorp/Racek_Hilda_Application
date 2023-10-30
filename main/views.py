@@ -417,12 +417,12 @@ class GenerateDC3View(View):
         sheet = wb.active
         sheet.page_setup.paperSize = sheet.PAPERSIZE_LETTER
         sheet.page_margins = PageMargins(
-            top=0,
+            top=0.2,
             left=0.25,
             right=0.01,
             header=0.1,
             footer=0.1,
-            bottom=0
+            bottom=0.2
         )
 
         dc3_needed_data = {
