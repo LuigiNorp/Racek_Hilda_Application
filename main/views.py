@@ -1,4 +1,5 @@
 import uuid
+from PyPDF2 import PdfReader, PdfWriter
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as XlsxImage
 from openpyxl.worksheet.page import PageMargins
@@ -358,7 +359,6 @@ class GenerateDC3View(View):
                 result[key] = 'Invalid value'
         return result
 
-
     def scale_image_from_height(self, image_path, desired_height_cm):
         # Load the image with PIL to get its size
         with PilImage.open(image_path) as pil_img:
@@ -375,7 +375,6 @@ class GenerateDC3View(View):
 
         return desired_width_px, desired_height_px
 
-
     def add_image_to_worksheet(self, image_path, cell, activesheet, width, height):
         # Load and add the image with openpyxl
         img = XlsxImage(image_path)
@@ -386,13 +385,25 @@ class GenerateDC3View(View):
         activesheet.add_image(img, cell)
 
     def convert_xlsx_to_pdf(self, xlsx_path, pdf_path):
-        sheet_index = 0 # Especifica el índice de la hoja (0 para la primera hoja)
-        command = f"libreoffice --headless --convert-to pdf:writer_pdf_Export --outdir {os.path.dirname(pdf_path)} {xlsx_path}"
-        subprocess.run(command, shell=True)
+        convertion_command = f"libreoffice --headless --convert-to pdf:writer_pdf_Export --outdir {os.path.dirname(pdf_path)} {xlsx_path}"
+        subprocess.run(convertion_command, shell=True)
         return pdf_path
 
+    def keep_first_page(self, pdf_path):
+        # Open the PDF file
+        reader = PdfReader(pdf_path)
 
-    def get(self, personal_id, request, queryset,desired_height_cm=3.5):
+        # Create a new PDF writer
+        writer = PdfWriter()
+
+        # Add the first page to the writer
+        writer.add_page(reader.pages[0])
+
+        # Write the output to a new file
+        with open(pdf_path, 'wb') as output_file:
+            writer.write(output_file)
+
+    def get(self, personal_id, request, queryset, desired_height_cm=3.5):
         original_file_path = "./media/file_templates/DC3 ACTUALIZADO.xlsx"
         modified_xlsx_path = 'media/file_templates/modified_dc3.xlsx'
 
@@ -472,10 +483,17 @@ class GenerateDC3View(View):
         # Convert the modified XLSX to PDF using LibreOffice
         self.convert_xlsx_to_pdf(modified_xlsx_path, pdf_path)
 
+        # Keep only the first page on PDF file
+        self.keep_first_page(pdf_path)
+
         # Return the PDF as a response with the desired filename
         with open(pdf_path, 'rb') as pdf_file:
-            filename = f'{first_personal.curp.get_full_name()}-dc3.pdf'
+            filename = f'{first_personal.curp.get_full_name()}-DC3.pdf'
             pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
             pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+        # Delete temporary file
+        os.remove(modified_xlsx_path)
+        os.remove(pdf_path)
 
         return pdf_response
