@@ -5,7 +5,7 @@ charset-normalizer==3.0.1
 darkdetect==0.5.1
 defusedxml==0.7.1
 diff-match-patch==20200713
-Django==4.1.7
+Django==4.1.10
 django-cors-headers==3.13.0
 django-db-multitenant==0.3.2
 django-environ==0.9.0
