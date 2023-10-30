@@ -347,6 +347,17 @@ class GenerateDC3View(View):
         # Use unidecode to remove accents and replace special characters
         return unidecode(text)
 
+    def verify_data(self, personal, datos):
+        result = {}
+        for key, function in datos.items():
+            try:
+                result[key] = function(personal)
+            except AttributeError:
+                result[key] = None
+            except ValueError:
+                result[key] = 'Invalid value'
+        return result
+
 
     def scale_image_from_height(self, image_path, desired_height_cm):
         # Load the image with PIL to get its size
@@ -397,141 +408,57 @@ class GenerateDC3View(View):
             bottom=.2
         )
 
+        dc3_needed_data = {
+            'nombre_completo': lambda p: p.curp.get_full_name(),
+            'curp': lambda p: p.curp.curp,
+            'ocupacion': lambda p: p.carpetalaboral.ocupacion.nombre_ocupacion,
+            'puesto': lambda p: p.carpetalaboral.puesto.nombre_puesto,
+            'razon_social': lambda p: p.cliente.razon_social,
+            'rfc': lambda p: p.cliente.carpetaclientegenerales.rfc,
+            'nombre_curso': lambda p: p.carpetacapacitacion.curso,
+            'horas_curso': lambda p: p.carpetacapacitacion.duracion,
+            'fecha_inicial_capacitacion': lambda p: p.carpetacapacitacion.inicio,
+            'fecha_final_capacitacion': lambda p: p.carpetacapacitacion.conclusion,
+            'area_curso': lambda p: p.carpetacapacitacion.area_curso.nombre_area,
+            'nombre_capacitador': lambda p: p.carpetacapacitacion.capacitador.nombre_capacitador,
+            'registro_capacitador': lambda p: p.carpetacapacitacion.capacitador.numero_registro,
+            'representante_legal': lambda p: p.cliente.carpetaclientegenerales.representante_legal,
+            'representante_trabajadores': lambda p: p.cliente.representantetrabajadores.nombre_completo,
+            'logotipo': lambda p: p.cliente.documentoscliente.logotipo.path,
+            'qr_code': lambda p: p.cliente.documentoscliente.qr_code.path,
+        }
+
         for personal in queryset:
-            data = {
-                'nombre_completo': '',
-                'curp': '',
-                'ocupacion': '',
-                'puesto': '',
-                'razon_social': '',
-                'rfc': '',
-                'nombre_curso': '',
-                'horas_curso': '',
-                'fecha_inicial_capacitacion': '',
-                'fecha_final_capacitacion': '',
-                'area_curso': '',
-                'nombre_capacitador': '',
-                'registro_capacitador': '',
-                'representante_legal': '',
-                'representante_trabajadores': '',
-                'logotipo': None,
-                'qr_code': None,
-                }
-
-            # Try to access each attribute individually and handle exceptions separately
-            try:
-                data['nombre_completo'] = personal.curp.get_full_name()
-            except AttributeError:
-                pass
-
-            try:
-                data['curp'] = personal.curp.curp
-            except AttributeError:
-                pass
-
-            try:
-                data['ocupacion'] = personal.carpetalaboral.ocupacion.nombre_ocupacion
-            except AttributeError:
-                pass
-
-            try:
-                data['puesto'] = personal.carpetalaboral.puesto.nombre_puesto
-            except AttributeError:
-                pass
-
-            try:
-                data['razon_social'] = personal.cliente.razon_social
-            except AttributeError:
-                pass
-
-            try:
-                data['rfc'] = personal.cliente.carpetaclientegenerales.rfc
-            except AttributeError:
-                pass
-
-            try:
-                data['nombre_curso'] = personal.carpetacapacitacion.curso
-            except AttributeError:
-                pass
-
-            try:
-                data['horas_curso'] = personal.carpetacapacitacion.duracion
-            except AttributeError:
-                pass
-
-            try:
-                data['fecha_inicial_capacitacion'] = personal.carpetacapacitacion.inicio
-            except AttributeError:
-                pass
-
-            try:
-                data['fecha_final_capacitacion'] = personal.carpetacapacitacion.conclusion
-            except AttributeError:
-                pass
-
-            try:
-                data['area_curso'] = personal.carpetacapacitacion.area_curso.nombre_area
-            except AttributeError:
-                pass
-
-            try:
-                data['nombre_capacitador'] = personal.carpetacapacitacion.capacitador.nombre_capacitador
-            except AttributeError:
-                pass
-
-            try:
-                data['registro_capacitador'] = personal.carpetacapacitacion.capacitador.numero_registro
-            except AttributeError:
-                pass
-
-            try:
-                data['representante_legal'] = personal.cliente.carpetaclientegenerales.representante_legal
-            except AttributeError:
-                pass
-
-            try:
-                data['representante_trabajadores'] = personal.cliente.representantetrabajadores.nombre_completo
-            except AttributeError:
-                pass
-
-            try:
-                data['logotipo'] = personal.cliente.documentoscliente.logotipo.path
-            except ValueError:
-                pass
-
-            try:
-                data['qr_code'] = personal.cliente.documentoscliente.qr_code.path
-            except ValueError:
-                pass
+            verified_data = self.verify_data(personal, dc3_needed_data)
 
             cell_mapping = {
-                'AJ5': data['nombre_completo'],
-                'AJ6': data['curp'],
-                'AJ7': data['ocupacion'],
-                'AJ8': data['puesto'],
-                'AJ9': data['nombre_curso'],
-                'AJ10': data['horas_curso'],
-                'AJ11': data['fecha_inicial_capacitacion'],
-                'AJ12': data['fecha_final_capacitacion'],
-                'AJ13': data['area_curso'],
-                'AJ14': data['nombre_capacitador'],
-                'AJ15': data['registro_capacitador'],
-                'AJ21': data['razon_social'],
-                'AJ22': data['rfc'],
-                'AJ23': data['representante_legal'],
-                'AJ24': data['representante_trabajadores'],
+                'AJ5': verified_data['nombre_completo'],
+                'AJ6': verified_data['curp'],
+                'AJ7': verified_data['ocupacion'],
+                'AJ8': verified_data['puesto'],
+                'AJ9': verified_data['nombre_curso'],
+                'AJ10': verified_data['horas_curso'],
+                'AJ11': verified_data['fecha_inicial_capacitacion'],
+                'AJ12': verified_data['fecha_final_capacitacion'],
+                'AJ13': verified_data['area_curso'],
+                'AJ14': verified_data['nombre_capacitador'],
+                'AJ15': verified_data['registro_capacitador'],
+                'AJ21': verified_data['razon_social'],
+                'AJ22': verified_data['rfc'],
+                'AJ23': verified_data['representante_legal'],
+                'AJ24': verified_data['representante_trabajadores'],
             }
 
             for cell, value in cell_mapping.items():
                 sheet[cell].value = value
 
-            if data['logotipo']:
-                img_path = data['logotipo']
+            if verified_data['logotipo']:
+                img_path = verified_data['logotipo']
                 width, height = self.scale_image_from_height(img_path, desired_height_cm)
                 self.add_image_to_worksheet(img_path, 'B1', sheet, width, height)
 
-            if data['qr_code']:
-                img_path = data['qr_code']
+            if verified_data['qr_code']:
+                img_path = verified_data['qr_code']
                 width, height = self.scale_image_from_height(img_path, desired_height_cm)
                 self.add_image_to_worksheet(img_path, 'AC1', sheet, width, height)
 
