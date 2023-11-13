@@ -13,7 +13,7 @@ urlpatterns = [
     path('users/', UsersView.as_view(), name='users'),
     path('user/<int:pk>/profile/', CustomUserProfileView.as_view(), name="profile"),
     path('clients/', ClientesView.as_view(), name="clients"),
-    path('previous/', PersonalView.as_view(), name="previous"),
+    path('previous/', PersonalPrevioView.as_view(), name="previous"),
     path('employees/', PersonalView.as_view(), name="employees"),
     path('user/<int:pk>/history/', UserHistoryView.as_view(), name="history"),
 ]

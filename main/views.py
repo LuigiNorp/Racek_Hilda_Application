@@ -18,8 +18,8 @@ from .helpers import send_forget_password_mail
 from django.views import View
 from django.core.cache import cache
 from django.db.models import Q
-from .forms import *
-from .models import *
+from dal import autocomplete
+from main.forms import *
 
 
 def keep_first_page(pdf_path):
@@ -185,8 +185,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -208,8 +207,7 @@ class RegisterView(LoginRequiredMixin, UserPassesTestMixin, APIView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -247,8 +245,7 @@ class CustomUserProfileView(LoginRequiredMixin, APIView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -284,8 +281,7 @@ class UsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -318,8 +314,7 @@ class ClientesView(TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -335,10 +330,24 @@ class PersonalView(TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if (
-                user.groups.filter(name='Superboss').exists() or
-                user.groups.filter(name='Manager').exists() or
-                user.groups.filter(name='Admin').exists()):
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
+            return True
+        return False
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_register_enabled'] = self.test_func()
+        context['form'] = PersonalForm(self.request.POST or None, request=self.request)
+        return context
+
+
+class PersonalPrevioView(TemplateView):
+    template_name = 'personal/personalprevio.html'
+    login_url = '/login/'
+
+    def test_func(self):
+        user = self.request.user
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -355,8 +364,7 @@ class UserHistoryView(LoginRequiredMixin, TemplateView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -385,6 +393,38 @@ class UserHistoryView(LoginRequiredMixin, TemplateView):
             'is_register_enabled': is_register_enabled,
         }
         return render(request, self.template_name, context)
+
+
+class ClienteAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Cliente.objects.all()
+        if self.q:
+            qs = qs.filter(nombre_comercial__istartswith=self.q)
+        return qs
+
+
+class CodigoPostalAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = CodigoPostal.objects.all()
+        if self.q:
+            qs = qs.filter(zip_code__istartswith=self.q)
+        return qs
+
+
+class CurpAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Curp.objects.all()
+        if self.q:
+            qs = qs.filter(curp__istartswith=self.q)
+        return qs
+
+
+class RfcAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Rfc.objects.all()
+        if self.q:
+            qs = qs.filter(rfc__istartswith=self.q)
+        return qs
 
 
 def remove_accents(text):
@@ -426,19 +466,19 @@ class GenerateDC3View(View):
         )
 
         dc3_needed_data = {
-            'nombre_completo': lambda p: p.curp.get_full_name(),
+            'nombre_completo': lambda p: p.curp.get_nombre_completo(),
             'curp': lambda p: p.curp.curp,
             'ocupacion': lambda p: p.carpetalaboral.ocupacion.nombre_ocupacion,
             'puesto': lambda p: p.carpetalaboral.puesto.nombre_puesto,
             'razon_social': lambda p: p.cliente.razon_social,
             'rfc': lambda p: p.cliente.carpetaclientegenerales.rfc,
-            'nombre_curso': lambda p: p.carpetacapacitacion.curso,
-            'horas_curso': lambda p: p.carpetacapacitacion.duracion,
-            'fecha_inicial_capacitacion': lambda p: p.carpetacapacitacion.inicio,
-            'fecha_final_capacitacion': lambda p: p.carpetacapacitacion.conclusion,
-            'area_curso': lambda p: p.carpetacapacitacion.area_curso.nombre_area,
-            'nombre_capacitador': lambda p: p.carpetacapacitacion.capacitador.nombre_capacitador,
-            'registro_capacitador': lambda p: p.carpetacapacitacion.capacitador.numero_registro,
+            'nombre_curso': lambda p: p.carpetacapacitacion.capacitacion.curso,
+            'horas_curso': lambda p: p.carpetacapacitacion.capacitacion.duracion,
+            'fecha_inicial_capacitacion': lambda p: p.carpetacapacitacion.capacitacion.inicio,
+            'fecha_final_capacitacion': lambda p: p.carpetacapacitacion.capacitacion.conclusion,
+            'area_curso': lambda p: p.carpetacapacitacion.capacitacion.area_curso,
+            'nombre_instructor': lambda p: p.carpetacapacitacion.capacitacion.instructor.nombre_instructor,
+            'registro_instructor': lambda p: p.carpetacapacitacion.capacitacion.instructor.numero_registro,
             'representante_legal': lambda p: p.cliente.carpetaclientegenerales.representante_legal,
             'representante_trabajadores': lambda p: p.cliente.representantetrabajadores.nombre_completo,
             'logotipo': lambda p: p.cliente.documentoscliente.logotipo.path,
@@ -458,8 +498,8 @@ class GenerateDC3View(View):
                 'AJ11': verified_data['fecha_inicial_capacitacion'],
                 'AJ12': verified_data['fecha_final_capacitacion'],
                 'AJ13': verified_data['area_curso'],
-                'AJ14': verified_data['nombre_capacitador'],
-                'AJ15': verified_data['registro_capacitador'],
+                'AJ14': verified_data['nombre_instructor'],
+                'AJ15': verified_data['registro_instructor'],
                 'AJ21': verified_data['razon_social'],
                 'AJ22': verified_data['rfc'],
                 'AJ23': verified_data['representante_legal'],
@@ -494,7 +534,7 @@ class GenerateDC3View(View):
 
         # Return the PDF as a response with the desired filename
         with open(pdf_path, 'rb') as pdf_file:
-            filename = f'{first_personal.curp.get_full_name()}-DC3.pdf'
+            filename = f'{first_personal.curp.get_nombre_completo()}-DC3.pdf'
             pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
             pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
 

@@ -10,20 +10,14 @@
       href="{% static 'css/users.css' %}"
   >
 
-  {% if 'employees' in request.path %}
-    <title>Empleados</title>
-  {% elif 'previous' in request.path %}
-    <title>Previos</title>
-  {% else %}
-    <title>Personal</title>
-  {% endif %}
+  <title>Previos</title>
 
 {% endblock %}
 
 
 {% block right %}
 <iframe 
-  src="/admin/data/personal/"
+  src="/admin/data/personalprevio/"
   width="100%" 
   height="100%"
   style="border: none;"

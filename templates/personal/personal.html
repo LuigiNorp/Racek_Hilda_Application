@@ -10,13 +10,7 @@
       href="{% static 'css/users.css' %}"
   >
 
-  {% if 'employees' in request.path %}
-    <title>Empleados</title>
-  {% elif 'previous' in request.path %}
-    <title>Previos</title>
-  {% else %}
-    <title>Personal</title>
-  {% endif %}
+  <title>Empleados</title>
 
 {% endblock %}
 

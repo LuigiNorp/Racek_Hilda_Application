@@ -12,9 +12,13 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 import environ
+import sys
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # read the .env file
 environ.Env.read_env()
@@ -31,7 +35,6 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = env('DEBUG')
 DEBUG = os.getenv('DEBUG')
-
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
@@ -56,6 +59,8 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'nested_admin',
     'rest_framework',
+    'dal',
+    'dal_select2',
     # 'import_export',
 ]
 
@@ -121,11 +126,11 @@ WSGI_APPLICATION = 'hildaApp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3-app',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3-app'),
     },
     'hilda_data': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3-data',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3-data'),
     },
 }
 
