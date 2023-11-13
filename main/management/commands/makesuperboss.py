@@ -14,7 +14,7 @@ class Command(BaseCommand):
         if user:
             group = Group.objects.get(name='Superboss')
             user.groups.add(group)
-            self.stdout.write(self.style.SUCCESS(f'Superboss group assigned to {user.username} successfully!'))
+            self.stdout.write(self.style.SUCCESS(f'Superboss group assigned to Superuser successfully!'))
         else:
             self.stdout.write(self.style.WARNING('No users found.'))
 

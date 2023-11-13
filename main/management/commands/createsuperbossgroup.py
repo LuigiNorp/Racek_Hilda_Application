@@ -10,8 +10,10 @@ class Command(BaseCommand):
         group_name = 'Superboss'
         group, created = Group.objects.get_or_create(name=group_name)
 
-        content_types = ContentType.objects.all()
-        permissions = Permission.objects.filter(content_type__in=content_types)
-        group.permissions.set(permissions)
-
-        self.stdout.write(self.style.SUCCESS('Superuser group created successfully!'))
+        if created:
+            content_types = ContentType.objects.all()
+            permissions = Permission.objects.filter(content_type__in=content_types)
+            group.permissions.set(permissions)
+            self.stdout.write(self.style.SUCCESS('Superboss group created successfully!'))
+        else:
+            self.stdout.write(self.style.SUCCESS('Superboss group already exists. No action taken.'))
