@@ -7,15 +7,21 @@ main/migrations/0*
 data/migrations/0*
 hildaApp/__pycache__
 .idea/
-main/migrations/0001_initial.py
-data/migrations/0001_initial.py
+/main/migrations/*[0-9]*[a-zA-Z]*.py
+/data/migrations/*[0-9]*[a-zA-Z]*.py
+/data/management/commands/migrations/*[0-9]*[a-zA-Z]*.py
+/main/management/commands/migrations/*[0-9]*[a-zA-Z]*.py
 
+db.sqlite3-app
+db.sqlite3-data
+media/Documentos/*
+media/file_templates/modified_*[a-zA-Z]*.*
 ### Django ###
 *.pot
 *.pyc
 __pycache__/
 local_settings.py
-media
+media/file_templates/Erasable
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.
@@ -197,3 +203,4 @@ sketch
 test_racek.tar
 
 # End of https://www.toptal.com/developers/gitignore/api/react,django
+

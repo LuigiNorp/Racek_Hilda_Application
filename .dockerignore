@@ -1,7 +1,9 @@
 racek.session.sql
-vscode
+.vscode
 app/__pycache__
-main/migrations/0001_initial.py
-data/migrations/0001_initial.py
 main/__pycache__
-data/__pycache__
+main/migrations/*[0-9]*[a-zA-Z]*.py
+data/management/commands/migrations/*[0-9]*[a-zA-Z]*.py
+/media/file_templates/Erasable/
+/db.sqlite3-app
+/db.sqlite3-data

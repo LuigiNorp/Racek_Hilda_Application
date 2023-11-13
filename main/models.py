@@ -43,14 +43,10 @@ class CustomUserManager(BaseUserManager):
     
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True)
-    nombre = models.CharField(max_length=150) 
-    apellido_paterno = models.CharField(max_length=150) 
-    apellido_materno = models.CharField(max_length=150) 
-    departamento = models.PositiveSmallIntegerField(choices=DEPARTAMENTO)
-
-    # USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['email','nombre','apellido_paterno','apellido_materno','departamento']
+    nombre = models.CharField(max_length=150, blank=True, null=True)
+    apellido_paterno = models.CharField(max_length=150, blank=True, null=True)
+    apellido_materno = models.CharField(max_length=150, blank=True, null=True)
+    departamento = models.PositiveSmallIntegerField(choices=DEPARTAMENTO, blank=True, null=True)
 
     def nombre_completo(self):
         return f'{self.apellido_paterno}{self.apellido_materno}{self.nombre}'
@@ -62,6 +58,8 @@ class CustomUser(AbstractUser):
 
 
 User = get_user_model()
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     forget_password_token = models.CharField(max_length=100)

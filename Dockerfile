@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
 	graphviz \
 	libgraphviz-dev \
 	pkg-config \
+    libreoffice \
     # snapd \
     && apt-get clean
 # RUN systemctl start snapd.service
