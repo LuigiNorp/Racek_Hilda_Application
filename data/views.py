@@ -205,20 +205,9 @@ CarpetaLaboralViewset = create_viewset(
 )
 
 
-PuestoViewset = create_viewset(
-    Puesto,
-    PuestoEmpladoSerializer, PuestoPrevioSerializer
-)
-
-
 CarpetaGeneralesViewset = create_viewset(
     CarpetaGenerales, CarpetaGeneralesPrevio,
     CarpetaGeneralesEmpleadoSerializer, CarpetaGeneralesPrevioSerializer
-)
-
-
-CarpetaReferenciasViewset = create_viewset(
-    CarpetaReferencias, CarpetaReferenciasSerializer
 )
 
 
@@ -273,11 +262,6 @@ CarpetaExamenPoligrafoViewset = create_viewset(
 )
 
 
-CarpetaEmpleoAnteriorSeguridadPublicaViewset = create_viewset(
-    CarpetaEmpleoAnteriorSeguridadPublica, CarpetaEmpleoAnteriorSeguridadPublicaSerializer
-)
-
-
 EmpleoAnteriorSeguridadPublicaViewset = create_viewset(
     EmpleoAnteriorSeguridadPublica, EmpleoAnteriorSeguridadPublicaSerializer
 )
@@ -293,11 +277,6 @@ TipoBajaViewset = create_viewset(
 )
 
 
-CarpetaEmpleoAnteriorViewset = create_viewset(
-    CarpetaEmpleoAnterior, CarpetaEmpleoAnteriorSerializer
-)
-
-
 EmpleoAnteriorViewset = create_viewset(
     EmpleoAnterior, EmpleoAnteriorSerializer
 )
@@ -305,11 +284,6 @@ EmpleoAnteriorViewset = create_viewset(
 
 MotivoSeparacionViewset = create_viewset(
     MotivoSeparacion, MotivoSeparacionSerializer
-)
-
-
-CarpetaCapacitacionViewset = create_viewset(
-    CarpetaCapacitacion, CarpetaCapacitacionSerializer
 )
 
 
@@ -339,15 +313,6 @@ RepresentanteTrabajadoresViewset = create_viewset(
     RepresentanteTrabajadores, RepresentanteTrabajadoresSerializer
 )
 
-
-CapacitacionClienteViewset = create_viewset(
-    CapacitacionCliente, CapacitacionClienteSerializer
-)
-
-
-PersonalPorCapacitarViewset = create_viewset(
-    PersonalPorCapacitar, PersonalPorCapacitarSerializer
-)
 
 
 DomicilioViewset = create_viewset(

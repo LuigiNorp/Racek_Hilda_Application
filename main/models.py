@@ -58,8 +58,6 @@ class CustomUser(AbstractUser):
 
 
 User = get_user_model()
-
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     forget_password_token = models.CharField(max_length=100)

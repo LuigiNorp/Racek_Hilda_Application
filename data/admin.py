@@ -62,15 +62,18 @@ class CarpetaClienteGeneralesInline(NestedStackedInline):
 class CarpetaClientePagosInline(NestedStackedInline):
     model = CarpetaClientePagos
     inlines = [DomicilioInline]
+    extra = 0
 
 
 class CarpetaClienteContactosInline(NestedStackedInline):
     model = CarpetaClienteContactos
-    
+    extra = 0
 
-class CapacitacionClienteInline(NestedStackedInline):
-    model = CapacitacionCliente
-    extra = 1
+
+class PaqueteCapacitacionInline(NestedStackedInline):
+    model = PaqueteCapacitacion
+    extra = 0
+    autocomplete_fields = ['cliente', ]
 
 
 @admin.register(Cliente)
@@ -83,7 +86,7 @@ class ClienteAdmin(NestedModelAdmin):
         CarpetaClienteGeneralesInline,
         CarpetaClientePagosInline,
         CarpetaClienteContactosInline,
-        CapacitacionClienteInline,
+        PaqueteCapacitacionInline,
     ]
     search_fields = ['nombre_comercial', 'razon_social',]
 
@@ -93,21 +96,10 @@ class EvaluadorInline(NestedStackedInline):
     extra = 0
 
 
-class PuestoInline(NestedStackedInline):
-    model = Puesto
-
-
-class OcupacionInline(NestedStackedInline):
-    model = Ocupacion
-    
-
 class CarpetaLaboralInline(NestedStackedInline):
     model = CarpetaLaboral
     extra = 0
-    inlines = [
-        PuestoInline, 
-        OcupacionInline,
-    ]
+    autocomplete_fields = ['ocupacion']
 
 
 class CarpetaGeneralesInline(NestedStackedInline):
@@ -118,12 +110,6 @@ class CarpetaGeneralesInline(NestedStackedInline):
 class ReferenciaInline(NestedStackedInline):
     model = Referencia
     inlines = [DomicilioInline]
-    extra = 1
-
-
-class CarpetaReferenciasInline(NestedStackedInline):
-    model = CarpetaReferencias
-    inlines = [ReferenciaInline]
     extra = 0
 
 
@@ -171,26 +157,14 @@ class CarpetaExamenPoligrafoInline(NestedStackedInline):
 class EmpleoAnteriorSeguridadPublicaInline(NestedStackedInline):
     model = EmpleoAnteriorSeguridadPublica
     inlines = [DomicilioInline]
-    extra = 1
-
-
-class CarpetaEmpleoAnteriorSeguridadPublicaInline(NestedStackedInline):
-    model = CarpetaEmpleoAnteriorSeguridadPublica
-    inlines = [EmpleoAnteriorSeguridadPublicaInline]
     extra = 0
 
 
 # TODO: Puedes mejor convertirlo en boton
-class EmpleoAnteriorAdmin(NestedStackedInline):
+class EmpleoAnteriorInline(NestedStackedInline):
     model = EmpleoAnterior
     extra = 0
     inlines = [DomicilioInline]
-
-
-class CarpetaEmpleoAnteriorInline(NestedStackedInline):
-    model = CarpetaEmpleoAnterior
-    inlines = [EmpleoAnteriorAdmin]
-    extra = 0
 
 
 class IdiomaInline(NestedStackedInline):
@@ -198,20 +172,10 @@ class IdiomaInline(NestedStackedInline):
     extra = 0
 
 
-class InstructorInline(NestedStackedInline):
-    model = Instructor
-
-
 class CapacitacionInline(NestedStackedInline):
     model = Capacitacion
-    inlines = [InstructorInline]
-    extra = 1
-
-
-class CarpetaCapacitacionInline(NestedStackedInline):
-    model = CarpetaCapacitacion
     extra = 0
-    inlines = [CapacitacionInline, IdiomaInline]
+    autocomplete_fields = ['paq_capacitacion', 'instructor', ]
 
 
 class CarpetaMediaFilicacionInline(NestedStackedInline):
@@ -227,8 +191,8 @@ class DocumentosDigitalesInline(NestedStackedInline):
 @admin.register(Personal)
 class PersonalAdmin(NestedModelAdmin):
     list_display = ('id', 'nombre_completo', 'cliente',)
-    search_fields = ['curp', 'rfc', 'cliente',]
-    autocomplete_fields = ['cliente', 'curp', 'rfc']
+    search_fields = ['curp', 'rfc', 'cliente', ]
+    autocomplete_fields = ['cliente', 'curp', 'rfc', ]
     inlines = [
         DomicilioInline,
         EvaluadorInline,
@@ -241,11 +205,12 @@ class PersonalAdmin(NestedModelAdmin):
         CarpetaExamenPoligrafoInline,
         CarpetaLaboralInline,
         CarpetaGeneralesInline,
-        CarpetaReferenciasInline,
+        ReferenciaInline,
         CarpetaDependientesInline,
-        CarpetaEmpleoAnteriorSeguridadPublicaInline,
-        CarpetaEmpleoAnteriorInline,
-        CarpetaCapacitacionInline,
+        EmpleoAnteriorSeguridadPublicaInline,
+        EmpleoAnteriorInline,
+        CapacitacionInline,
+        IdiomaInline,
         CarpetaMediaFilicacionInline,
         DocumentosDigitalesInline,
     ]
@@ -384,19 +349,7 @@ class MotivoSeparacionAdmin(admin.ModelAdmin):
 @admin.register(Instructor)
 class InstructorAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre_instructor', 'numero_registro',)
-
-
-@admin.register(CapacitacionCliente)
-class CapacitacionClienteInline(admin.ModelAdmin):
-    list_display = ('id', 'cliente', 'estatus_capacitacion', 'comentarios', 'fecha_realizacion')
-
-
-@admin.register(Capacitacion)
-class CapacitacionAdmin(admin.ModelAdmin):
-    list_display = (
-        'id', 'institucion_empresa', 'curso', 'tipo_curso', 'area_curso', 'impartido_recibido', 'eficiencia_terminal',
-        'inicio', 'conclusion', 'duracion')
-
+    search_fields = ['nombre_instructor', 'numero_registro',]
 
 @admin.register(CodigoPostal)
 class CodigoPostalAdmin(admin.ModelAdmin):
@@ -446,41 +399,15 @@ class RfcPrevioAdmin(admin.ModelAdmin):
         return form
 
 
+@admin.register(Ocupacion)
+class OcupacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'clave_subarea', 'subarea',)
+    search_fields = ['clave_subarea', 'subarea', ]
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# This one is the only repeate as Inline and ModelAdmin
+@admin.register(PaqueteCapacitacion)
+class PaqueteCapacitacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'cliente', 'fecha_solicitud', 'fecha_realizacion',)
+    search_fields = ['cliente', 'fecha_realizacion',]
+    autocomplete_fields = ['cliente',]

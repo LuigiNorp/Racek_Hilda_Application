@@ -138,11 +138,6 @@ EvaluadorPrevioSerializer = create_serializer(
 OcupacionSerializer = create_serializer(Ocupacion)
 InstructorSerializer = create_serializer(Instructor)
 CarpetaLaboralSerializer = create_serializer(CarpetaLaboral)
-PuestoEmpladoSerializer = create_serializer(Puesto)
-PuestoPrevioSerializer = create_serializer(
-    Puesto,
-    ['nombre_puesto']
-)
 CarpetaGeneralesEmpleadoSerializer = create_serializer(CarpetaGenerales)
 CarpetaGeneralesPrevioSerializer = create_serializer(
     CarpetaGeneralesPrevio,
@@ -155,7 +150,6 @@ CarpetaGeneralesPrevioSerializer = create_serializer(
         'email_empleado'
     ]
 )
-CarpetaReferenciasSerializer = create_serializer(CarpetaReferencias)
 ReferenciaSerializer = create_serializer(Referencia)
 CarpetaDependientesSerializer = create_serializer(CarpetaDependientes)
 DependienteSerializer = create_serializer(Dependiente)
@@ -207,14 +201,11 @@ CarpetaExamenPoligrafoPrevioSerializer = create_serializer(
         'observacion'
     ]
 )
-CarpetaEmpleoAnteriorSeguridadPublicaSerializer = create_serializer(CarpetaEmpleoAnteriorSeguridadPublica)
 EmpleoAnteriorSeguridadPublicaSerializer = create_serializer(EmpleoAnteriorSeguridadPublica)
 PuestoFuncionalSerializer = create_serializer(PuestoFuncional)
 TipoBajaSerializer = create_serializer(TipoBaja)
-CarpetaEmpleoAnteriorSerializer = create_serializer(CarpetaEmpleoAnterior)
 EmpleoAnteriorSerializer = create_serializer(EmpleoAnterior)
 MotivoSeparacionSerializer = create_serializer(MotivoSeparacion)
-CarpetaCapacitacionSerializer = create_serializer(CarpetaCapacitacion)
 CapacitacionSerializer = create_serializer(Capacitacion)
 IdiomaSerializer = create_serializer(Idioma)
 CarpetaMediaFiliacionEmpleadoSerializer = create_serializer(CarpetaMediaFiliacion)
@@ -249,7 +240,6 @@ DocumentosDigitalesPrevioSerializer = create_serializer(
     ]
 )
 RepresentanteTrabajadoresSerializer = create_serializer(RepresentanteTrabajadores)
-CapacitacionClienteSerializer = create_serializer(CapacitacionCliente)
-PersonalPorCapacitarSerializer = create_serializer(PersonalPorCapacitar)
+CapacitacionClienteSerializer = create_serializer(PaqueteCapacitacion)
 DomicilioSerializer = create_serializer(Domicilio)
 CodigoPostalSerializer = create_serializer(CodigoPostal)

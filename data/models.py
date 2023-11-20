@@ -144,6 +144,28 @@ class CarpetaClienteContactos(models.Model):
 		verbose_name_plural = 'Clientes Contactos'
 
 
+class PaqueteCapacitacion(models.Model):
+	cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+	estatus_capacitacion = models.PositiveSmallIntegerField(choices=ESTATUS_CAPACITACION, blank=True, null=True)
+	fecha_solicitud = models.DateField(blank=True, null=True)
+	detalle_solicitud = models.CharField(max_length=200, blank=True, null=True)
+	fecha_realizacion = models.DateField(blank=True, null=True)
+	detalle_realizacion = models.CharField(max_length=200, blank=True, null=True)
+	fecha_entrega = models.DateField(blank=True, null=True)
+	detalle_entrega = models.CharField(max_length=200, blank=True, null=True)
+	fecha_facturado = models.DateField(blank=True, null=True)
+	no_factura = models.CharField(max_length=200, blank=True, null=True)
+	fecha_pagado = models.DateField(blank=True, null=True)
+	detalle_pagado = models.CharField(max_length=200, blank=True, null=True)
+	comentarios = models.TextField(blank=True, null=True)
+
+	def __str__(self):
+		return f'{self.fecha_realizacion}: {self.cliente}'
+
+	class Meta:
+		verbose_name_plural = 'Paquete Capacitaciones'
+
+
 class Curp(models.Model):
 	# Implementar Curp Api desde Frontend
 	curp_regex = r'^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$'
@@ -172,20 +194,20 @@ class Curp(models.Model):
 		return f'{self.curp}: {self.get_nombre_completo()}'
 
 	class Meta:
-		verbose_name_plural = 'CURP'
+		verbose_name = 'CURP empleado'
 
 
 class CurpPrevio(Curp):
 	class Meta:
 		proxy = True
-		verbose_name_plural = 'CURP'
+		verbose_name = 'CURP previo'
 
 
 class Rfc(models.Model):
 	# Hacer conexiones con API RFC desde FrontEnd
 	rfc_regex = r'^[A-Za-z]{3,4}(\d{6})([A-Za-z]\d{2}|(\D|\d){3})?$'
 	rfc = models.CharField(max_length=13, validators=[RegexValidator(rfc_regex, 'El RFC ingresado no es válido')])
-	rfc_digital = models.FileField(upload_to=get_upload_path, blank=True, unique=True)
+	rfc_digital = models.FileField(upload_to=get_upload_path, null=True, blank=True)
 	razon_social = models.CharField(max_length=255, blank=True, null=True)
 	estatus = models.CharField(max_length=20, blank=True, null=True)
 	fecha_efectiva = models.DateField(blank=True, null=True)
@@ -197,13 +219,13 @@ class Rfc(models.Model):
 		return f'{self.rfc}'
 
 	class Meta:
-		verbose_name_plural = 'RFC'
+		verbose_name_plural = 'RFC empleados'
 
 
 class RfcPrevio(Rfc):
 	class Meta:
 		proxy = True
-		verbose_name_plural = 'RFC'
+		verbose_name_plural = 'RFC previos'
 
 
 class Personal(models.Model):
@@ -224,13 +246,13 @@ class Personal(models.Model):
 			return 'SIN CURP'
 
 	class Meta:
-		verbose_name_plural = 'Personal'
+		verbose_name_plural = 'Personal empleado'
 
 
 class PersonalPrevio(Personal):
 	class Meta:
 		proxy = True
-		verbose_name_plural = 'Personal'
+		verbose_name_plural = 'Personal previos'
 
 
 class Evaluador(models.Model):
@@ -242,6 +264,22 @@ class Evaluador(models.Model):
 
 	class Meta:
 		verbose_name_plural = 'Evaluadores'
+
+
+class Ocupacion(models.Model):
+	clave_area = models.CharField(max_length=2, blank=True, null=True)
+	area = models.CharField(max_length=100, blank=True, null=True)
+	clave_subarea = models.CharField(max_length=4, blank=True, null=True)
+	subarea = models.CharField(max_length=100, blank=True, null=True)
+
+	def get_ocuacion_fullname(self):
+		return f'{self.clave_subarea}/{self.subarea}'
+
+	def __str__(self):
+		return self.get_ocuacion_fullname()
+
+	class Meta:
+		verbose_name_plural = 'Ocupaciones'
 
 
 class CarpetaLaboral(models.Model):
@@ -258,6 +296,8 @@ class CarpetaLaboral(models.Model):
 	oficina = models.CharField(max_length=30, null=True, blank=True)
 	especialidad_empleo = models.CharField(max_length=35, null=True, blank=True)
 	servicio = models.CharField(max_length=30, null=True, blank=True)
+	puesto = models.PositiveSmallIntegerField(choices=TIPO_PUESTO, null=True, blank=True)
+	ocupacion = models.OneToOneField(Ocupacion, on_delete=models.RESTRICT, blank=True, null=True)
 	rango = models.CharField(max_length=30, null=True, blank=True)
 	turno = models.CharField(max_length=30, null=True, blank=True)
 	division = models.CharField(max_length=35, null=True, blank=True)
@@ -296,33 +336,17 @@ class CarpetaLaboral(models.Model):
 	lic_part_col = models.CharField(max_length=25, null=True, blank=True)
 	comentarios = models.TextField(blank=True, null=True)
 
+	def display_choice_value(self, field_name):
+		field = self._meta.get_field(field_name)
+		choices = field.choices
+		choice_value = getattr(self, field_name)
+		return dict(choices).get(choice_value)
+
 	def __str__(self):
 		return f'{self.personal}: {self.proceso_racek}'
 
 	class Meta:
 		verbose_name_plural = 'Carpetas Laborales'
-
-
-class Ocupacion(models.Model):
-	nombre_ocupacion = models.CharField(max_length=100, blank=True, null=True)
-	carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, blank=True, null=True)
-
-	def __str__(self):
-		return f'{self.nombre_ocupacion}'
-
-	class Meta:
-		verbose_name_plural = 'Ocupaciones'
-
-
-class Puesto(models.Model):
-	nombre_puesto = models.CharField(max_length=30)
-	carpeta_laboral = models.OneToOneField(CarpetaLaboral, on_delete=models.RESTRICT, blank=True, null=True)
-
-	def __str__(self):
-		return f'{self.nombre_puesto}'
-
-	class Meta:
-		verbose_name_plural = 'Puestos'
 
 
 class CarpetaGenerales(models.Model):
@@ -373,23 +397,14 @@ class CarpetaGeneralesPrevio(CarpetaGenerales):
 		verbose_name_plural = 'Carpeta Generales'
 
 
-class CarpetaReferencias(models.Model):
-	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
-
-	def __str__(self):
-		return f'{self.personal}'
-
-	class Meta:
-		verbose_name_plural = 'Carpeta Referencias'
-
-
 class Referencia(models.Model):
+	personal = models.ForeignKey(Personal, on_delete=models.CASCADE, blank=True, null=True)
 	tipo_referencia = models.PositiveSmallIntegerField(choices=TIPO_REFERENCIA, null=True, blank=True)
 	nombre = models.CharField(max_length=100)
 	apellido_paterno = models.CharField(max_length=100)
 	apellido_materno = models.CharField(max_length=100)
 	sexo = models.PositiveSmallIntegerField(choices=SEXO_OPCIONES, null=True, blank=True)
-	ocupacion = models.PositiveSmallIntegerField(choices=OCUPACION, null=True, blank=True)
+	ocupacion = models.PositiveSmallIntegerField(choices=OCUPACION_REFERENCIA, null=True, blank=True)
 	parentesco = models.PositiveSmallIntegerField(choices=PARENTESCO, null=True, blank=True)
 	tiempo_de_conocerse = models.CharField(max_length=30, null=True, blank=True)
 	direccion = models.CharField(max_length=100, null=True, blank=True)
@@ -397,10 +412,9 @@ class Referencia(models.Model):
 	validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
 	telefono_contacto = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
 	opinion = models.TextField(blank=True, null=True)
-	carpeta_referencia = models.ForeignKey(CarpetaReferencias, on_delete=models.CASCADE)
 
 	class Meta:
-		verbose_name_plural = 'Referencias'
+		verbose_name_plural = 'Carpeta Referencias'
 
 
 class CarpetaDependientes(models.Model):
@@ -688,6 +702,12 @@ class CarpetaExamenPoligrafo(models.Model):
 	resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADO_POLIGRAFO_ASPIRANTE, blank=True, null=True)
 	observacion = models.TextField(blank=True, null=True)
 
+	def display_choice_value(self, field_name):
+		field = self._meta.get_field(field_name)
+		choices = field.choices
+		choice_value = getattr(self, field_name)
+		return dict(choices).get(choice_value)
+
 	def __str__(self):
 		return f'{self.personal}'
 
@@ -699,16 +719,6 @@ class CarpetaExamenPoligrafoPrevio(CarpetaExamenPoligrafo):
 	class Meta:
 		proxy = True
 		verbose_name_plural = 'Carpeta Examen Polígrafo'
-
-
-class CarpetaEmpleoAnteriorSeguridadPublica(models.Model):
-	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
-
-	def __str__(self):
-		return f'{self.personal}'
-
-	class Meta:
-		verbose_name_plural = 'Carpeta Empleos Anteriores Seguridad Publica'
 
 
 class MotivoSeparacion(models.Model):
@@ -733,6 +743,7 @@ class TipoBaja(models.Model):
 
 
 class EmpleoAnteriorSeguridadPublica(models.Model):
+	personal = models.ForeignKey(Personal, on_delete=models.CASCADE, blank=True, null=True)
 	dependencia = models.CharField(max_length=100, blank=True, null=True)
 	corporacion = models.CharField(max_length=100, blank=True, null=True)
 	direccion = models.CharField(max_length=150, blank=True, null=True)
@@ -754,26 +765,22 @@ class EmpleoAnteriorSeguridadPublica(models.Model):
 	jefe_inmediato = models.CharField(max_length=300, blank=True, null=True)
 	cuip_jefe_inmediato = models.CharField(max_length=20, blank=True, null=True)
 	comentarios = models.CharField(max_length=150, blank=True, null=True)
-	carp_emp_ant_seg_pub = models.ForeignKey(CarpetaEmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE)
 	puesto_funcional = models.OneToOneField(PuestoFuncional, on_delete=models.RESTRICT, null=True, blank=True)
 	tipo_baja = models.OneToOneField(TipoBaja, on_delete=models.RESTRICT, null=True, blank=True)
 	motivo_separacion = models.OneToOneField(MotivoSeparacion, on_delete=models.RESTRICT, null=True, blank=True)
 
-	class Meta:
-		verbose_name_plural = 'Empleos Anteriores Seguridad Publica'
-
-
-class CarpetaEmpleoAnterior(models.Model):
-	personal = models.ForeignKey(Personal, on_delete=models.CASCADE)
-
-	def __str__(self):
-		return f'{self.personal}'
+	def display_choice_value(self, field_name):
+		field = self._meta.get_field(field_name)
+		choices = field.choices
+		choice_value = getattr(self, field_name)
+		return dict(choices).get(choice_value)
 
 	class Meta:
-		verbose_name_plural = 'Carpeta Empleos Anteriores'
+		verbose_name_plural = 'Carpeta Empleos Anteriores Seguridad Publica'
 
 
 class EmpleoAnterior(models.Model):
+	personal = models.ForeignKey(Personal, on_delete=models.CASCADE, blank=True, null=True)
 	empresa = models.CharField(max_length=100, blank=True, null=True)
 	validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
 	telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
@@ -789,44 +796,19 @@ class EmpleoAnterior(models.Model):
 	puesto_informante = models.CharField(max_length=50, blank=True, null=True)
 	desempenio = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True, verbose_name='desempeño')
 	observaciones = models.TextField(blank=True, null=True)
-	carp_emp_ant = models.OneToOneField(CarpetaEmpleoAnterior, on_delete=models.CASCADE)
 	motivo_separacion = models.OneToOneField(MotivoSeparacion, on_delete=models.RESTRICT, null=True, blank=True)
 
-	class Meta:
-		verbose_name_plural = 'Empleos Anteriores'
-
-
-class CarpetaCapacitacion(models.Model):
-	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
-
-	def __str__(self):
-		return f'{self.personal}'
+	def display_choice_value(self, field_name):
+		field = self._meta.get_field(field_name)
+		choices = field.choices
+		choice_value = getattr(self, field_name)
+		return dict(choices).get(choice_value)
 
 	class Meta:
-		verbose_name_plural = 'Carpeta Capacitaciones'
-
-
-class Capacitacion(models.Model):
-	carpeta_capacitacion = models.ForeignKey(CarpetaCapacitacion, on_delete=models.CASCADE)
-	institucion_empresa = models.CharField(max_length=100, blank=True, null=True)
-	curso = models.CharField(max_length=100, blank=True, null=True)
-	tipo_curso = models.CharField(max_length=100, blank=True, null=True)
-	area_curso = models.CharField(max_length=100, blank=True, null=True)
-	impartido_recibido = models.PositiveSmallIntegerField(choices=IMPARTIDO_RECIBIDO, blank=True, null=True)
-	eficiencia_terminal = models.PositiveSmallIntegerField(choices=EFICIENCIA_TERMINAL, blank=True, null=True)
-	inicio = models.DateField(blank=True, null=True)
-	conclusion = models.DateField(blank=True, null=True)
-	duracion = models.CharField(max_length=10, blank=True, null=True)
-
-	def __str__(self):
-		return f'{self.curso}'
-
-	class Meta:
-		verbose_name_plural = 'Capacitaciones'
+		verbose_name_plural = 'Carpeta Empleos Anteriores'
 
 
 class Instructor(models.Model):
-	capacitacion = models.OneToOneField(Capacitacion, on_delete=models.RESTRICT, blank=True, null=True)
 	nombre_instructor = models.CharField(max_length=300, blank=True, null=True)
 	numero_registro = models.CharField(max_length=14, blank=True, null=True)
 
@@ -835,6 +817,33 @@ class Instructor(models.Model):
 
 	class Meta:
 		verbose_name_plural = 'Instructores'
+
+
+class Capacitacion(models.Model):
+	personal = models.ForeignKey(Personal, on_delete=models.RESTRICT)
+	paq_capacitacion = models.ForeignKey(PaqueteCapacitacion, on_delete=models.RESTRICT, blank=True, null=True)
+	institucion_empresa = models.CharField(max_length=100, blank=True, null=True)
+	curso = models.CharField(max_length=100, blank=True, null=True)
+	tipo_curso = models.CharField(max_length=100, blank=True, null=True)
+	area_curso = models.PositiveSmallIntegerField(choices=AREA_CURSO, blank=True, null=True)
+	impartido_recibido = models.PositiveSmallIntegerField(choices=IMPARTIDO_RECIBIDO, blank=True, null=True)
+	eficiencia_terminal = models.PositiveSmallIntegerField(choices=EFICIENCIA_TERMINAL, blank=True, null=True)
+	inicio = models.DateField(blank=True, null=True)
+	conclusion = models.DateField(blank=True, null=True)
+	duracion = models.CharField(max_length=10, blank=True, null=True)
+	instructor = models.OneToOneField(Instructor, on_delete=models.RESTRICT, blank=True, null=True)
+
+	def display_choice_value(self, field_name):
+		field = self._meta.get_field(field_name)
+		choices = field.choices
+		choice_value = getattr(self, field_name)
+		return dict(choices).get(choice_value)
+
+	def __str__(self):
+		return f'{self.paq_capacitacion} - {self.curso}'
+
+	class Meta:
+		verbose_name_plural = 'Carpeta Capacitaciones'
 
 
 class RepresentanteTrabajadores(models.Model):
@@ -848,7 +857,7 @@ class RepresentanteTrabajadores(models.Model):
 		return self.nombre_completo
 
 	class Meta:
-		verbose_name_plural = 'Representantes Trabajadores'
+		verbose_name_plural = 'Representante Trabajadores'
 
 
 class Domicilio(models.Model):
@@ -865,7 +874,7 @@ class Domicilio(models.Model):
 	empleo_anterior_sp = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE, blank=True, null=True, editable=False)
 	empleo_anterior = models.OneToOneField(EmpleoAnterior, on_delete=models.CASCADE, blank=True, null=True, editable=False)
 
-	def __str__(self):
+	def get_full_address(self):
 		return (
 			f'{self.calle} No.{self.numero_exterior} '
 			f'{self.numero_interior}, '
@@ -875,16 +884,25 @@ class Domicilio(models.Model):
 			f'{self.codigo_postal.pais}'
 		)
 
+	def __str__(self):
+		return self.get_full_address()
+
 	class Meta:
-		verbose_name_plural = 'Domicilios'
+		verbose_name_plural = 'Carpeta Domicilios'
 
 
 class Idioma(models.Model):
+	personal = models.ForeignKey(Personal, on_delete=models.RESTRICT, blank=True, null=True)
 	idioma = models.CharField(max_length=50, blank=True, null=True)
 	lectura = models.CharField(max_length=3, blank=True, null=True)
 	escritura = models.CharField(max_length=3, blank=True, null=True)
 	conversacion = models.CharField(max_length=3, blank=True, null=True)
-	carpeta_capacitacion = models.ForeignKey(CarpetaCapacitacion, on_delete=models.CASCADE)
+
+	def __str__(self):
+		return f'{self.idioma}'
+
+	class Meta:
+		verbose_name_plural = 'Carpeta Idiomas'
 
 
 class CarpetaMediaFiliacion(models.Model):
@@ -919,8 +937,7 @@ class CarpetaMediaFiliacion(models.Model):
 	nariz_ancho = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
 	nariz_base = models.PositiveSmallIntegerField(choices=NARIZ_BASE, null=True, blank=True)
 	nariz_altura = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
-	boca_tamanio = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True,
-	                                                verbose_name='Boca tamaño')
+	boca_tamanio = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True, verbose_name='Boca tamaño')
 	boca_comisuras = models.PositiveSmallIntegerField(choices=BOCA_COMISURAS, null=True, blank=True)
 	labios_espesor = models.PositiveSmallIntegerField(choices=LABIOS_ESPESOR, null=True, blank=True)
 	altura_nasolabial = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
@@ -932,14 +949,10 @@ class CarpetaMediaFiliacion(models.Model):
 	oreja_derecha_original = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
 	oreja_derecha_helix_superior = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
 	oreja_derecha_helix_posterior = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
-	oreja_derecha_helix_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, null=True,
-	                                                                  blank=True)
-	oreja_derecha_helix_contorno = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_HELIX_CONTORNO, null=True,
-	                                                                blank=True)
-	oreja_derecha_lobulo_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, null=True,
-	                                                                   blank=True)
-	oreja_derecha_lobulo_particularidad = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_LOBULO_PARTICULARIDAD,
-	                                                                       null=True, blank=True)
+	oreja_derecha_helix_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, null=True, blank=True)
+	oreja_derecha_helix_contorno = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_HELIX_CONTORNO, null=True, blank=True)
+	oreja_derecha_lobulo_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, null=True, blank=True)
+	oreja_derecha_lobulo_particularidad = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_LOBULO_PARTICULARIDAD, null=True, blank=True)
 	oreja_derecha_lobulo_dimension = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
 	sangre = models.PositiveSmallIntegerField(choices=SANGRE, null=True, blank=True)
 	rh = models.PositiveSmallIntegerField(choices=RH, null=True, blank=True)
@@ -1039,39 +1052,3 @@ class DocumentosDigitalesPrevio(DocumentosDigitales):
 		verbose_name_plural = 'Documentos Digitales'
 
 
-class CapacitacionCliente(models.Model):
-	estatus_capacitacion = models.PositiveSmallIntegerField(choices=ESTATUS_CAPACITACION, blank=True, null=True)
-	fecha_solicitud = models.DateField(blank=True, null=True)
-	detalle_solicitud = models.CharField(max_length=200, blank=True, null=True)
-	fecha_realizacion = models.DateField(blank=True, null=True)
-	detalle_realizacion = models.CharField(max_length=200, blank=True, null=True)
-	fecha_entrega = models.DateField(blank=True, null=True)
-	detalle_entrega = models.CharField(max_length=200, blank=True, null=True)
-	fecha_facturado = models.DateField(blank=True, null=True)
-	no_factura = models.CharField(max_length=200, blank=True, null=True)
-	fecha_pagado = models.DateField(blank=True, null=True)
-	detalle_pagado = models.CharField(max_length=200, blank=True, null=True)
-	comentarios = models.TextField(blank=True, null=True)
-	capacitacion = models.ManyToManyField(Capacitacion, related_name='capacitacionesencurso', blank=True)
-	cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True)
-
-	def __str__(self):
-		return f'{self.pk} {self.cliente}'
-
-	class Meta:
-		verbose_name_plural = 'Capacitaciones Cliente'
-
-
-class PersonalPorCapacitar(models.Model):
-	resultado_capacitacion = models.PositiveSmallIntegerField(choices=RESULTADO_CAPACITACION, blank=True, null=True)
-	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
-	capacitacion_cliente = models.ForeignKey(CapacitacionCliente, on_delete=models.CASCADE)
-
-	def __str__(self):
-		try:
-			return f'{self.personal.curp.nombre} {self.personal.curp.apellido_paterno} {self.personal.curp.apellido_materno}: {self.resultado_capacitacion}'
-		except AttributeError:
-			return f'SIN CURP'
-
-	class Meta:
-		verbose_name_plural = 'Personal Por Capacitar'

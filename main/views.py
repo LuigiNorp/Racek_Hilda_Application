@@ -42,8 +42,8 @@ def verify_data(personal, datos):
     for key, function in datos.items():
         try:
             result[key] = function(personal)
-        except AttributeError:
-            result[key] = None
+        # except AttributeError:
+        #     result[key] = None
         except ValueError:
             result[key] = 'Invalid value'
     return result
@@ -407,7 +407,7 @@ class CodigoPostalAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         qs = CodigoPostal.objects.all()
         if self.q:
-            qs = qs.filter(zip_code__istartswith=self.q)
+            qs = qs.filter(codigo_postal__istartswith=self.q)
         return qs
 
 
@@ -427,9 +427,20 @@ class RfcAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
-def remove_accents(text):
-    # Use unidecode to remove accents and replace special characters
-    return unidecode(text)
+class OcupacionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Ocupacion.objects.all()
+        if self.q:
+            qs = qs.filter(clave_subarea__istartswith=self.q)
+        return qs
+
+
+class PaqueteCapacitacionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = PaqueteCapacitacion.objects.all()
+        if self.q:
+            qs = qs.filter(fecha_realizacion__istartswith=self.q)
+        return qs
 
 
 class GenerateDC3View(View):
@@ -468,17 +479,17 @@ class GenerateDC3View(View):
         dc3_needed_data = {
             'nombre_completo': lambda p: p.curp.get_nombre_completo(),
             'curp': lambda p: p.curp.curp,
-            'ocupacion': lambda p: p.carpetalaboral.ocupacion.nombre_ocupacion,
-            'puesto': lambda p: p.carpetalaboral.puesto.nombre_puesto,
+            'ocupacion': lambda p: p.carpetalaboral.ocupacion.get_ocuacion_fullname(),
+            'puesto': lambda p: p.carpetalaboral.display_choice_value('puesto'),
             'razon_social': lambda p: p.cliente.razon_social,
             'rfc': lambda p: p.cliente.carpetaclientegenerales.rfc,
-            'nombre_curso': lambda p: p.carpetacapacitacion.capacitacion.curso,
-            'horas_curso': lambda p: p.carpetacapacitacion.capacitacion.duracion,
-            'fecha_inicial_capacitacion': lambda p: p.carpetacapacitacion.capacitacion.inicio,
-            'fecha_final_capacitacion': lambda p: p.carpetacapacitacion.capacitacion.conclusion,
-            'area_curso': lambda p: p.carpetacapacitacion.capacitacion.area_curso,
-            'nombre_instructor': lambda p: p.carpetacapacitacion.capacitacion.instructor.nombre_instructor,
-            'registro_instructor': lambda p: p.carpetacapacitacion.capacitacion.instructor.numero_registro,
+            'curso': lambda p: p.capacitacion.curso,
+            'horas_curso': lambda p: p.capacitacion.duracion,
+            'fecha_inicial_capacitacion': lambda p: p.capacitacion.inicio,
+            'fecha_final_capacitacion': lambda p: p.capacitacion.conclusion,
+            'area_curso': lambda p: p.capacitacion.display_choice_value('area_curso'),
+            'nombre_instructor': lambda p: p.capacitacion.instructor.nombre_instructor,
+            'registro_instructor': lambda p: p.capacitacion.instructor.numero_registro,
             'representante_legal': lambda p: p.cliente.carpetaclientegenerales.representante_legal,
             'representante_trabajadores': lambda p: p.cliente.representantetrabajadores.nombre_completo,
             'logotipo': lambda p: p.cliente.documentoscliente.logotipo.path,
@@ -493,7 +504,7 @@ class GenerateDC3View(View):
                 'AJ6': verified_data['curp'],
                 'AJ7': verified_data['ocupacion'],
                 'AJ8': verified_data['puesto'],
-                'AJ9': verified_data['nombre_curso'],
+                'AJ9': verified_data['curso'],
                 'AJ10': verified_data['horas_curso'],
                 'AJ11': verified_data['fecha_inicial_capacitacion'],
                 'AJ12': verified_data['fecha_final_capacitacion'],
