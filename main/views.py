@@ -1,11 +1,11 @@
 import uuid
+from datetime import datetime
 from PyPDF2 import PdfReader, PdfWriter
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as XlsxImage
 from openpyxl.worksheet.page import PageMargins
 from PIL import Image as PilImage
 import subprocess
-from unidecode import unidecode
 from django.http import FileResponse, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.views import APIView
@@ -476,57 +476,163 @@ class GenerateDC3View(View):
             bottom=0.2
         )
 
-        dc3_needed_data = {
-            'nombre_completo': lambda p: p.curp.get_nombre_completo(),
-            'curp': lambda p: p.curp.curp,
-            'ocupacion': lambda p: p.carpetalaboral.ocupacion.get_ocuacion_fullname(),
-            'puesto': lambda p: p.carpetalaboral.display_choice_value('puesto'),
-            'razon_social': lambda p: p.cliente.razon_social,
-            'rfc': lambda p: p.cliente.carpetaclientegenerales.rfc,
-            'curso': lambda p: p.capacitacion.curso,
-            'horas_curso': lambda p: p.capacitacion.duracion,
-            'fecha_inicial_capacitacion': lambda p: p.capacitacion.inicio,
-            'fecha_final_capacitacion': lambda p: p.capacitacion.conclusion,
-            'area_curso': lambda p: p.capacitacion.display_choice_value('area_curso'),
-            'nombre_instructor': lambda p: p.capacitacion.instructor.nombre_instructor,
-            'registro_instructor': lambda p: p.capacitacion.instructor.numero_registro,
-            'representante_legal': lambda p: p.cliente.carpetaclientegenerales.representante_legal,
-            'representante_trabajadores': lambda p: p.cliente.representantetrabajadores.nombre_completo,
-            'logotipo': lambda p: p.cliente.documentoscliente.logotipo.path,
-            'qr_code': lambda p: p.cliente.documentoscliente.qr_code.path,
-        }
-
         for personal in queryset:
-            verified_data = verify_data(personal, dc3_needed_data)
+            data = {
+                'nombre_completo': '',
+                'curp': '',
+                'ocupacion': '',
+                'puesto': '',
+                'razon_social': '',
+                'rfc': '',
+                'nombre_curso': '',
+                'horas_curso': '',
+                'fecha_inicial_capacitacion': '',
+                'fecha_final_capacitacion': '',
+                'area_curso': '',
+                'nombre_instructor': '',
+                'registro_instructor': '',
+                'representante_legal': '',
+                'representante_trabajadores': '',
+                'logotipo': None,
+                'qr_code': None,
+            }
 
+            # Try to access each attribute individually and handle exceptions separately
+            try:
+                data['nombre_completo'] = f"{personal.curp.get_nombre_completo()}"
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['curp'] = personal.curp.curp
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['ocupacion'] = f"{personal.carpetalaboral.ocupacion}"
+
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['puesto'] = f'{personal.carpetalaboral.display_choice_value("puesto")}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['razon_social'] = personal.cliente.razon_social
+            except AttributeError:
+                pass
+
+            try:
+                data['rfc'] = personal.cliente.carpetaclientegenerales.rfc
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['nombre_curso'] = f'{personal.capacitaciones.latest("id").curso}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['horas_curso'] = f'{personal.capacitaciones.latest("id").duracion}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['fecha_inicial_capacitacion'] = f'{personal.capacitaciones.latest("id").inicio.strftime("%d/%m/%Y")}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['fecha_final_capacitacion'] = f'{personal.capacitaciones.latest("id").conclusion.strftime("%d/%m/%Y")}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['area_curso'] = f'{personal.capacitaciones.latest("id").display_choice_value("area_curso")}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                capacitacion = personal.capacitaciones.all().last()
+                if capacitacion.instructor is not None and capacitacion.instructor.nombre_instructor is not None:
+                    data['nombre_instructor'] = f'{capacitacion.instructor.nombre_instructor}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                capacitacion = personal.capacitaciones.all().last()
+                if capacitacion.instructor is not None and capacitacion.instructor.nombre_instructor is not None:
+                    data['registro_instructor'] = f'{capacitacion.instructor.numero_registro}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['representante_legal'] = personal.cliente.carpetaclientegenerales.representante_legal
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['representante_trabajadores'] = personal.cliente.representantetrabajadores.nombre_completo
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['logotipo'] = personal.cliente.documentoscliente.logotipo.path
+            except ValueError as e:
+                print(e)
+                pass
+
+            try:
+                data['qr_code'] = personal.cliente.documentoscliente.qr_code.path
+            except ValueError as e:
+                print(e)
+                pass
+
+            # Define the data to be replaced in the cells for each 'personal' object
             cell_mapping = {
-                'AJ5': verified_data['nombre_completo'],
-                'AJ6': verified_data['curp'],
-                'AJ7': verified_data['ocupacion'],
-                'AJ8': verified_data['puesto'],
-                'AJ9': verified_data['curso'],
-                'AJ10': verified_data['horas_curso'],
-                'AJ11': verified_data['fecha_inicial_capacitacion'],
-                'AJ12': verified_data['fecha_final_capacitacion'],
-                'AJ13': verified_data['area_curso'],
-                'AJ14': verified_data['nombre_instructor'],
-                'AJ15': verified_data['registro_instructor'],
-                'AJ21': verified_data['razon_social'],
-                'AJ22': verified_data['rfc'],
-                'AJ23': verified_data['representante_legal'],
-                'AJ24': verified_data['representante_trabajadores'],
+                'AJ5': data['nombre_completo'],
+                'AJ6': data['curp'],
+                'AJ7': data['ocupacion'],
+                'AJ8': data['puesto'],
+                'AJ9': data['nombre_curso'],
+                'AJ10': data['horas_curso'],
+                'AJ11': data['fecha_inicial_capacitacion'],
+                'AJ12': data['fecha_final_capacitacion'],
+                'AJ13': data['area_curso'],
+                'AJ14': data['nombre_instructor'],
+                'AJ15': data['registro_instructor'],
+                'AJ21': data['razon_social'],
+                'AJ22': data['rfc'],
+                'AJ23': data['representante_legal'],
+                'AJ24': data['representante_trabajadores'],
             }
 
             for cell, value in cell_mapping.items():
                 sheet[cell].value = value
 
-            if verified_data['logotipo']:
-                img_path = verified_data['logotipo']
+            if data['logotipo']:
+                img_path = data['logotipo']
                 width, height = scale_image_from_height(img_path, desired_height_cm)
                 self.add_image_to_worksheet(img_path, 'B1', sheet, width, height)
 
-            if verified_data['qr_code']:
-                img_path = verified_data['qr_code']
+            if data['qr_code']:
+                img_path = data['qr_code']
                 width, height = scale_image_from_height(img_path, desired_height_cm)
                 self.add_image_to_worksheet(img_path, 'AC1', sheet, width, height)
 

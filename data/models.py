@@ -256,8 +256,8 @@ class PersonalPrevio(Personal):
 
 
 class Evaluador(models.Model):
+	personal = models.OneToOneField(Personal, on_delete=models.RESTRICT)
 	solicitante = models.CharField(max_length=300)
-	personal = models.OneToOneField(Personal, on_delete=models.RESTRICT, blank=True, null=True)
 
 	def __str__(self):
 		return f'{self.solicitante}'
@@ -272,18 +272,18 @@ class Ocupacion(models.Model):
 	clave_subarea = models.CharField(max_length=4, blank=True, null=True)
 	subarea = models.CharField(max_length=100, blank=True, null=True)
 
-	def get_ocuacion_fullname(self):
+	def get_ocupacion_fullname(self):
 		return f'{self.clave_subarea}/{self.subarea}'
 
 	def __str__(self):
-		return self.get_ocuacion_fullname()
+		return self.get_ocupacion_fullname()
 
 	class Meta:
 		verbose_name_plural = 'Ocupaciones'
 
 
 class CarpetaLaboral(models.Model):
-	personal = models.OneToOneField(Personal, on_delete=models.CASCADE, null=True, blank=True)
+	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
 	modalidad = models.PositiveSmallIntegerField(choices=MODALIDAD, null=True, blank=True)
 	estatus_empleado = models.PositiveSmallIntegerField(choices=ESTATUS_EMPLEADO, null=True, blank=True)
 	proceso_racek = models.PositiveSmallIntegerField(choices=PROCESO_RACEK, null=True, blank=True)
@@ -398,7 +398,7 @@ class CarpetaGeneralesPrevio(CarpetaGenerales):
 
 
 class Referencia(models.Model):
-	personal = models.ForeignKey(Personal, on_delete=models.CASCADE, blank=True, null=True)
+	personal = models.ForeignKey(Personal, on_delete=models.CASCADE)
 	tipo_referencia = models.PositiveSmallIntegerField(choices=TIPO_REFERENCIA, null=True, blank=True)
 	nombre = models.CharField(max_length=100)
 	apellido_paterno = models.CharField(max_length=100)
@@ -476,6 +476,7 @@ class CarpetaExamenPsicologicoPrevio(CarpetaExamenPsicologico):
 
 
 class CarpetaExamenToxicologico(models.Model):
+	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
 	fecha_examen = models.DateField(auto_now=True, null=True, blank=True)
 	cocaina = models.BooleanField(blank=True, default=False)
 	marihuana = models.BooleanField(blank=True, default=False)
@@ -487,7 +488,6 @@ class CarpetaExamenToxicologico(models.Model):
 	resultado_toxicologico = models.BooleanField(blank=True, default=False)
 	resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADO_TOXICOLOGICO_ASPIRANTE, blank=True, null=True)
 	observacion = models.TextField(blank=True, null=True)
-	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
 
 	class Meta:
 		verbose_name_plural = 'Carpeta Examen Toxicológico'
@@ -743,7 +743,7 @@ class TipoBaja(models.Model):
 
 
 class EmpleoAnteriorSeguridadPublica(models.Model):
-	personal = models.ForeignKey(Personal, on_delete=models.CASCADE, blank=True, null=True)
+	personal = models.ForeignKey(Personal, on_delete=models.CASCADE)
 	dependencia = models.CharField(max_length=100, blank=True, null=True)
 	corporacion = models.CharField(max_length=100, blank=True, null=True)
 	direccion = models.CharField(max_length=150, blank=True, null=True)
@@ -780,7 +780,7 @@ class EmpleoAnteriorSeguridadPublica(models.Model):
 
 
 class EmpleoAnterior(models.Model):
-	personal = models.ForeignKey(Personal, on_delete=models.CASCADE, blank=True, null=True)
+	personal = models.ForeignKey(Personal, on_delete=models.CASCADE)
 	empresa = models.CharField(max_length=100, blank=True, null=True)
 	validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
 	telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
@@ -809,8 +809,8 @@ class EmpleoAnterior(models.Model):
 
 
 class Instructor(models.Model):
-	nombre_instructor = models.CharField(max_length=300, blank=True, null=True)
-	numero_registro = models.CharField(max_length=14, blank=True, null=True)
+	nombre_instructor = models.CharField(max_length=300)
+	numero_registro = models.CharField(max_length=14)
 
 	def __str__(self):
 		return f'{self.nombre_instructor}'
@@ -820,8 +820,8 @@ class Instructor(models.Model):
 
 
 class Capacitacion(models.Model):
-	personal = models.ForeignKey(Personal, on_delete=models.RESTRICT)
-	paq_capacitacion = models.ForeignKey(PaqueteCapacitacion, on_delete=models.RESTRICT, blank=True, null=True)
+	personal = models.ForeignKey(Personal, on_delete=models.RESTRICT, null=True, blank=True, related_name='capacitaciones')
+	paq_capacitacion = models.ForeignKey(PaqueteCapacitacion, null=True, blank=True, on_delete=models.RESTRICT)
 	institucion_empresa = models.CharField(max_length=100, blank=True, null=True)
 	curso = models.CharField(max_length=100, blank=True, null=True)
 	tipo_curso = models.CharField(max_length=100, blank=True, null=True)
@@ -861,18 +861,18 @@ class RepresentanteTrabajadores(models.Model):
 
 
 class Domicilio(models.Model):
+	personal = models.OneToOneField(Personal, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+	carpeta_cliente_generales = models.OneToOneField(CarpetaClienteGenerales, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+	carpeta_cliente_pagos = models.OneToOneField(CarpetaClientePagos, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+	referencia = models.OneToOneField(Referencia, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+	empleo_anterior_sp = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+	empleo_anterior = models.OneToOneField(EmpleoAnterior, on_delete=models.CASCADE, blank=True, null=True, editable=False)
 	calle = models.CharField(max_length=100, blank=True, null=True)
 	numero_exterior = models.CharField(max_length=20, default='S/N', blank=True, null=True)
 	numero_interior = models.CharField(max_length=20, blank=True, null=True)
 	entre_calle = models.CharField(max_length=100, null=True, blank=True)
 	y_calle = models.CharField(max_length=100, null=True, blank=True)
 	codigo_postal = models.OneToOneField(CodigoPostal, on_delete=models.RESTRICT)
-	carpeta_cliente_generales = models.OneToOneField(CarpetaClienteGenerales, on_delete=models.CASCADE, blank=True, null=True, editable=False)
-	carpeta_cliente_pagos = models.OneToOneField(CarpetaClientePagos, on_delete=models.CASCADE, blank=True, null=True, editable=False)
-	personal = models.OneToOneField(Personal, on_delete=models.CASCADE, blank=True, null=True, editable=False)
-	referencia = models.OneToOneField(Referencia, on_delete=models.CASCADE, blank=True, null=True, editable=False)
-	empleo_anterior_sp = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE, blank=True, null=True, editable=False)
-	empleo_anterior = models.OneToOneField(EmpleoAnterior, on_delete=models.CASCADE, blank=True, null=True, editable=False)
 
 	def get_full_address(self):
 		return (
@@ -892,7 +892,7 @@ class Domicilio(models.Model):
 
 
 class Idioma(models.Model):
-	personal = models.ForeignKey(Personal, on_delete=models.RESTRICT, blank=True, null=True)
+	personal = models.ForeignKey(Personal, on_delete=models.RESTRICT)
 	idioma = models.CharField(max_length=50, blank=True, null=True)
 	lectura = models.CharField(max_length=3, blank=True, null=True)
 	escritura = models.CharField(max_length=3, blank=True, null=True)
