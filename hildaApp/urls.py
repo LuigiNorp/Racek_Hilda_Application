@@ -20,7 +20,7 @@ from data.admin import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('data.urls')),
+    # path('api/', include('data.urls')),
     path('', include('main.urls')),
 ]
 

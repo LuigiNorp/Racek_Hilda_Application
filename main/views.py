@@ -1,11 +1,11 @@
 import uuid
+from datetime import datetime
 from PyPDF2 import PdfReader, PdfWriter
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as XlsxImage
 from openpyxl.worksheet.page import PageMargins
 from PIL import Image as PilImage
 import subprocess
-from unidecode import unidecode
 from django.http import FileResponse, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.views import APIView
@@ -18,8 +18,8 @@ from .helpers import send_forget_password_mail
 from django.views import View
 from django.core.cache import cache
 from django.db.models import Q
-from .forms import *
-from .models import *
+from dal import autocomplete
+from main.forms import *
 
 
 def keep_first_page(pdf_path):
@@ -42,8 +42,8 @@ def verify_data(personal, datos):
     for key, function in datos.items():
         try:
             result[key] = function(personal)
-        except AttributeError:
-            result[key] = None
+        # except AttributeError:
+        #     result[key] = None
         except ValueError:
             result[key] = 'Invalid value'
     return result
@@ -185,8 +185,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -208,8 +207,7 @@ class RegisterView(LoginRequiredMixin, UserPassesTestMixin, APIView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -247,8 +245,7 @@ class CustomUserProfileView(LoginRequiredMixin, APIView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -284,8 +281,7 @@ class UsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -318,8 +314,7 @@ class ClientesView(TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -335,10 +330,24 @@ class PersonalView(TemplateView):
 
     def test_func(self):
         user = self.request.user
-        if (
-                user.groups.filter(name='Superboss').exists() or
-                user.groups.filter(name='Manager').exists() or
-                user.groups.filter(name='Admin').exists()):
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
+            return True
+        return False
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_register_enabled'] = self.test_func()
+        context['form'] = PersonalForm(self.request.POST or None, request=self.request)
+        return context
+
+
+class PersonalPrevioView(TemplateView):
+    template_name = 'personal/personalprevio.html'
+    login_url = '/login/'
+
+    def test_func(self):
+        user = self.request.user
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -355,8 +364,7 @@ class UserHistoryView(LoginRequiredMixin, TemplateView):
 
     def is_register_enabled(self):
         user = self.request.user
-        if user.groups.filter(name='Superboss').exists() or user.groups.filter(
-                name='Manager').exists() or user.groups.filter(name='Admin').exists():
+        if user.groups.filter(name__in=['Superboss', 'Manager', 'Admin']).exists():
             return True
         return False
 
@@ -387,9 +395,52 @@ class UserHistoryView(LoginRequiredMixin, TemplateView):
         return render(request, self.template_name, context)
 
 
-def remove_accents(text):
-    # Use unidecode to remove accents and replace special characters
-    return unidecode(text)
+class ClienteAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Cliente.objects.all()
+        if self.q:
+            qs = qs.filter(nombre_comercial__istartswith=self.q)
+        return qs
+
+
+class CodigoPostalAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = CodigoPostal.objects.all()
+        if self.q:
+            qs = qs.filter(codigo_postal__istartswith=self.q)
+        return qs
+
+
+class CurpAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Curp.objects.all()
+        if self.q:
+            qs = qs.filter(curp__istartswith=self.q)
+        return qs
+
+
+class RfcAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Rfc.objects.all()
+        if self.q:
+            qs = qs.filter(rfc__istartswith=self.q)
+        return qs
+
+
+class OcupacionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Ocupacion.objects.all()
+        if self.q:
+            qs = qs.filter(clave_subarea__istartswith=self.q)
+        return qs
+
+
+class PaqueteCapacitacionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = PaqueteCapacitacion.objects.all()
+        if self.q:
+            qs = qs.filter(fecha_realizacion__istartswith=self.q)
+        return qs
 
 
 class GenerateDC3View(View):
@@ -425,57 +476,163 @@ class GenerateDC3View(View):
             bottom=0.2
         )
 
-        dc3_needed_data = {
-            'nombre_completo': lambda p: p.curp.get_full_name(),
-            'curp': lambda p: p.curp.curp,
-            'ocupacion': lambda p: p.carpetalaboral.ocupacion.nombre_ocupacion,
-            'puesto': lambda p: p.carpetalaboral.puesto.nombre_puesto,
-            'razon_social': lambda p: p.cliente.razon_social,
-            'rfc': lambda p: p.cliente.carpetaclientegenerales.rfc,
-            'nombre_curso': lambda p: p.carpetacapacitacion.curso,
-            'horas_curso': lambda p: p.carpetacapacitacion.duracion,
-            'fecha_inicial_capacitacion': lambda p: p.carpetacapacitacion.inicio,
-            'fecha_final_capacitacion': lambda p: p.carpetacapacitacion.conclusion,
-            'area_curso': lambda p: p.carpetacapacitacion.area_curso.nombre_area,
-            'nombre_capacitador': lambda p: p.carpetacapacitacion.capacitador.nombre_capacitador,
-            'registro_capacitador': lambda p: p.carpetacapacitacion.capacitador.numero_registro,
-            'representante_legal': lambda p: p.cliente.carpetaclientegenerales.representante_legal,
-            'representante_trabajadores': lambda p: p.cliente.representantetrabajadores.nombre_completo,
-            'logotipo': lambda p: p.cliente.documentoscliente.logotipo.path,
-            'qr_code': lambda p: p.cliente.documentoscliente.qr_code.path,
-        }
-
         for personal in queryset:
-            verified_data = verify_data(personal, dc3_needed_data)
+            data = {
+                'nombre_completo': '',
+                'curp': '',
+                'ocupacion': '',
+                'puesto': '',
+                'razon_social': '',
+                'rfc': '',
+                'nombre_curso': '',
+                'horas_curso': '',
+                'fecha_inicial_capacitacion': '',
+                'fecha_final_capacitacion': '',
+                'area_curso': '',
+                'nombre_instructor': '',
+                'registro_instructor': '',
+                'representante_legal': '',
+                'representante_trabajadores': '',
+                'logotipo': None,
+                'qr_code': None,
+            }
 
+            # Try to access each attribute individually and handle exceptions separately
+            try:
+                data['nombre_completo'] = f"{personal.curp.get_nombre_completo()}"
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['curp'] = personal.curp.curp
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['ocupacion'] = f"{personal.carpetalaboral.ocupacion}"
+
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['puesto'] = f'{personal.carpetalaboral.display_choice_value("puesto")}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['razon_social'] = personal.cliente.razon_social
+            except AttributeError:
+                pass
+
+            try:
+                data['rfc'] = personal.cliente.carpetaclientegenerales.rfc
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['nombre_curso'] = f'{personal.capacitaciones.latest("id").curso}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['horas_curso'] = f'{personal.capacitaciones.latest("id").duracion}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['fecha_inicial_capacitacion'] = f'{personal.capacitaciones.latest("id").inicio.strftime("%d/%m/%Y")}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['fecha_final_capacitacion'] = f'{personal.capacitaciones.latest("id").conclusion.strftime("%d/%m/%Y")}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['area_curso'] = f'{personal.capacitaciones.latest("id").display_choice_value("area_curso")}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                capacitacion = personal.capacitaciones.all().last()
+                if capacitacion.instructor is not None and capacitacion.instructor.nombre_instructor is not None:
+                    data['nombre_instructor'] = f'{capacitacion.instructor.nombre_instructor}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                capacitacion = personal.capacitaciones.all().last()
+                if capacitacion.instructor is not None and capacitacion.instructor.nombre_instructor is not None:
+                    data['registro_instructor'] = f'{capacitacion.instructor.numero_registro}'
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['representante_legal'] = personal.cliente.carpetaclientegenerales.representante_legal
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['representante_trabajadores'] = personal.cliente.representantetrabajadores.nombre_completo
+            except AttributeError as e:
+                print(e)
+                pass
+
+            try:
+                data['logotipo'] = personal.cliente.documentoscliente.logotipo.path
+            except ValueError as e:
+                print(e)
+                pass
+
+            try:
+                data['qr_code'] = personal.cliente.documentoscliente.qr_code.path
+            except ValueError as e:
+                print(e)
+                pass
+
+            # Define the data to be replaced in the cells for each 'personal' object
             cell_mapping = {
-                'AJ5': verified_data['nombre_completo'],
-                'AJ6': verified_data['curp'],
-                'AJ7': verified_data['ocupacion'],
-                'AJ8': verified_data['puesto'],
-                'AJ9': verified_data['nombre_curso'],
-                'AJ10': verified_data['horas_curso'],
-                'AJ11': verified_data['fecha_inicial_capacitacion'],
-                'AJ12': verified_data['fecha_final_capacitacion'],
-                'AJ13': verified_data['area_curso'],
-                'AJ14': verified_data['nombre_capacitador'],
-                'AJ15': verified_data['registro_capacitador'],
-                'AJ21': verified_data['razon_social'],
-                'AJ22': verified_data['rfc'],
-                'AJ23': verified_data['representante_legal'],
-                'AJ24': verified_data['representante_trabajadores'],
+                'AJ5': data['nombre_completo'],
+                'AJ6': data['curp'],
+                'AJ7': data['ocupacion'],
+                'AJ8': data['puesto'],
+                'AJ9': data['nombre_curso'],
+                'AJ10': data['horas_curso'],
+                'AJ11': data['fecha_inicial_capacitacion'],
+                'AJ12': data['fecha_final_capacitacion'],
+                'AJ13': data['area_curso'],
+                'AJ14': data['nombre_instructor'],
+                'AJ15': data['registro_instructor'],
+                'AJ21': data['razon_social'],
+                'AJ22': data['rfc'],
+                'AJ23': data['representante_legal'],
+                'AJ24': data['representante_trabajadores'],
             }
 
             for cell, value in cell_mapping.items():
                 sheet[cell].value = value
 
-            if verified_data['logotipo']:
-                img_path = verified_data['logotipo']
+            if data['logotipo']:
+                img_path = data['logotipo']
                 width, height = scale_image_from_height(img_path, desired_height_cm)
                 self.add_image_to_worksheet(img_path, 'B1', sheet, width, height)
 
-            if verified_data['qr_code']:
-                img_path = verified_data['qr_code']
+            if data['qr_code']:
+                img_path = data['qr_code']
                 width, height = scale_image_from_height(img_path, desired_height_cm)
                 self.add_image_to_worksheet(img_path, 'AC1', sheet, width, height)
 
@@ -494,7 +651,7 @@ class GenerateDC3View(View):
 
         # Return the PDF as a response with the desired filename
         with open(pdf_path, 'rb') as pdf_file:
-            filename = f'{first_personal.curp.get_full_name()}-DC3.pdf'
+            filename = f'{first_personal.curp.get_nombre_completo()}-DC3.pdf'
             pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
             pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
 

@@ -32,7 +32,6 @@ SECRET_KEY = env('SECRET_KEY')
 # DEBUG = env('DEBUG')
 DEBUG = os.getenv('DEBUG')
 
-
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # Application definition
@@ -56,6 +55,8 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'nested_admin',
     'rest_framework',
+    'dal',
+    'dal_select2',
     # 'import_export',
 ]
 

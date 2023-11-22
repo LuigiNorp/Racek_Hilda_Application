@@ -2,12 +2,14 @@ from nested_admin import NestedStackedInline, NestedModelAdmin
 from .models import *
 from .actions import *
 from django.contrib import admin
+from django import forms
 
 
 # Register your models here.
 class DomicilioInline(NestedStackedInline):
     model = Domicilio
     extra = 0
+    autocomplete_fields = ['codigo_postal']
 
     # Hide Domicilio when is not used (the get_fields is necessary)
     def get_fields(self, request, obj=None):
@@ -44,6 +46,7 @@ class DocumentosClienteInline(NestedStackedInline):
 
 class RepresentanteTrabajadoresInline(NestedStackedInline):
     model = RepresentanteTrabajadores
+    extra = 0
 
 
 class SedeInline(NestedStackedInline):
@@ -59,15 +62,18 @@ class CarpetaClienteGeneralesInline(NestedStackedInline):
 class CarpetaClientePagosInline(NestedStackedInline):
     model = CarpetaClientePagos
     inlines = [DomicilioInline]
+    extra = 0
 
 
 class CarpetaClienteContactosInline(NestedStackedInline):
     model = CarpetaClienteContactos
-    
+    extra = 0
 
-class CapacitacionClienteInline(NestedStackedInline):
-    model = CapacitacionCliente
-    extra = 1
+
+class PaqueteCapacitacionInline(NestedStackedInline):
+    model = PaqueteCapacitacion
+    extra = 0
+    autocomplete_fields = ['cliente', ]
 
 
 @admin.register(Cliente)
@@ -80,62 +86,31 @@ class ClienteAdmin(NestedModelAdmin):
         CarpetaClienteGeneralesInline,
         CarpetaClientePagosInline,
         CarpetaClienteContactosInline,
-        CapacitacionClienteInline,
+        PaqueteCapacitacionInline,
     ]
+    search_fields = ['nombre_comercial', 'razon_social',]
 
 
 class EvaluadorInline(NestedStackedInline):
     model = Evaluador
-
-
-class CurpInline(NestedStackedInline):
-    model = Curp
-
-
-class RfcInline(NestedStackedInline):
-    model = Rfc
-
-
-class PuestoInline(NestedStackedInline):
-    model = Puesto
-    
-
-class InstructorInline(NestedStackedInline):
-    model = Instructor
-
-
-class OcupacionInline(NestedStackedInline):
-    model = Ocupacion
-    
-
-class AreaCursoInline(NestedStackedInline):
-    model = AreaCurso
+    extra = 0
 
 
 class CarpetaLaboralInline(NestedStackedInline):
     model = CarpetaLaboral
-    extra = 1
-    inlines = [
-        PuestoInline, 
-        OcupacionInline, 
-        AreaCursoInline,
-        InstructorInline, 
-    ]
+    extra = 0
+    autocomplete_fields = ['ocupacion']
 
 
 class CarpetaGeneralesInline(NestedStackedInline):
     model = CarpetaGenerales
+    extra = 0
 
 
 class ReferenciaInline(NestedStackedInline):
     model = Referencia
     inlines = [DomicilioInline]
-    extra = 1
-
-
-class CarpetaReferenciasInline(NestedStackedInline):
-    model = CarpetaReferencias
-    inlines = [ReferenciaInline]
+    extra = 0
 
 
 class DependienteInline(NestedStackedInline):
@@ -146,89 +121,79 @@ class DependienteInline(NestedStackedInline):
 class CarpetaDependientesInline(NestedStackedInline):
     model = CarpetaDependientes
     inlines = [DependienteInline]
+    extra = 0
 
 
 class CarpetaExamenFisicoInline(NestedStackedInline):
     model = CarpetaExamenFisico
+    extra = 0
 
 
 class CarpetaExamenMedicoInline(NestedStackedInline):
     model = CarpetaExamenMedico
+    extra = 0
 
 
 class CarpetaExamenPsicologicoInline(NestedStackedInline):
     model = CarpetaExamenPsicologico
+    extra = 0
 
 
 class CarpetaExamenToxicologicoInline(NestedStackedInline):
     model = CarpetaExamenToxicologico
+    extra = 0
 
 
 class CarpetaExamenSocioeconomicoInline(NestedStackedInline):
     model = CarpetaExamenSocioeconomico
+    extra = 0
 
 
 class CarpetaExamenPoligrafoInline(NestedStackedInline):
     model = CarpetaExamenPoligrafo
+    extra = 0
 
 
 class EmpleoAnteriorSeguridadPublicaInline(NestedStackedInline):
     model = EmpleoAnteriorSeguridadPublica
     inlines = [DomicilioInline]
-    extra = 1
-
-
-class CarpetaEmpleoAnteriorSeguridadPublicaInline(NestedStackedInline):
-    model = CarpetaEmpleoAnteriorSeguridadPublica
-    inlines = [EmpleoAnteriorSeguridadPublicaInline]
+    extra = 0
 
 
 # TODO: Puedes mejor convertirlo en boton
-class EmpleoAnteriorAdmin(NestedStackedInline):
+class EmpleoAnteriorInline(NestedStackedInline):
     model = EmpleoAnterior
+    extra = 0
     inlines = [DomicilioInline]
-
-
-class CarpetaEmpleoAnteriorInline(NestedStackedInline):
-    model = CarpetaEmpleoAnterior
-    inlines = [EmpleoAnteriorAdmin]
-    extra = 1
 
 
 class IdiomaInline(NestedStackedInline):
     model = Idioma
-    extra = 1
-
-
-class TipoCursoInline(NestedStackedInline):
-    model = TipoCurso
+    extra = 0
 
 
 class CapacitacionInline(NestedStackedInline):
     model = Capacitacion
-    inlines = [TipoCursoInline]
-    extra = 1
-
-
-class CarpetaCapacitacionInline(NestedStackedInline):
-    model = CarpetaCapacitacion
-    inlines = [CapacitacionInline, IdiomaInline]
+    extra = 0
+    autocomplete_fields = ['paq_capacitacion', 'instructor', ]
 
 
 class CarpetaMediaFilicacionInline(NestedStackedInline):
     model = CarpetaMediaFiliacion
+    extra = 0
 
 
 class DocumentosDigitalesInline(NestedStackedInline):
     model = DocumentosDigitales
+    extra = 0
 
 
 @admin.register(Personal)
 class PersonalAdmin(NestedModelAdmin):
-    list_display = ('id', 'get_full_name', 'cliente',)
+    list_display = ('id', 'nombre_completo', 'cliente',)
+    search_fields = ['curp', 'rfc', 'cliente', ]
+    autocomplete_fields = ['cliente', 'curp', 'rfc', ]
     inlines = [
-        CurpInline,
-        RfcInline,
         DomicilioInline,
         EvaluadorInline,
         RepresentanteTrabajadoresInline,
@@ -240,30 +205,130 @@ class PersonalAdmin(NestedModelAdmin):
         CarpetaExamenPoligrafoInline,
         CarpetaLaboralInline,
         CarpetaGeneralesInline,
-        CarpetaReferenciasInline,
+        ReferenciaInline,
         CarpetaDependientesInline,
-        CarpetaEmpleoAnteriorSeguridadPublicaInline,
-        CarpetaEmpleoAnteriorInline,
-        CarpetaCapacitacionInline,
+        EmpleoAnteriorSeguridadPublicaInline,
+        EmpleoAnteriorInline,
+        CapacitacionInline,
+        IdiomaInline,
         CarpetaMediaFilicacionInline,
         DocumentosDigitalesInline,
     ]
-
     generate_dc3_report.short_description = 'Generar DC-3'
     actions = [generate_dc3_report]
 
-    def get_full_name(self, obj):
-        return f"{obj.curp.nombre} {obj.curp.apellido_paterno} {obj.curp.apellido_materno}"
+    def nombre_completo(self, obj):
+        return f"{obj.curp.get_nombre_completo()}"
 
-    get_full_name.short_description = 'Full Name'
-
-
-class PersonalPreviosAdmin(PersonalAdmin):
-    exclude = ('es_empleado',)  # Excluir el campo 'es_empleado' en PreviosAdmin
+    nombre_completo.short_description = 'Nombre Completo'
 
 
-class PersonalEmpleadosAdmin(PersonalAdmin):
-    pass
+class CarpetaExamenFisicoPrevioInline(NestedStackedInline):
+    model = CarpetaExamenFisicoPrevio
+    extra = 1
+    fields = ('resultado_aspirante', 'observacion')
+
+
+class CarpetaExamenMedicoPrevioInline(NestedStackedInline):
+    model = CarpetaExamenMedicoPrevio
+    extra = 1
+    fields = ('resultado_aspirante', 'observacion')
+
+
+class CarpetaExamenPsicologicoPrevioInline(NestedStackedInline):
+    model = CarpetaExamenPsicologicoPrevio
+    extra = 1
+    fields = ('resultado_aspirante', 'observacion')
+
+
+class CarpetaExamenToxicologicoPrevioInline(NestedStackedInline):
+    model = CarpetaExamenToxicologicoPrevio
+    extra = 1
+    fields = ('resultado_aspirante', 'observacion')
+
+
+class CarpetaExamenSocioeconomicoPrevioInline(NestedStackedInline):
+    model = CarpetaExamenSocioeconomicoPrevio
+    extra = 1
+    fields = ('resultado_aspirante', 'comentarios_generales')
+
+
+class CarpetaExamenPoligrafoPrevioInline(NestedStackedInline):
+    model = CarpetaExamenPoligrafoPrevio
+    extra = 1
+    fields = ('resultado_aspirante', 'observacion')
+
+
+class CarpetaGeneralesPrevioInline(NestedStackedInline):
+    model = CarpetaGeneralesPrevio
+    extra = 1
+    fields = (
+        'estado_civil',
+        'escolaridad',
+        'telefono_domicilio',
+        'telefono_celular',
+        'telefono_recados',
+        'email_empleado'
+    )
+
+
+class CarpetaMediaFilicacionPrevioInline(NestedStackedInline):
+    model = CarpetaMediaFiliacionPrevio
+    extra = 1
+
+    fields = (
+        'peso',
+        'estatura',
+        'tension_arterial',
+        'temperatura',
+        'indice_masa_corporal',
+        'clasificacion_imc',
+        'sat02',
+        'frecuencia_cardiaca',
+        'cronica_degenerativa',
+        'sangre',
+        'rh'
+    )
+
+
+class DocumentosDigitalesPrevioInline(NestedStackedInline):
+    model = DocumentosDigitalesPrevio
+    extra = 1
+    fields = (
+        'acta_nacimiento',
+        'ine',
+        'comprobante_domicilio',
+        'comprobante_estudios',
+        'curp',
+        'cartilla_smn',
+        'nss',
+        'huellas_digitales'
+    )
+
+
+@admin.register(PersonalPrevio)
+class PersonalPrevioAdmin(NestedModelAdmin):
+    list_display = ('id', 'nombre_completo', 'cliente',)
+    search_fields = ['curp', 'rfc', 'cliente',]
+    autocomplete_fields = ['cliente', 'curp', 'rfc']
+    inlines = [
+        DomicilioInline,
+        EvaluadorInline,
+        CarpetaExamenFisicoPrevioInline,
+        CarpetaExamenMedicoPrevioInline,
+        CarpetaExamenPsicologicoPrevioInline,
+        CarpetaExamenToxicologicoPrevioInline,
+        CarpetaExamenSocioeconomicoPrevioInline,
+        CarpetaExamenPoligrafoPrevioInline,
+        CarpetaGeneralesPrevioInline,
+        CarpetaMediaFilicacionPrevioInline,
+        DocumentosDigitalesPrevioInline,
+    ]
+
+    def nombre_completo(self, obj):
+        return f"{obj.curp.get_nombre_completo()}"
+
+    nombre_completo.short_description = 'Nombre Completo'
 
 
 @admin.register(PuestoFuncional)
@@ -281,53 +346,68 @@ class MotivoSeparacionAdmin(admin.ModelAdmin):
     list_display = ('id', 'motivo',)
 
 
-@admin.register(CapacitacionCliente)
-class CapacitacionClienteInline(admin.ModelAdmin):
-    list_display = ('id', 'cliente', 'estatus_capacitacion', 'comentarios', 'fecha_realizacion')
-
-
-@admin.register(Capacitacion)
-class CapacitacionAdmin(admin.ModelAdmin):
-    list_display = (
-        'id', 'institucion_empresa', 'curso', 'impartido_recibido', 'eficiencia_terminal', 'inicio', 'conclusion',
-        'duracion')
-
-
-# TODO: Verificar si se puede eliminar
-# @admin.register(CapacitacionEnCurso)
-# class CapacitacionEnCursoAdmin(admin.ModelAdmin):
-#     list_display = ('id','carpeta_capacitacion','estudio_curso')
-
-
-# @admin.register(Habilidad)
-# class HabilidadAdmin(admin.ModelAdmin):
-#     list_display = ('id','carpeta_capacitacion')
-
-# @admin.register(HabilidadPersonalizada)
-# class HabilidadPersonalizadaAdmin(admin.ModelAdmin):
-#     list_display = ('id','habilidad','nombre_habilidad')
-
+@admin.register(Instructor)
+class InstructorAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nombre_instructor', 'numero_registro',)
+    search_fields = ['nombre_instructor', 'numero_registro',]
 
 @admin.register(CodigoPostal)
 class CodigoPostalAdmin(admin.ModelAdmin):
-    list_display = ('id', 'codigo_postal')
+    list_display = ('id', 'codigo_postal', 'tipo_asentamiento', 'asentamiento', 'municipio', 'estado', 'ciudad', 'pais')
+    search_fields = ['codigo_postal', 'tipo_asentamiento', 'asentamiento',]
 
 
-@admin.register(Colonia)
-class ColoniaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'colonia')
+@admin.register(Curp)
+class CurpAdmin(admin.ModelAdmin):
+    list_display = ('id', 'curp', 'nombre', 'apellido_paterno', 'apellido_materno', 'fecha_nacimiento', 'sexo',)
+    search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno',]
 
 
-@admin.register(Municipio)
-class MunicipioAdmin(admin.ModelAdmin):
-    list_display = ('id', 'municipio')
+@admin.register(CurpPrevio)
+class CurpPrevioAdmin(admin.ModelAdmin):
+    list_display = ('curp', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo',)
+    search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno',]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        # Hide all other fields
+        for field in form.base_fields:
+            if field not in self.list_display:
+                form.base_fields[field].widget = forms.HiddenInput()
+        return form
 
 
-@admin.register(Estado)
-class EstadoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'estado')
+@admin.register(Rfc)
+class RfcAdmin(admin.ModelAdmin):
+    list_display = ('id', 'rfc', 'razon_social',)
+    search_fields = ['rfc', 'razon_social',]
 
 
-@admin.register(Pais)
-class PaisAdmin(admin.ModelAdmin):
-    list_display = ('id', 'pais')
+@admin.register(RfcPrevio)
+class RfcPrevioAdmin(admin.ModelAdmin):
+    list_display = ('rfc', 'razon_social',)
+    search_fields = ['rfc', 'razon_social',]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        # Hide all other fields
+        for field in form.base_fields:
+            if field not in self.list_display:
+                form.base_fields[field].widget = forms.HiddenInput()
+        return form
+
+
+@admin.register(Ocupacion)
+class OcupacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'clave_subarea', 'subarea',)
+    search_fields = ['clave_subarea', 'subarea', ]
+
+
+# This one is the only repeate as Inline and ModelAdmin
+@admin.register(PaqueteCapacitacion)
+class PaqueteCapacitacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'cliente', 'fecha_solicitud', 'fecha_realizacion',)
+    search_fields = ['cliente', 'fecha_realizacion',]
+    autocomplete_fields = ['cliente',]

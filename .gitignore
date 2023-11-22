@@ -5,8 +5,11 @@ main/__pycache__/
 data/__pycache__/
 hildaApp/__pycache__
 .idea/
-main/migrations/*[0-9]*[a-zA-Z]*.py
-data/migrations/*[0-9]*[a-zA-Z]*.py
+/main/migrations/*[0-9]*[a-zA-Z]*.py
+/data/migrations/*[0-9]*[a-zA-Z]*.py
+/data/management/commands/migrations/*[0-9]*[a-zA-Z]*.py
+/main/management/commands/migrations/*[0-9]*[a-zA-Z]*.py
+
 db.sqlite3-app
 db.sqlite3-data
 media/Documentos/*
@@ -198,5 +201,5 @@ sketch
 test_racek.tar
 
 # End of https://www.toptal.com/developers/gitignore/api/react,django
-/appmap.yml
-/tmp/
+
+appmap.yml

@@ -112,7 +112,7 @@ class PersonalForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if request and 'previous' in request.META.get('HTTP_REFERER', ''):
-            self.fields = ['folio','origen','fecha','observaciones','resultado']
+            self.fields = ['folio', 'origen', 'fecha', 'observaciones', 'resultado']
         else:
             self.fields = '__all__'  # Include all fields for other URLs
 

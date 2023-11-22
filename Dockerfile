@@ -21,14 +21,14 @@ RUN apt-get update && apt-get install -y \
 	graphviz \
 	libgraphviz-dev \
 	pkg-config \
-    # snapd \
+    libreoffice \
     && apt-get clean
 # RUN systemctl start snapd.service
-# RUN snap install core 
+# RUN snap install core
 # RUN snap refresh core
 # RUN snap install --classic certbot
 # RUN ln -s /snap/bin/certbot /usr/bin/certbot
-# RUN certbot --nginx     
+# RUN certbot --nginx
 
 RUN pip install -r requirements.txt
 COPY . .
