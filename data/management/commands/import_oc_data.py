@@ -23,7 +23,7 @@ class Command(BaseCommand):
 		sql_checksum = calculate_checksum_sql('hilda_data', query_for_ocupaciones_checksum)
 
 		# Handle Ocupaciones data import
-		if sql_checksum is None or csv_checksum < sql_checksum:
+		if sql_checksum is None or csv_checksum > sql_checksum:
 			self.import_or_update_ocupaciones('media/file_templates/ocupaciones.csv')
 			self.stdout.write(self.style.SUCCESS('Ocupaciones data import completed successfully'))
 		else:

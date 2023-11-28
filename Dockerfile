@@ -23,14 +23,8 @@ RUN apt-get update && apt-get install -y \
 	pkg-config \
     libreoffice \
     && apt-get clean
-# RUN systemctl start snapd.service
-# RUN snap install core
-# RUN snap refresh core
-# RUN snap install --classic certbot
-# RUN ln -s /snap/bin/certbot /usr/bin/certbot
-# RUN certbot --nginx
-
+RUN apt-get update && apt-get install -y certbot
 RUN pip install -r requirements.txt
 COPY . .
-EXPOSE 20001
-CMD ["python", "manage.py", "runserver", "0.0.0.0:20001"]
+EXPOSE 8000
+CMD ["gunicorn", "hildaApp.wsgi:application", "--bind", "0.0.0.0:8000"]

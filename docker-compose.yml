@@ -6,20 +6,18 @@ services:
         ports:
             - 8080:80
             - 4343:443
-        environment:
-            - DJANGO_HOST=app
         volumes:
             - ./default.conf.template:/etc/nginx/templates/default.conf.template
-            - ./conf/:/etc/nginx/conf.d/:ro
+            - static_volume:/usr/share/nginx/html
+            - /etc/letsencrypt:/etc/letsencrypt
         networks:
             - backend
+
     app:
         build:
             context: .
             dockerfile: Dockerfile
         restart: always
-        ports:
-            - 20001:20001
         command: >
             bash -c "python manage.py makemigrations &&
                      python manage.py migrate &&
@@ -27,8 +25,8 @@ services:
                      python manage.py createsuperbossgroup &&
                      python manage.py import_cp_data &&
                      python manage.py import_oc_data &&
-                     python manage.py runserver 0.0.0.0:20001"
-
+                     python manage.py collectstatic --no-input &&
+                     gunicorn hildaApp.wsgi:application --bind 0.0.0.0:8000"
         environment:
             NAME: ${NAME}
             USER: ${USER}
@@ -37,9 +35,12 @@ services:
             PORT: ${PORT}
         volumes:
             - .:/app
-            - ./conf/:/etc/nginx/conf.d/:ro
+            - static_volume:/usr/share/nginx/html
         networks:
             - backend
 
 networks:
-    backend:   
+    backend:
+
+volumes:
+    static_volume:
