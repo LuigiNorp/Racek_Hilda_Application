@@ -188,12 +188,59 @@ class DocumentosDigitalesInline(NestedStackedInline):
     extra = 0
 
 
+class CurpEmpleadoInline(NestedStackedInline):
+    model = CurpEmpleado
+    extra = 1
+    fields = (
+        'personal',
+        'curp',
+        'nombre',
+        'apellido_paterno',
+        'apellido_materno',
+        'sexo',
+        'iniciales',
+    )
+    readonly_fields = (
+        'fecha_nacimiento',
+        'edad',
+        'anio_registro',
+        'numero_acta',
+        'validacion_renapo',
+        'estatus_curp',
+        'clave_municipio_registro',
+        'municipio_registro',
+        'clave_entidad_registro',
+        'entidad_registro',
+        'transaction_id',
+    )
+
+
+class RfcEmpleadoInline(NestedStackedInline):
+    model = RfcEmpleado
+    extra = 1
+    fields = (
+        'personal',
+        'rfc',
+        'razon_social',
+        'rfc_digital',
+    )
+    readonly_fields = (
+        'estatus',
+        'fecha_efectiva',
+        'correo_contacto',
+        'validez',
+        'tipo',
+    )
+
+
 @admin.register(Personal)
 class PersonalAdmin(NestedModelAdmin):
     list_display = ('id', 'nombre_completo', 'cliente',)
-    search_fields = ['curp', 'rfc', 'cliente', ]
-    autocomplete_fields = ['cliente', 'curp', 'rfc', ]
+    search_fields = ['cliente',]
+    autocomplete_fields = ['cliente',]
     inlines = [
+        CurpEmpleadoInline,
+        RfcEmpleadoInline,
         DomicilioInline,
         EvaluadorInline,
         RepresentanteTrabajadoresInline,
@@ -275,7 +322,6 @@ class CarpetaGeneralesPrevioInline(NestedStackedInline):
 class CarpetaMediaFilicacionPrevioInline(NestedStackedInline):
     model = CarpetaMediaFiliacionPrevio
     extra = 1
-
     fields = (
         'peso',
         'estatura',
@@ -306,12 +352,59 @@ class DocumentosDigitalesPrevioInline(NestedStackedInline):
     )
 
 
+class CurpPrevioInline(NestedStackedInline):
+    model = CurpPrevio
+    extra = 1
+    fields = (
+        'personal',
+        'curp',
+        'nombre',
+        'apellido_paterno',
+        'apellido_materno',
+        'sexo',
+        'iniciales',
+    )
+    readonly_fields = (
+        'fecha_nacimiento',
+        'edad',
+        'anio_registro',
+        'numero_acta',
+        'validacion_renapo',
+        'estatus_curp',
+        'clave_municipio_registro',
+        'municipio_registro',
+        'clave_entidad_registro',
+        'entidad_registro',
+        'transaction_id',
+    )
+
+
+class RfcPrevioInline(NestedStackedInline):
+    model = RfcPrevio
+    extra = 1
+    fields = (
+        'personal',
+        'rfc',
+        'razon_social',
+        'rfc_digital',
+    )
+    readonly_fields = (
+        'estatus',
+        'fecha_efectiva',
+        'correo_contacto',
+        'validez',
+        'tipo',
+    )
+
+
 @admin.register(PersonalPrevio)
 class PersonalPrevioAdmin(NestedModelAdmin):
     list_display = ('id', 'nombre_completo', 'cliente',)
-    search_fields = ['curp', 'rfc', 'cliente',]
-    autocomplete_fields = ['cliente', 'curp', 'rfc']
+    search_fields = ['cliente',]
+    autocomplete_fields = ['cliente',]
     inlines = [
+        CurpPrevioInline,
+        RfcPrevioInline,
         DomicilioInline,
         EvaluadorInline,
         CarpetaExamenFisicoPrevioInline,
@@ -331,36 +424,25 @@ class PersonalPrevioAdmin(NestedModelAdmin):
     nombre_completo.short_description = 'Nombre Completo'
 
 
-@admin.register(PuestoFuncional)
-class PuestoFuncionalAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre_puesto',)
-
-
-@admin.register(TipoBaja)
-class TipoBajaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'motivo',)
-
-
-@admin.register(MotivoSeparacion)
-class MotivoSeparacionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'motivo',)
-
-
-@admin.register(Instructor)
-class InstructorAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre_instructor', 'numero_registro',)
-    search_fields = ['nombre_instructor', 'numero_registro',]
-
-@admin.register(CodigoPostal)
-class CodigoPostalAdmin(admin.ModelAdmin):
-    list_display = ('id', 'codigo_postal', 'tipo_asentamiento', 'asentamiento', 'municipio', 'estado', 'ciudad', 'pais')
-    search_fields = ['codigo_postal', 'tipo_asentamiento', 'asentamiento',]
-
-
 @admin.register(Curp)
 class CurpAdmin(admin.ModelAdmin):
     list_display = ('id', 'curp', 'nombre', 'apellido_paterno', 'apellido_materno', 'fecha_nacimiento', 'sexo',)
     search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno',]
+
+
+@admin.register(CurpEmpleado)
+class CurpEmpleadoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'curp', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo',)
+    search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno',]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        # Hide all other fields
+        for field in form.base_fields:
+            if field not in self.list_display:
+                form.base_fields[field].widget = forms.HiddenInput()
+        return form
 
 
 @admin.register(CurpPrevio)
@@ -384,6 +466,21 @@ class RfcAdmin(admin.ModelAdmin):
     search_fields = ['rfc', 'razon_social',]
 
 
+@admin.register(RfcEmpleado)
+class RfcEmpleadoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'rfc', 'razon_social',)
+    search_fields = ['rfc', 'razon_social',]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        # Hide all other fields
+        for field in form.base_fields:
+            if field not in self.list_display:
+                form.base_fields[field].widget = forms.HiddenInput()
+        return form
+
+
 @admin.register(RfcPrevio)
 class RfcPrevioAdmin(admin.ModelAdmin):
     list_display = ('rfc', 'razon_social',)
@@ -397,6 +494,33 @@ class RfcPrevioAdmin(admin.ModelAdmin):
             if field not in self.list_display:
                 form.base_fields[field].widget = forms.HiddenInput()
         return form
+
+
+@admin.register(PuestoFuncional)
+class PuestoFuncionalAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nombre_puesto',)
+
+
+@admin.register(TipoBaja)
+class TipoBajaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'motivo',)
+
+
+@admin.register(MotivoSeparacion)
+class MotivoSeparacionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'motivo',)
+
+
+@admin.register(Instructor)
+class InstructorAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nombre_instructor', 'numero_registro',)
+    search_fields = ['nombre_instructor', 'numero_registro',]
+
+
+@admin.register(CodigoPostal)
+class CodigoPostalAdmin(admin.ModelAdmin):
+    list_display = ('id', 'codigo_postal', 'tipo_asentamiento', 'asentamiento', 'municipio', 'estado', 'ciudad', 'pais')
+    search_fields = ['codigo_postal', 'tipo_asentamiento', 'asentamiento',]
 
 
 @admin.register(Ocupacion)

@@ -2,7 +2,10 @@ from .choices import *
 from django.db import models
 from django.core.validators import RegexValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
-# from django.utils import timezone
+from decimal import Decimal, InvalidOperation
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 from django.core.files.storage import default_storage
 import os
 from uuid import uuid4
@@ -166,8 +169,34 @@ class PaqueteCapacitacion(models.Model):
 		verbose_name_plural = 'Paquete Capacitaciones'
 
 
+class Personal(models.Model):
+	folio = models.CharField(max_length=10, default='SIN FOLIO', blank=True, null=True)
+	cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+	origen = models.PositiveSmallIntegerField(choices=ORIGEN_ASPIRANTE, blank=True, null=True)
+	fecha = models.DateField(auto_now=True)
+	es_empleado = models.BooleanField(default=False, null=True, blank=True)
+	observaciones = models.TextField(blank=True, null=True)
+	resultado = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
+
+	def __str__(self):
+		try:
+			return f'{self.curp.get_nombre_completo()}: {self.cliente}'
+		except AttributeError:
+			return 'SIN CURP'
+
+	class Meta:
+		verbose_name_plural = 'Personal empleado'
+
+
+class PersonalPrevio(Personal):
+	class Meta:
+		proxy = True
+		verbose_name_plural = 'Personal previos'
+
+
 class Curp(models.Model):
 	# Implementar Curp Api desde Frontend
+	personal = models.OneToOneField(Personal, on_delete=models.RESTRICT)
 	curp_regex = r'^[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$'
 	curp = models.CharField(max_length=18, unique=True, validators=[RegexValidator(curp_regex, 'La CURP no es válida')])
 	nombre = models.CharField(max_length=100)
@@ -193,7 +222,43 @@ class Curp(models.Model):
 	def __str__(self):
 		return f'{self.curp}: {self.get_nombre_completo()}'
 
+	def save(self, *args, **kwargs):
+		self.fecha_nacimiento = self.get_fecha_nacimiento()
+		self.edad = self.get_edad()
+		self.sexo = self.get_sexo()
+		self.iniciales = self.get_iniciales()
+		super().save(*args, **kwargs)
+
+	def get_fecha_nacimiento(self):
+		anio = self.curp[4:6]
+		mes = self.curp[6:8]
+		dia = self.curp[8:10]
+		# Asumiendo que cualquier año mayor a 30 pertenece al siglo XX
+		siglo = '19' if int(anio) > 30 else '20'
+		fecha = f'{siglo}{anio}-{mes}-{dia}'
+		return datetime.strptime(fecha, '%Y-%m-%d').date()
+
+	def get_edad(self):
+		hoy = datetime.today().date()
+		return hoy.year - self.fecha_nacimiento.year - (
+					(hoy.month, hoy.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
+
+	def get_sexo(self):
+		return '2' if self.curp[10] == 'H' else '1'
+
+	def get_iniciales(self):
+		nombres = self.nombre.split()
+		apellidos = (self.apellido_paterno + ' ' + self.apellido_materno).split()
+		iniciales = [nombre[0] for nombre in nombres + apellidos]
+		return ''.join(iniciales)
+
 	class Meta:
+		verbose_name = 'CURP'
+
+
+class CurpEmpleado(Curp):
+	class Meta:
+		proxy = True
 		verbose_name = 'CURP empleado'
 
 
@@ -205,6 +270,7 @@ class CurpPrevio(Curp):
 
 class Rfc(models.Model):
 	# Hacer conexiones con API RFC desde FrontEnd
+	personal = models.OneToOneField(Personal, on_delete=models.RESTRICT)
 	rfc_regex = r'^[A-Za-z]{3,4}(\d{6})([A-Za-z]\d{2}|(\D|\d){3})?$'
 	rfc = models.CharField(max_length=13, validators=[RegexValidator(rfc_regex, 'El RFC ingresado no es válido')])
 	rfc_digital = models.FileField(upload_to=get_upload_path, null=True, blank=True)
@@ -219,6 +285,12 @@ class Rfc(models.Model):
 		return f'{self.rfc}'
 
 	class Meta:
+		verbose_name_plural = 'RFC'
+
+
+class RfcEmpleado(Rfc):
+	class Meta:
+		proxy = True
 		verbose_name_plural = 'RFC empleados'
 
 
@@ -226,33 +298,6 @@ class RfcPrevio(Rfc):
 	class Meta:
 		proxy = True
 		verbose_name_plural = 'RFC previos'
-
-
-class Personal(models.Model):
-	folio = models.CharField(max_length=10, default='SIN FOLIO', blank=True, null=True)
-	cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-	origen = models.PositiveSmallIntegerField(choices=ORIGEN_ASPIRANTE, blank=True, null=True)
-	fecha = models.DateField(auto_now=True)
-	es_empleado = models.BooleanField(default=False, null=True, blank=True)
-	observaciones = models.TextField(blank=True, null=True)
-	resultado = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
-	curp = models.OneToOneField(Curp, on_delete=models.RESTRICT)
-	rfc = models.OneToOneField(Rfc, on_delete=models.RESTRICT)
-
-	def __str__(self):
-		try:
-			return f'{self.curp.get_nombre_completo()}: {self.cliente}'
-		except AttributeError:
-			return 'SIN CURP'
-
-	class Meta:
-		verbose_name_plural = 'Personal empleado'
-
-
-class PersonalPrevio(Personal):
-	class Meta:
-		proxy = True
-		verbose_name_plural = 'Personal previos'
 
 
 class Evaluador(models.Model):
@@ -499,8 +544,21 @@ class CarpetaExamenToxicologicoPrevio(CarpetaExamenToxicologico):
 		verbose_name_plural = 'Carpeta Examen Toxicológico'
 
 
+class JefeMedico(models.Model):
+	nombre_completo = models.CharField(max_length=300)
+	cedula_profesional = models.CharField(max_length=10, null=True, blank=True)
+	firma_medico = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+
+	def __str__(self):
+		return f'{self.nombre_completo}'
+
+	class Meta:
+		verbose_name_plural = 'Jefes Médicos'
+
+
 class CarpetaExamenMedico(models.Model):
 	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
+	jefe_medico = models.ForeignKey(JefeMedico, on_delete=models.CASCADE, blank=True, null=True)
 	fecha_examen = models.DateField(blank=True, null=True)
 	medico_agudeza_visual = models.CharField(max_length=100, blank=True, null=True)
 	medico_agudeza_auditiva = models.CharField(max_length=100, blank=True, null=True)
@@ -909,8 +967,6 @@ class CarpetaMediaFiliacion(models.Model):
 	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
 	tension_arterial = models.CharField(max_length=10, null=True, blank=True)
 	temperatura = models.CharField(max_length=5, null=True, blank=True)
-	indice_masa_corporal = models.CharField(max_length=6, null=True, blank=True)
-	clasificacion_imc = models.PositiveSmallIntegerField(choices=CLASIFICACION_IMC, blank=True, null=True)
 	sat02 = models.CharField(max_length=10, null=True, blank=True)
 	frecuencia_cardiaca = models.CharField(max_length=6, null=True, blank=True)
 	cronica_degenerativa = models.CharField(max_length=100, null=True, blank=True)
@@ -928,10 +984,10 @@ class CarpetaMediaFiliacion(models.Model):
 	cejas_direccion = models.PositiveSmallIntegerField(choices=CEJAS_DIRECCION, null=True, blank=True)
 	cejas_implantacion = models.PositiveSmallIntegerField(choices=CEJAS_IMPLANTACION, null=True, blank=True)
 	cejas_forma = models.PositiveSmallIntegerField(choices=CEJAS_FORMA, null=True, blank=True)
-	cejas_tamanio = models.PositiveSmallIntegerField(choices=CEJAS_TAMANIO, blank=True, verbose_name='Cejas tamaño')
+	cejas_tamanio = models.PositiveSmallIntegerField(choices=CEJAS_TAMANIO, null=True, blank=True, verbose_name='Cejas tamaño')
 	ojos_color = models.PositiveSmallIntegerField(choices=OJOS_COLOR, null=True, blank=True)
 	ojos_forma = models.PositiveSmallIntegerField(choices=OJOS_FORMA, null=True, blank=True)
-	ojos_tamanio = models.PositiveSmallIntegerField(choices=OJOS_TAMANIO, blank=True, verbose_name='Ojos tamaño')
+	ojos_tamanio = models.PositiveSmallIntegerField(choices=OJOS_TAMANIO, null=True, blank=True, verbose_name='Ojos tamaño')
 	ojos_raiz = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
 	nariz_dorso = models.PositiveSmallIntegerField(choices=NARIZ_DORSO, null=True, blank=True)
 	nariz_ancho = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
@@ -957,12 +1013,44 @@ class CarpetaMediaFiliacion(models.Model):
 	sangre = models.PositiveSmallIntegerField(choices=SANGRE, null=True, blank=True)
 	rh = models.PositiveSmallIntegerField(choices=RH, null=True, blank=True)
 	anteojos = models.BooleanField(default=False, null=True, blank=True)
-	estatura = models.CharField(max_length=15, blank=True, null=True)
-	peso = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+	estatura = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+	peso = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+	indice_masa_corporal = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+	clasificacion_imc = models.PositiveSmallIntegerField(choices=CLASIFICACION_IMC, blank=True, null=True)
 
 	def __str__(self):
 		return f'{self.personal}'
 
+	def save(self, *args, **kwargs):
+		try:
+			if self.estatura and self.peso:  # Verificar si se han ingresado la estatura y el peso
+				# Convertir los valores de estatura y peso a Decimal
+				estatura_decimal = Decimal(str(self.estatura))
+				peso_decimal = Decimal(str(self.peso))
+				# Calcular el IMC
+				self.indice_masa_corporal = peso_decimal / (estatura_decimal ** 2)
+				# Actualizar la clasificación del IMC
+				if self.indice_masa_corporal < 18.5:
+					self.clasificacion_imc = 6  # Delgadez
+				elif 18.5 <= self.indice_masa_corporal < 25:
+					self.clasificacion_imc = 1  # Normal
+				elif 25 <= self.indice_masa_corporal < 30:
+					self.clasificacion_imc = 2  # Sobrepeso
+				elif 30 <= self.indice_masa_corporal < 35:
+					self.clasificacion_imc = 3  # Obesidad GI
+				elif 35 <= self.indice_masa_corporal < 40:
+					self.clasificacion_imc = 4  # Obesidad GII
+				else:
+					self.clasificacion_imc = 5  # Obesidad GIII
+			else:
+				self.indice_masa_corporal = None  # Establecer el valor por defecto como None si faltan datos
+
+			super().save(*args, **kwargs)  # Llamar al método save de la clase base para guardar el objeto
+		except InvalidOperation as e:
+			# Manejar la excepción de InvalidOperation
+			# Aquí puedes agregar un registro de error, imprimir un mensaje de error, o tomar otras medidas según sea necesario
+			print(e)
+			pass
 	class Meta:
 		verbose_name_plural = 'Carpeta Media Filiación'
 

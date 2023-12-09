@@ -205,4 +205,6 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 # to use SMB
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-CSRF_TRUSTED_ORIGINS = ["http://localhost:20002"]
+
+# todo: remove localhost:8080
+CSRF_TRUSTED_ORIGINS = ["http://localhost:20002", "http://localhost:8080"]

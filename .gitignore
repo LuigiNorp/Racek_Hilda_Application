@@ -203,3 +203,4 @@ test_racek.tar
 # End of https://www.toptal.com/developers/gitignore/api/react,django
 
 appmap.yml
+main/temp.py
