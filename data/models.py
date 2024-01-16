@@ -556,8 +556,20 @@ class JefeMedico(models.Model):
 		verbose_name_plural = 'Jefes Médicos'
 
 
+class MedicoOdontologico(models.Model):
+	nombre_completo = models.CharField(max_length=300)
+	cedula_profesional = models.CharField(max_length=10, null=True, blank=True)
+	firma_medico = models.ImageField(upload_to=get_upload_path, blank=True, null=True)
+
+	def __str__(self):
+		return f'{self.nombre_completo}'
+
+	class Meta:
+		verbose_name_plural = 'Médicos Odontológicos'
+
+
 class CarpetaExamenMedico(models.Model):
-	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
+	personal = models.ForeignKey(Personal, on_delete=models.CASCADE)
 	jefe_medico = models.ForeignKey(JefeMedico, on_delete=models.CASCADE, blank=True, null=True)
 	fecha_examen = models.DateField(blank=True, null=True)
 	medico_agudeza_visual = models.CharField(max_length=100, blank=True, null=True)
@@ -567,7 +579,7 @@ class CarpetaExamenMedico(models.Model):
 	medico_diagnostico_musculo_esqueletico = models.CharField(max_length=100, blank=True, null=True)
 	medico_cardiologico = models.CharField(max_length=100, blank=True, null=True)
 	medico_pulmonar = models.CharField(max_length=100, blank=True, null=True)
-	medico_odontologico = models.CharField(max_length=100, blank=True, null=True)
+	medico_odontologico = models.ForeignKey(MedicoOdontologico, on_delete=models.CASCADE, blank=True, null=True)
 	medico_resultado = models.CharField(max_length=100, blank=True, null=True)
 	ishihara_visual_oi = models.CharField(max_length=10, blank=True, null=True)
 	ishihara_visual_od = models.CharField(max_length=10, blank=True, null=True)

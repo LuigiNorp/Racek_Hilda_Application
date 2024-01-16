@@ -262,7 +262,11 @@ class PersonalAdmin(NestedModelAdmin):
         DocumentosDigitalesInline,
     ]
     generate_dc3_report.short_description = 'Generar DC-3'
-    actions = [generate_dc3_report]
+    generate_odontologic_report.short_description = 'Generar Evaluación Odontológica'
+    actions = [
+        generate_dc3_report,
+        generate_odontologic_report
+    ]
 
     def nombre_completo(self, obj):
         return f"{obj.curp.get_nombre_completo()}"

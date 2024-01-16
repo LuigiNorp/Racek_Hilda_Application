@@ -2,6 +2,7 @@ FROM python:3.9.12
 ENV PYTHONUNBUFFERED 1
 ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 ENV PYTHONDONTWRITEBYTECODE 1
+ENV LD_LIBRARY_PATH="/usr/lib/libreoffice/lib:$LD_LIBRARY_PATH"
 
 WORKDIR /app
 COPY requirements.txt /app
@@ -20,10 +21,9 @@ RUN apt-get update && apt-get install -y \
     gcc \
 	graphviz \
 	libgraphviz-dev \
-	pkg-config \
     libreoffice \
     && apt-get clean
-RUN apt-get update && apt-get install -y certbot
+# RUN apt-get update && apt-get install -y certbot
 RUN pip install -r requirements.txt
 COPY . .
 EXPOSE 8000
