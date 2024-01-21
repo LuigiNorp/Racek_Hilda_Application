@@ -208,7 +208,7 @@ class Curp(models.Model):
 	anio_registro = models.PositiveIntegerField(blank=True, null=True, verbose_name="Año registro")
 	numero_acta = models.CharField(max_length=20, blank=True, null=True)
 	validacion_renapo = models.PositiveSmallIntegerField(choices=VALIDACION_RENAPO, blank=True, null=True)
-	sexo = models.PositiveSmallIntegerField(choices=SEXO_CURP_OPCIONES, blank=True, null=True)
+	sexo = models.CharField(max_length=6, choices=SEXO_CURP_OPCIONES, blank=True, null=True)
 	estatus_curp = models.CharField(max_length=20, choices=ESTATUS_CURP, blank=True, null=True)
 	clave_municipio_registro = models.CharField(max_length=5, blank=True, null=True)
 	municipio_registro = models.CharField(max_length=100, blank=True, null=True)
@@ -225,7 +225,7 @@ class Curp(models.Model):
 	def save(self, *args, **kwargs):
 		self.fecha_nacimiento = self.get_fecha_nacimiento()
 		self.edad = self.get_edad()
-		self.sexo = self.get_sexo()
+		self.sexo = self.get_sexo_from_curp()
 		self.iniciales = self.get_iniciales()
 		super().save(*args, **kwargs)
 
@@ -243,8 +243,12 @@ class Curp(models.Model):
 		return hoy.year - self.fecha_nacimiento.year - (
 					(hoy.month, hoy.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
 
-	def get_sexo(self):
-		return '2' if self.curp[10] == 'H' else '1'
+	def get_sexo_from_curp(self):
+		sexo_map = {
+			'H': 'HOMBRE',
+			'M': 'MUJER'
+		}
+		return sexo_map.get(self.curp[10], 'INDEFINIDO')
 
 	def get_iniciales(self):
 		nombres = self.nombre.split()
@@ -448,7 +452,7 @@ class Referencia(models.Model):
 	nombre = models.CharField(max_length=100)
 	apellido_paterno = models.CharField(max_length=100)
 	apellido_materno = models.CharField(max_length=100)
-	sexo = models.PositiveSmallIntegerField(choices=SEXO_OPCIONES, null=True, blank=True)
+	sexo = models.CharField(max_length=9, choices=SEXO_OPCIONES, blank=True, null=True)
 	ocupacion = models.PositiveSmallIntegerField(choices=OCUPACION_REFERENCIA, null=True, blank=True)
 	parentesco = models.PositiveSmallIntegerField(choices=PARENTESCO, null=True, blank=True)
 	tiempo_de_conocerse = models.CharField(max_length=30, null=True, blank=True)
@@ -479,7 +483,7 @@ class Dependiente(models.Model):
 	nombre = models.CharField(max_length=100, null=True, blank=True)
 	apellido_paterno = models.CharField(max_length=100, null=True, blank=True)
 	apellido_materno = models.CharField(max_length=100, null=True, blank=True)
-	sexo = models.PositiveSmallIntegerField(choices=SEXO_OPCIONES, null=True, blank=True)
+	sexo = models.CharField(max_length=9, choices=SEXO_OPCIONES, blank=True, null=True)
 	fecha_nacimiento = models.DateField(null=True, blank=True)
 	parentesco = models.PositiveSmallIntegerField(choices=PARENTESCO, null=True, blank=True)
 	actividad = models.PositiveSmallIntegerField(choices=ACTIVIDAD, null=True, blank=True)
