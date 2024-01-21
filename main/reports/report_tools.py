@@ -1,5 +1,4 @@
 import PyPDF2
-from docx2pdf import convert
 from docxtpl import DocxTemplate
 from openpyxl.drawing.image import Image as XlsxImage
 from openpyxl.worksheet.page import PageMargins
@@ -13,11 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 def replace_variables_in_docx(docx_file_path, variables_dict):
-    if docx_file_path is None:
-        raise ValueError("docx_file_path must not be None.")
+    temporal_docx_path = 'media/file_templates/temporal.docx'
     doc = DocxTemplate(docx_file_path)
     doc.render(variables_dict)
-    doc.save(docx_file_path)
+    doc.save(temporal_docx_path)
+    return temporal_docx_path
 
 
 def keep_first_page(pdf_path):
@@ -75,7 +74,7 @@ def add_image_to_worksheet(image_path: str, cell: str, activesheet, width: int, 
     activesheet.add_image(img, cell)
 
 
-def convert_xlsx_to_pdf(xlsx_path: str, pdf_path: str):
+def convert_to_pdf(temporary_file_path: str, pdf_path: str):
     convertion_command = [
         "libreoffice",
         "--headless",
@@ -83,17 +82,11 @@ def convert_xlsx_to_pdf(xlsx_path: str, pdf_path: str):
         "pdf:writer_pdf_Export",
         "--outdir",
         os.path.dirname(pdf_path),
-        xlsx_path
+        temporary_file_path
     ]
     process = subprocess.Popen(convertion_command)
     process.wait()  # Wait for the process to finish before returning
     return pdf_path if process.returncode == 0 else None  # Check return code for success
-
-
-# TODO: Fix, not working properly
-def convert_docx_to_pdf(docx_path, pdf_path):
-    convert(docx_path, pdf_path)
-    return pdf_path
 
 
 def merge_pdf_files(existing_pdf_path: str, added_pdf_path: str, output_pdf_path: str):

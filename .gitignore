@@ -204,3 +204,5 @@ test_racek.tar
 
 appmap.yml
 main/temp.py
+/Pipfile.lock
+/Pipfile

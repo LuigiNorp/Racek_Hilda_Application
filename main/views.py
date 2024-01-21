@@ -513,7 +513,7 @@ class GenerateDC3View(View):
         front_pdf = os.path.join('media/file_templates', pdf_filename)
 
         # Convert the modified XLSX to PDF using LibreOffice
-        convert_xlsx_to_pdf(modified_xlsx_path, front_pdf)
+        convert_to_pdf(modified_xlsx_path, front_pdf)
 
         # Keep only the first page on PDF file
         keep_first_page(front_pdf)
@@ -542,7 +542,6 @@ class GenerateOdontologicView(View):
     def get(self, personal_id: int, request: any, queryset: any):
         verified_queries = default_data
         docx_file_path = 'media/file_templates/odontologico.docx'
-        pdf_file_path = 'media/file_templates/odontologico.pdf'
 
         for personal in queryset:
             # Specific data access for odontologico document
@@ -570,7 +569,7 @@ class GenerateOdontologicView(View):
                 pass
 
             try:
-                verified_queries['edad'] = f'{personal.curp.edad}'
+                verified_queries['edad'] = f'{personal.curp.get_edad()}'
             except AttributeError:
                 pass
 
@@ -594,18 +593,18 @@ class GenerateOdontologicView(View):
             except AttributeError:
                 pass
 
-            # Use the first element to generate the file and filename
-            first_personal = queryset.first()
-            temporal_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
-            convert_docx_to_pdf(temporal_docx_path, pdf_file_path)
+                # Generate the PDF file name based on the person's full name
+                pdf_file_path = f'media/file_templates/temporal.pdf'
+                temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+                temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
 
-            with open(pdf_file_path, 'rb') as pdf_file:
-             filename = f'{first_personal.curp.get_nombre_completo()}-DC3.pdf'
-             pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-             pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+                with open(temporary_pdf_path, 'rb') as pdf_file:
+                    filename = f'{personal.curp.get_nombre_completo()}-ODONTOLOGICO.pdf'
+                    pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                    pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
 
-            # Delete temporary files
-            os.remove(temporal_docx_path)
-            os.remove(pdf_file_path)
+                # Delete temporary files
+                os.remove(temporary_docx_path)
+                os.remove(temporary_pdf_path)
 
             return pdf_response

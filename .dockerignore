@@ -7,3 +7,5 @@ data/management/commands/migrations/*[0-9]*[a-zA-Z]*.py
 /media/file_templates/Erasable/
 /db.sqlite3-app
 /db.sqlite3-data
+/Pipfile
+/Pipfile.lock
