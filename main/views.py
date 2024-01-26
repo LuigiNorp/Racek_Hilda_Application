@@ -589,7 +589,7 @@ class GenerateOdontologicView(View):
                 pass
 
             try:
-                verified_queries['firma_dentista'] = f'{personal.carpetaexamenmedico.medico_odontologico.firma_medico}'
+                verified_queries['firma_dentista'] = f'{personal.carpetaexamenmedico.medicoodontologico.firma.path}'
             except AttributeError:
                 pass
 

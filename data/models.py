@@ -51,6 +51,15 @@ class CodigoPostal(models.Model):
 	def __str__(self):
 		return f'{self.codigo_postal}: {self.tipo_asentamiento} {self.asentamiento}, {self.municipio}, {self.estado}, {self.pais}'
 
+	def save(self, *args, **kwargs):
+		self.tipo_asentamiento = self.tipo_asentamiento.upper()
+		self.asentamiento = self.asentamiento.upper()
+		self.municipio = self.municipio.upper()
+		self.estado = self.estado.upper()
+		self.ciudad = self.ciudad.upper()
+		self.pais = self.pais.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Codigos Postales'
 
@@ -63,6 +72,11 @@ class Cliente(models.Model):
 	def __str__(self):
 		return f'{self.nombre_comercial}'
 
+	def save(self, *args, **kwargs):
+		self.nombre_comercial = self.nombre_comercial.upper()
+		self.razon_social = self.razon_social.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Clientes'
 
@@ -74,6 +88,11 @@ class Sede(models.Model):
 
 	def __str__(self):
 		return f'{self.clave_sede}: {self.nombre_sede}'
+
+	def save(self, *args, **kwargs):
+		self.clave_sede = self.clave_sede.upper()
+		self.nombre_sede = self.nombre_sede.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Sedes'
@@ -103,6 +122,15 @@ class CarpetaClienteGenerales(models.Model):
 	def __str__(self):
 		return f'{self.rfc}: {self.cliente}'
 
+	def save(self, *args, **kwargs):
+		self.rfc = self.rfc.upper()
+		self.representante_legal = self.representante_legal.upper()
+		self.encargado_operativo = self.encargado_operativo.upper()
+		self.encargado_rh = self.encargado_rh.upper()
+		self.coordinador = self.coordinador.upper()
+		self.registro_patronal = self.registro_patronal.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Clientes Generales'
 
@@ -125,6 +153,14 @@ class CarpetaClientePagos(models.Model):
 	def __str__(self):
 		return f'{self.cliente}: {self.encargado_pagos}'
 
+	def save(self, *args, **kwargs):
+		self.encargado_pagos = self.encargado_pagos.upper()
+		self.email = self.email.upper()
+		self.rfc = self.rfc.upper()
+		self.revision = self.revision.upper()
+		self.pagos = self.pagos.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Clientes Pagos'
 
@@ -142,6 +178,13 @@ class CarpetaClienteContactos(models.Model):
 
 	def __str__(self):
 		return f'{self.cliente}: {self.nombre_contacto}'
+
+	def save(self, *args, **kwargs):
+		self.nombre_contacto = self.nombre_contacto.upper()
+		self.puesto = self.puesto.upper()
+		self.email_1 = self.email_1.upper()
+		self.email_2 = self.email_2.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Clientes Contactos'
@@ -165,6 +208,14 @@ class PaqueteCapacitacion(models.Model):
 	def __str__(self):
 		return f'{self.fecha_realizacion}: {self.cliente}'
 
+	def save(self, *args, **kwargs):
+		self.detalle_solicitud = self.detalle_solicitud.upper()
+		self.detalle_realizacion = self.detalle_realizacion.upper()
+		self.detalle_entrega = self.detalle_entrega.upper()
+		self.no_factura = self.no_factura.upper()
+		self.detalle_pagado = self.detalle_pagado.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Paquete Capacitaciones'
 
@@ -183,6 +234,10 @@ class Personal(models.Model):
 			return f'{self.curp.get_nombre_completo()}: {self.cliente}'
 		except AttributeError:
 			return 'SIN CURP'
+
+	def save(self, *args, **kwargs):
+		self.observaciones = self.observaciones.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Personal empleado'
@@ -241,7 +296,8 @@ class Curp(models.Model):
 	def get_edad(self):
 		hoy = datetime.today().date()
 		return hoy.year - self.fecha_nacimiento.year - (
-					(hoy.month, hoy.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
+				(hoy.month, hoy.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day)
+		)
 
 	def get_sexo_from_curp(self):
 		sexo_map = {
@@ -288,6 +344,15 @@ class Rfc(models.Model):
 	def __str__(self):
 		return f'{self.rfc}'
 
+	def save(self, *args, **kwargs):
+		self.rfc = self.rfc.upper()
+		self.razon_social = self.razon_social.upper()
+		self.estatus = self.estatus.upper()
+		self.correo_contacto = self.correo_contacto.upper()
+		self.validez = self.validez.upper()
+		self.tipo = self.tipo.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'RFC'
 
@@ -311,6 +376,10 @@ class Evaluador(models.Model):
 	def __str__(self):
 		return f'{self.solicitante}'
 
+	def save(self, *args, **kwargs):
+		self.solicitante = self.solicitante.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Evaluadores'
 
@@ -326,6 +395,11 @@ class Ocupacion(models.Model):
 
 	def __str__(self):
 		return self.get_ocupacion_fullname()
+
+	def save(self, *args, **kwargs):
+		self.area = self.area.upper()
+		self.subarea = self.subarea.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Ocupaciones'
@@ -394,6 +468,22 @@ class CarpetaLaboral(models.Model):
 	def __str__(self):
 		return f'{self.personal}: {self.proceso_racek}'
 
+	def save(self, *args, **kwargs):
+		self.oficina = self.oficina.upper()
+		self.especialidad_empleo = self.especialidad_empleo.upper()
+		self.servicio = self.servicio.upper()
+		self.division = self.division.upper()
+		self.rango = self.rango.upper()
+		self.turno = self.turno.upper()
+		self.funciones = self.funciones.upper()
+		self.expediente = self.expediente.upper()
+		self.oficio_registro_estatal = self.oficio_registro_estatal.upper()
+		self.oficio_registro_dgsp = self.oficio_registro_dgsp.upper()
+		self.oficio_registro_sedena = self.oficio_registro_sedena.upper()
+		self.lic_part_col = self.lic_part_col.upper()
+		self.comentarios = self.comentarios.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Carpetas Laborales'
 
@@ -435,6 +525,21 @@ class CarpetaGenerales(models.Model):
 
 	def __str__(self):
 		return f'{self.personal}'
+
+	def save(self, *args, **kwargs):
+		self.email_empleado = self.email_empleado.upper()
+		self.transporte = self.transporte.upper()
+		self.clave_cartilla = self.clave_cartilla.upper()
+		self.cuip = self.cuip.upper()
+		self.clave_ine = self.clave_ine.upper()
+		self.folio = self.folio.upper()
+		self.pasaporte = self.pasaporte.upper()
+		self.escuela = self.escuela.upper()
+		self.especialidad_escuela = self.especialidad_escuela.upper()
+		self.cedula_profesional = self.cedula_profesional.upper()
+		self.licencia_conducir = self.licencia_conducir.upper()
+		self.alergias = self.alergias.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Carpetas Generales'
@@ -490,6 +595,13 @@ class Dependiente(models.Model):
 	comentarios = models.TextField(blank=True, null=True)
 	carpeta_dependientes = models.ForeignKey(CarpetaDependientes, on_delete=models.CASCADE)
 
+	def save(self, *args, **kwargs):
+		self.nombre = self.nombre.upper()
+		self.apellido_paterno = self.apellido_paterno.upper()
+		self.apellido_materno = self.apellido_materno.upper()
+		self.comentarios = self.comentarios.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Dependientes'
 
@@ -513,6 +625,10 @@ class CarpetaExamenPsicologico(models.Model):
 
 	def __str__(self):
 		return f'{self.personal}'
+
+	def save(self, *args, **kwargs):
+		self.observacion = self.observacion.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Carpeta Examen Psicológico'
@@ -538,6 +654,10 @@ class CarpetaExamenToxicologico(models.Model):
 	resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADO_TOXICOLOGICO_ASPIRANTE, blank=True, null=True)
 	observacion = models.TextField(blank=True, null=True)
 
+	def save(self, *args, **kwargs):
+		self.observacion = self.observacion.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Carpeta Examen Toxicológico'
 
@@ -556,6 +676,11 @@ class JefeMedico(models.Model):
 	def __str__(self):
 		return f'{self.nombre_completo}'
 
+	def save(self, *args, **kwargs):
+		self.nombre_completo = self.nombre_completo.upper()
+		self.cedula_profesional = self.cedula_profesional.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Jefes Médicos'
 
@@ -568,13 +693,18 @@ class MedicoOdontologico(models.Model):
 	def __str__(self):
 		return f'{self.nombre_completo}'
 
+	def save(self, *args, **kwargs):
+		self.nombre_completo = self.nombre_completo.upper()
+		self.cedula_profesional = self.cedula_profesional.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Médicos Odontológicos'
 
 
 class CarpetaExamenMedico(models.Model):
-	personal = models.ForeignKey(Personal, on_delete=models.CASCADE)
-	jefe_medico = models.ForeignKey(JefeMedico, on_delete=models.CASCADE, blank=True, null=True)
+	personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
+	jefe_medico = models.OneToOneField(JefeMedico, on_delete=models.CASCADE, blank=True, null=True)
 	fecha_examen = models.DateField(blank=True, null=True)
 	medico_agudeza_visual = models.CharField(max_length=100, blank=True, null=True)
 	medico_agudeza_auditiva = models.CharField(max_length=100, blank=True, null=True)
@@ -583,7 +713,7 @@ class CarpetaExamenMedico(models.Model):
 	medico_diagnostico_musculo_esqueletico = models.CharField(max_length=100, blank=True, null=True)
 	medico_cardiologico = models.CharField(max_length=100, blank=True, null=True)
 	medico_pulmonar = models.CharField(max_length=100, blank=True, null=True)
-	medico_odontologico = models.ForeignKey(MedicoOdontologico, on_delete=models.CASCADE, blank=True, null=True)
+	medico_odontologico = models.OneToOneField(MedicoOdontologico, on_delete=models.CASCADE, blank=True, null=True)
 	medico_resultado = models.CharField(max_length=100, blank=True, null=True)
 	ishihara_visual_oi = models.CharField(max_length=10, blank=True, null=True)
 	ishihara_visual_od = models.CharField(max_length=10, blank=True, null=True)
@@ -599,6 +729,27 @@ class CarpetaExamenMedico(models.Model):
 
 	def __str__(self):
 		return f'{self.personal}'
+
+	def save(self, *args, **kwargs):
+		self.medico_agudeza_visual = self.medico_agudeza_visual.upper()
+		self.medico_agudeza_auditiva = self.medico_agudeza_auditiva.upper()
+		self.medico_agudeza_motriz = self.medico_agudeza_motriz.upper()
+		self.medico_estado_nutricional = self.medico_estado_nutricional.upper()
+		self.medico_diagnostico_musculo_esqueletico = self.medico_diagnostico_musculo_esqueletico.upper()
+		self.medico_cardiologico = self.medico_cardiologico.upper()
+		self.medico_pulmonar = self.medico_pulmonar.upper()
+		self.medico_resultado = self.medico_resultado.upper()
+		self.ishihara_visual_oi = self.ishihara_visual_oi.upper()
+		self.ishihara_visual_od = self.ishihara_visual_od.upper()
+		self.ishihara_visual_ao = self.ishihara_visual_ao.upper()
+		self.ishihara_lentes = self.ishihara_lentes.upper()
+		self.ishihara_deuteranopia = self.ishihara_deuteranopia.upper()
+		self.ishihara_protanopia = self.ishihara_protanopia.upper()
+		self.ishihara_tritanopia = self.ishihara_tritanopia.upper()
+		self.ishihara_acromatopsia = self.ishihara_acromatopsia.upper()
+		self.ishihara_resultado = self.ishihara_resultado.upper()
+		self.observacion = self.observacion.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Carpeta Examen Médico'
@@ -632,6 +783,11 @@ class CarpetaExamenFisico(models.Model):
 
 	def __str__(self):
 		return f'{self.personal}'
+
+	def save(self, *args, **kwargs):
+		self.resultado = self.resultado.upper()
+		self.observacion = self.observacion.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Carpeta Examen Físico'
@@ -761,6 +917,54 @@ class CarpetaExamenSocioeconomico(models.Model):
 	def __str__(self):
 		return f'{self.personal}'
 
+	def save(self, *args, **kwargs):
+		self.propiedades = self.propiedades.upper()
+		self.inversiones = self.inversiones.upper()
+		self.vehiculo = self.vehiculo.upper()
+		self.tarjetas_credito_departamental = self.tarjetas_credito_departamental.upper()
+		self.adeudos_importantes = self.adeudos_importantes.upper()
+		self.titular_domicilio = self.titular_domicilio.upper()
+		self.salud_alergias = self.salud_alergias.upper()
+		self.salud_visual_auditiva_fisica = self.salud_visual_auditiva_fisica.upper()
+		self.salud_cirugias = self.salud_cirugias.upper()
+		self.salud_enfermedad_cronica = self.salud_enfermedad_cronica.upper()
+		self.cantidad_frecuencia_ciqarro = self.cantidad_frecuencia_ciqarro.upper()
+		self.cantidad_frecuencia_alcohol = self.cantidad_frecuencia_alcohol.upper()
+		self.vicios = self.vicios.upper()
+		self.at_medica_observaciones = self.at_medica_observaciones.upper()
+		self.estado_salud_propio = self.estado_salud_propio.upper()
+		self.ultima_vez_enfermo = self.ultima_vez_enfermo.upper()
+		self.embarazada = self.embarazada.upper()
+		self.contacto_emergencia = self.contacto_emergencia.upper()
+		self.parentesco_contacto = self.parentesco_contacto.upper()
+		self.actividades_culturales_deportes = self.actividades_culturales_deportes.upper()
+		self.organizacion_familia = self.organizacion_familia.upper()
+		self.comunicacion = self.comunicacion.upper()
+		self.roles = self.roles.upper()
+		self.autoridad = self.autoridad.upper()
+		self.limites = self.limites.upper()
+		self.calidad_vida = self.calidad_vida.upper()
+		self.imagen_publica = self.imagen_publica.upper()
+		self.comportamiento_social = self.comportamiento_social.upper()
+		self.demanda_laboral = self.demanda_laboral.upper()
+		self.porque_este_empleo = self.porque_este_empleo.upper()
+		self.puesto_deseado = self.puesto_deseado.upper()
+		self.area_deseada = self.area_deseada.upper()
+		self.tiempo_ascenso = self.tiempo_ascenso.upper()
+		self.obtencion_reconocimiento = self.obtencion_reconocimiento.upper()
+		self.obtencion_ascenso = self.obtencion_ascenso.upper()
+		self.capacitacion_deseada = self.capacitacion_deseada.upper()
+		self.comentarios_generales = self.comentarios_generales.upper()
+		self.ruta_acceso = self.ruta_acceso.upper()
+		self.color_vivienda_porton = self.color_vivienda_porton.upper()
+		self.referencias = self.referencias.upper()
+		self.tiempo_traslado = self.tiempo_traslado.upper()
+		self.gasto = self.gasto.upper()
+		self.nombre_recados = self.nombre_recados.upper()
+		self.parentesco = self.parentesco.upper()
+		self.comentario = self.comentario.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Carpeta Examen Socioeconómico'
 
@@ -785,6 +989,10 @@ class CarpetaExamenPoligrafo(models.Model):
 	def __str__(self):
 		return f'{self.personal}'
 
+	def save(self, *args, **kwargs):
+		self.observacion = self.observacion.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Carpeta Examen Polígrafo'
 
@@ -798,6 +1006,10 @@ class CarpetaExamenPoligrafoPrevio(CarpetaExamenPoligrafo):
 class MotivoSeparacion(models.Model):
 	motivo = models.CharField(max_length=50, blank=True, null=True)
 
+	def save(self, *args, **kwargs):
+		self.motivo = self.motivo.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Motivos Separacion'
 
@@ -805,12 +1017,20 @@ class MotivoSeparacion(models.Model):
 class PuestoFuncional(models.Model):
 	nombre_puesto = models.CharField(max_length=50, blank=True, null=True)
 
+	def save(self, *args, **kwargs):
+		self.nombre_puesto = self.nombre_puesto.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Puestos Funcionales'
 
 
 class TipoBaja(models.Model):
 	motivo = models.CharField(max_length=50, blank=True, null=True)
+
+	def save(self, *args, **kwargs):
+		self.motivo = self.motivo.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Tipos Baja'
@@ -849,6 +1069,19 @@ class EmpleoAnteriorSeguridadPublica(models.Model):
 		choice_value = getattr(self, field_name)
 		return dict(choices).get(choice_value)
 
+	def save(self, *args, **kwargs):
+		self.dependencia = self.dependencia.upper()
+		self.corporacion = self.corporacion.upper()
+		self.direccion = self.direccion.upper()
+		self.funciones = self.funciones.upper()
+		self.especialidad = self.especialidad.upper()
+		self.rango_categoria = self.rango_categoria.upper()
+		self.area = self.area.upper()
+		self.division = self.division.upper()
+		self.jefe_inmediato = self.jefe_inmediato.upper()
+		self.comentarios = self.comentarios.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Carpeta Empleos Anteriores Seguridad Publica'
 
@@ -878,6 +1111,17 @@ class EmpleoAnterior(models.Model):
 		choice_value = getattr(self, field_name)
 		return dict(choices).get(choice_value)
 
+	def save(self, *args, **kwargs):
+		self.empresa = self.empresa.upper()
+		self.area_puesto = self.area_puesto.upper()
+		self.funciones = self.funciones.upper()
+		self.jefe_inmediato = self.jefe_inmediato.upper()
+		self.puesto_jefe_inmediato = self.puesto_jefe_inmediato.upper()
+		self.informante = self.informante.upper()
+		self.puesto_informante = self.puesto_informante.upper()
+		self.observaciones = self.observaciones.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Carpeta Empleos Anteriores'
 
@@ -888,6 +1132,10 @@ class Instructor(models.Model):
 
 	def __str__(self):
 		return f'{self.nombre_instructor}'
+
+	def save(self, *args, **kwargs):
+		self.nombre_instructor = self.nombre_instructor.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Instructores'
@@ -916,6 +1164,12 @@ class Capacitacion(models.Model):
 	def __str__(self):
 		return f'{self.paq_capacitacion} - {self.curso}'
 
+	def save(self, *args, **kwargs):
+		self.institucion_empresa = self.institucion_empresa.upper()
+		self.curso = self.curso.upper()
+		self.tipo_curso = self.tipo_curso.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Carpeta Capacitaciones'
 
@@ -929,6 +1183,10 @@ class RepresentanteTrabajadores(models.Model):
 
 	def __str__(self):
 		return self.nombre_completo
+
+	def save(self, *args, **kwargs):
+		self.nombre_completo = self.nombre_completo.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Representante Trabajadores'
@@ -961,6 +1219,12 @@ class Domicilio(models.Model):
 	def __str__(self):
 		return self.get_full_address()
 
+	def save(self, *args, **kwargs):
+		self.calle = self.calle.upper()
+		self.entre_calle = self.entre_calle.upper()
+		self.y_calle = self.y_calle.upper()
+		super().save(*args, **kwargs)
+
 	class Meta:
 		verbose_name_plural = 'Carpeta Domicilios'
 
@@ -974,6 +1238,10 @@ class Idioma(models.Model):
 
 	def __str__(self):
 		return f'{self.idioma}'
+
+	def save(self, *args, **kwargs):
+		self.idioma = self.idioma.upper()
+		super().save(*args, **kwargs)
 
 	class Meta:
 		verbose_name_plural = 'Carpeta Idiomas'
@@ -1061,6 +1329,11 @@ class CarpetaMediaFiliacion(models.Model):
 			else:
 				self.indice_masa_corporal = None  # Establecer el valor por defecto como None si faltan datos
 
+			self.tension_arterial = self.tension_arterial.upper()
+			self.temperatura = self.temperatura.upper()
+			self.sat02 = self.sat02.upper()
+			self.cronica_degenerativa = self.cronica_degenerativa.upper()
+			self.frecuencia_cardiaca = self.frecuencia_cardiaca.upper()
 			super().save(*args, **kwargs)  # Llamar al método save de la clase base para guardar el objeto
 		except InvalidOperation as e:
 			# Manejar la excepción de InvalidOperation

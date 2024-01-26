@@ -505,6 +505,18 @@ class PuestoFuncionalAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre_puesto',)
 
 
+@admin.register(JefeMedico)
+class JefeMedicoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nombre_completo', 'cedula_profesional',)
+    search_fields = ['nombre_completo', 'cedula_profesional',]
+
+
+@admin.register(MedicoOdontologico)
+class MedicoOdontologicoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nombre_completo', 'cedula_profesional',)
+    search_fields = ['nombre_completo', 'cedula_profesional',]
+
+
 @admin.register(TipoBaja)
 class TipoBajaAdmin(admin.ModelAdmin):
     list_display = ('id', 'motivo',)
