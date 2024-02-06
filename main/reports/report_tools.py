@@ -1,22 +1,40 @@
 import PyPDF2
-from docxtpl import DocxTemplate
+from docx import Document
 from openpyxl.drawing.image import Image as XlsxImage
 from openpyxl.worksheet.page import PageMargins
 from PIL import Image as PilImage
 import os
 import subprocess
 import logging
+import re
 
 # Creation of logger
 logger = logging.getLogger(__name__)
 
 
 def replace_variables_in_docx(docx_file_path, variables_dict):
-    temporal_docx_path = 'media/file_templates/temporal.docx'
-    doc = DocxTemplate(docx_file_path)
-    doc.render(variables_dict)
-    doc.save(temporal_docx_path)
-    return temporal_docx_path
+    temporal_docx_file_path = 'media/file_templates/temporal.docx'
+    doc = Document(docx_file_path)
+
+    # Reemplazar variables en párrafos (como antes)
+    for paragraph in doc.paragraphs:
+        for match in re.findall(r'\{\{.*?}}', paragraph.text):
+            key = match[2:-2]
+            if key in variables_dict:
+                paragraph.text = paragraph.text.replace(match, variables_dict[key])
+
+    # Reemplazar variables en tablas (nueva parte)
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    for match in re.findall(r'\{\{.*?}}', paragraph.text):
+                        key = match[2:-2]
+                        if key in variables_dict:
+                            paragraph.text = paragraph.text.replace(match, variables_dict[key])
+
+    doc.save(temporal_docx_file_path)
+    return temporal_docx_file_path
 
 
 def keep_first_page(pdf_path):

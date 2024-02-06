@@ -1,6 +1,27 @@
 from nested_admin import NestedStackedInline, NestedModelAdmin
 from .models import *
-from .actions import *
+from .actions import (
+    generate_dc3_report,
+    generate_odontologic_report,
+    generate_fingerprint_record_report,
+    generate_cdmx_license_report,
+    generate_edomex_license_report,
+    generate_federal_license_report,
+    generate_consent_form_report,
+    generate_training_certificate_report,
+    generate_cdmx_tests_report,
+    generate_federal_tests_report,
+    generate_socioeconomic_photos_report,
+    generate_isihara_test_report,
+    generate_honesty_test_report,
+    generate_polygraph_test_report,
+    generate_gch_preliminary_report,
+    generate_psychological_test_report,
+    generate_candidate_report,
+    generate_socioeconomic_report,
+    generate_social_work_report,
+    generate_sedena_report,
+)
 from django.contrib import admin
 from django import forms
 
@@ -263,9 +284,46 @@ class PersonalAdmin(NestedModelAdmin):
     ]
     generate_dc3_report.short_description = 'Generar DC-3'
     generate_odontologic_report.short_description = 'Generar Evaluación Odontológica'
+    generate_fingerprint_record_report.short_description = 'Generar Registro DecaDactilar'
+    generate_cdmx_license_report.short_description = 'Generar Cédula CDMX'
+    generate_edomex_license_report.short_description = 'Generar Cédula EDOMEX'
+    generate_federal_license_report.short_description = 'Generar Cédula Federal'
+    generate_consent_form_report.short_description = 'Generar Acta de Consentimiento'
+    generate_training_certificate_report.short_description = 'Generar Constancia de Capacitación'
+    generate_cdmx_tests_report.short_description = 'Generar Exámenes CDMX'
+    generate_federal_tests_report.short_description = 'Generar Exámenes Federal'
+    generate_socioeconomic_photos_report.short_description = 'Generar Reporte Fotogáfico Socioeconómicas'
+    generate_isihara_test_report.short_description = 'Generar Examen Ishihara'
+    generate_honesty_test_report.short_description = 'Generar Modo Honesto de Vivir'
+    generate_polygraph_test_report.short_description = 'Generar Examen Poligráfico'
+    generate_gch_preliminary_report.short_description = 'Generar Reporte Preliminar GCH'
+    generate_psychological_test_report.short_description = 'Generar Examen Psicológico'
+    generate_candidate_report.short_description = 'Generar Reporte Candidato'
+    generate_socioeconomic_report.short_description = 'Generar Examen Socioeconómico'
+    generate_social_work_report.short_description = 'Generar Reporte de Trabajo Social'
+    generate_sedena_report.short_description = 'Generar Reporte Sedena'
+
     actions = [
         generate_dc3_report,
-        generate_odontologic_report
+        generate_odontologic_report,
+        generate_fingerprint_record_report,
+        generate_cdmx_license_report,
+        generate_edomex_license_report,
+        generate_federal_license_report,
+        generate_consent_form_report,
+        generate_training_certificate_report,
+        generate_cdmx_tests_report,
+        generate_federal_tests_report,
+        generate_socioeconomic_photos_report,
+        generate_isihara_test_report,
+        generate_honesty_test_report,
+        generate_polygraph_test_report,
+        generate_gch_preliminary_report,
+        generate_psychological_test_report,
+        generate_candidate_report,
+        generate_socioeconomic_report,
+        generate_social_work_report,
+        generate_sedena_report
     ]
 
     def nombre_completo(self, obj):
@@ -277,25 +335,79 @@ class PersonalAdmin(NestedModelAdmin):
 class CarpetaExamenFisicoPrevioInline(NestedStackedInline):
     model = CarpetaExamenFisicoPrevio
     extra = 1
-    fields = ('resultado_aspirante', 'observacion')
+    fields = (
+        'fecha_examen',
+        'elasticidad',
+        'velocidad',
+        'resistencia',
+        'condicion_fisica',
+        'reflejos',
+        'locomocion',
+        'prueba_esfuerzo',
+        'resultado',
+        'observacion'
+    )
 
 
 class CarpetaExamenMedicoPrevioInline(NestedStackedInline):
     model = CarpetaExamenMedicoPrevio
     extra = 1
-    fields = ('resultado_aspirante', 'observacion')
+    fields = (
+        'fecha_examen',
+        'medico_agudeza_visual',
+        'medico_agudeza_auditiva',
+        'medico_agudeza_motriz',
+        'medico_estado_nutricional',
+        'medico_cardiologico',
+        'medico_pulmonar',
+        'medico_resultado',
+        'ishihara_visual_oi',
+        'ishihara_visual_od',
+        'ishihara_visual_ao',
+        'ishihara_lentes',
+        'ishihara_deuteranopia',
+        'ishihara_protanopia',
+        'ishihara_tritanopia',
+        'ishihara_resultado',
+        'observacion',
+    )
 
 
 class CarpetaExamenPsicologicoPrevioInline(NestedStackedInline):
     model = CarpetaExamenPsicologicoPrevio
     extra = 1
-    fields = ('resultado_aspirante', 'observacion')
+    fields = (
+        'fecha_examen',
+        'actitud',
+        'inteligencia',
+        'personalidad',
+        'impulsividad',
+        'organizacion',
+        'valores',
+        'temperamento',
+        'confiabilidad',
+        'compromiso',
+        'habilidades_laborales',
+        'resultado_psicologico',
+        'observacion'
+    )
 
 
 class CarpetaExamenToxicologicoPrevioInline(NestedStackedInline):
     model = CarpetaExamenToxicologicoPrevio
     extra = 1
-    fields = ('resultado_aspirante', 'observacion')
+    fields = (
+        'fecha_examen',
+        'cocaina',
+        'marihuana',
+        'opiaceos',
+        'anfetaminas',
+        'metanfetaminas',
+        'barbituricos',
+        'benzodiacepinas',
+        'resultado_toxicologico',
+        'observacion'
+    )
 
 
 class CarpetaExamenSocioeconomicoPrevioInline(NestedStackedInline):
@@ -416,7 +528,6 @@ class PersonalPrevioAdmin(NestedModelAdmin):
         CarpetaExamenPsicologicoPrevioInline,
         CarpetaExamenToxicologicoPrevioInline,
         CarpetaExamenSocioeconomicoPrevioInline,
-        CarpetaExamenPoligrafoPrevioInline,
         CarpetaGeneralesPrevioInline,
         CarpetaMediaFilicacionPrevioInline,
         DocumentosDigitalesPrevioInline,
