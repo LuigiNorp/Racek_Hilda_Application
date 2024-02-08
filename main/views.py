@@ -412,19 +412,19 @@ class GenerateDC3View(View):
 
             # Try to access each attribute individually and handle exceptions separately
             try:
-                data['nombre_completo'] = personal.curp.get_nombre_completo()
+                data['nombre_completo_personal'] = personal.curp.get_nombre_completo()
             except AttributeError:
                 pass
             try:
-                data['curp'] = f'{personal.curp.curp}'
+                data['curp_personal'] = f'{personal.curp.curp}'
             except AttributeError:
                 pass
             try:
-                data['ocupacion'] = f'{personal.carpetalaboral.ocupacion.get_ocupacion_fullname()}'
+                data['ocupacion_personal'] = f'{personal.carpetalaboral.ocupacion.get_ocupacion_fullname()}'
             except AttributeError:
                 pass
             try:
-                data['puesto'] = f'{personal.carpetalaboral.display_choice_value("puesto")}'
+                data['puesto_personal'] = f'{personal.carpetalaboral.display_choice_value("puesto")}'
             except AttributeError:
                 pass
             try:
@@ -432,7 +432,7 @@ class GenerateDC3View(View):
             except AttributeError:
                 pass
             try:
-                data['rfc'] = f'{personal.cliente.carpetaclientegenerales.rfc}'
+                data['rfc_personal'] = f'{personal.cliente.carpetaclientegenerales.rfc}'
             except AttributeError:
                 pass
             try:
@@ -481,10 +481,10 @@ class GenerateDC3View(View):
                 pass
 
             cell_mapping = {
-                'AJ5': data['nombre_completo'],
-                'AJ6': data['curp'],
-                'AJ7': data['ocupacion'],
-                'AJ8': data['puesto'],
+                'AJ5': data['nombre_completo_personal'],
+                'AJ6': data['curp_personal'],
+                'AJ7': data['ocupacion_personal'],
+                'AJ8': data['puesto_personal'],
                 'AJ9': data['nombre_curso'],
                 'AJ10': data['horas_curso'],
                 'AJ11': data['fecha_inicial_capacitacion'],
@@ -493,7 +493,7 @@ class GenerateDC3View(View):
                 'AJ14': data['nombre_capacitador'],
                 'AJ15': data['registro_capacitador'],
                 'AJ21': data['razon_social'],
-                'AJ22': data['rfc'],
+                'AJ22': data['rfc_personal'],
                 'AJ23': data['representante_legal'],
                 'AJ24': data['representante_trabajadores'],
             }
@@ -565,15 +565,15 @@ class GenerateOdontologicView(View):
             except AttributeError:
                 pass
             try:
-                verified_queries['sexo'] = f'{personal.curp.sexo}'
+                verified_queries['sexo_personal'] = f'{personal.curp.sexo}'
             except AttributeError:
                 pass
             try:
-                verified_queries['edad'] = f'{personal.curp.edad}'
+                verified_queries['edad_personal'] = f'{personal.curp.edad}'
             except AttributeError:
                 pass
             try:
-                verified_queries['ocupacion'] = f'{personal.carpetalaboral.ocupacion.get_ocupacion_fullname()}'
+                verified_queries['ocupacion_personal'] = f'{personal.carpetalaboral.ocupacion.get_ocupacion_fullname()}'
             except AttributeError:
                 pass
             try:
