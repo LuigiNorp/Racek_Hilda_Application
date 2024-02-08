@@ -1,5 +1,6 @@
 from main.reports.report_contants import default_data
 from main.reports.report_tools import *
+from babel.dates import format_date
 import uuid
 from openpyxl import load_workbook
 from django.http import FileResponse, HttpResponseNotFound, HttpResponse
@@ -546,7 +547,9 @@ class GenerateOdontologicView(View):
         for personal in queryset:
             # Specific data access for odontologico document
             try:
-                verified_queries['fecha'] = f'{personal.carpetaexamenmedico.fecha_examen.strftime("%d DE %B DEL %Y")}'.upper()
+                fecha_odontolico = personal.carpetaexamenmedico.fecha_examen
+                fecha_odontolico_mx = format_date(fecha_odontolico, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_odontologico'] = f'{fecha_odontolico_mx}'.upper()
             except AttributeError:
                 pass
             try:
@@ -669,7 +672,9 @@ class GenerateIshiharaTestView(View):
             except AttributeError:
                 pass
             try:
-                verified_queries['fecha_examen_medico'] = f'{personal.carpetaexamenmedico.fecha_examen.strftime("%d de %B del %Y")}'
+                fecha_examen_medico = personal.carpetaexamenmedico.fecha_examen
+                fecha_examen_medico_mx = format_date(fecha_examen_medico, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_examen_medico'] = f"{fecha_examen_medico_mx}"
             except AttributeError:
                 pass
             try:
@@ -750,7 +755,9 @@ class GeneratePolygraphTestView(View):
         for personal in queryset:
             # Specific data access for poligraph test document
             try:
-                verified_queries['fecha_reporte'] = f'{personal.carpetaexamenpoligrafo.fechareporte.strftime("%d DE %B DEL %Y")}'.upper()
+                fecha_reporte = personal.carpetaexamenpoligrafo.fechareporte
+                fecha_reporte_mx = format_date(fecha_reporte, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_reporte'] = f'{fecha_reporte_mx}'.upper()
             except AttributeError:
                 pass
             try:
@@ -758,7 +765,9 @@ class GeneratePolygraphTestView(View):
             except AttributeError:
                 pass
             try:
-                verified_queries['fecha_poligrafo'] = f'{personal.carpetaexamenpoligrafo.fechapoligrafo.strftime("%d DE %B DEL %Y")}'.upper()
+                fecha_poligrafo = personal.carpetaexamenpoligrafo.fechapoligrafo
+                fecha_poligrafo_mx = format_date(fecha_poligrafo, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_poligrafo'] = f'{fecha_poligrafo_mx}'.upper()
             except AttributeError:
                 pass
             try:

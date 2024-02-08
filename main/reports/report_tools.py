@@ -16,22 +16,24 @@ def replace_variables_in_docx(docx_file_path, variables_dict):
     temporal_docx_file_path = 'media/file_templates/temporal.docx'
     doc = Document(docx_file_path)
 
-    # Reemplazar variables en párrafos (como antes)
+    # Reemplazar variables en párrafos
     for paragraph in doc.paragraphs:
-        for match in re.findall(r'\{\{.*?}}', paragraph.text):
-            key = match[2:-2]
-            if key in variables_dict:
-                paragraph.text = paragraph.text.replace(match, variables_dict[key])
+        for run in paragraph.runs:
+            for match in re.findall(r'\{\{.*?}}', run.text):
+                key = match[2:-2]
+                if key in variables_dict:
+                    run.text = run.text.replace(match, variables_dict[key])
 
-    # Reemplazar variables en tablas (nueva parte)
+    # Reemplazar variables en tablas
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
-                    for match in re.findall(r'\{\{.*?}}', paragraph.text):
-                        key = match[2:-2]
-                        if key in variables_dict:
-                            paragraph.text = paragraph.text.replace(match, variables_dict[key])
+                    for run in paragraph.runs:
+                        for match in re.findall(r'\{\{.*?}}', run.text):
+                            key = match[2:-2]
+                            if key in variables_dict:
+                                run.text = run.text.replace(match, variables_dict[key])
 
     doc.save(temporal_docx_file_path)
     return temporal_docx_file_path

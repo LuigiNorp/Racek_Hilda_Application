@@ -16,7 +16,7 @@ default_data = {
     'representante_trabajadores': '',
     'logotipo': None,
     'qr_code': None,
-    'fecha': '',
+    'fecha_odontologico': '',
     'nombre_completo_personal': '',
     'id_racek': '',
     'rfc_personal': '',
