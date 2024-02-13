@@ -2,10 +2,7 @@ from .choices import *
 from django.db import models
 from django.core.validators import RegexValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
-from decimal import Decimal, InvalidOperation
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
-from django.utils import timezone
 from django.core.files.storage import default_storage
 import os
 from uuid import uuid4
@@ -540,14 +537,10 @@ class CarpetaLaboral(models.Model):
 class CarpetaGenerales(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
     email_empleado = models.CharField(max_length=200, null=True, blank=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_domicilio = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                          help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_domicilio = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     numero_elemento = models.PositiveIntegerField(null=True, blank=True)
     transporte = models.CharField(max_length=50, null=True, blank=True)
     tiempo_trayecto = models.CharField(max_length=15, blank=True, null=True)
@@ -1444,41 +1437,14 @@ class CarpetaMediaFiliacion(models.Model):
 
     def save(self, *args, **kwargs):
         try:
-            if self.estatura and self.peso:  # Verificar si se han ingresado la estatura y el peso
-                # Convertir los valores de estatura y peso a Decimal
-                estatura_decimal = Decimal(str(self.estatura))
-                peso_decimal = Decimal(str(self.peso))
-                # Calcular el IMC
-                self.indice_masa_corporal = peso_decimal / (estatura_decimal ** 2)
-                # Actualizar la clasificación del IMC
-                if self.indice_masa_corporal < 18.5:
-                    self.clasificacion_imc = 6  # Delgadez
-                elif 18.5 <= self.indice_masa_corporal < 25:
-                    self.clasificacion_imc = 1  # Normal
-                elif 25 <= self.indice_masa_corporal < 30:
-                    self.clasificacion_imc = 2  # Sobrepeso
-                elif 30 <= self.indice_masa_corporal < 35:
-                    self.clasificacion_imc = 3  # Obesidad GI
-                elif 35 <= self.indice_masa_corporal < 40:
-                    self.clasificacion_imc = 4  # Obesidad GII
-                else:
-                    self.clasificacion_imc = 5  # Obesidad GIII
-            else:
-                self.indice_masa_corporal = None  # Establecer el valor por defecto como None si faltan datos
-            try:
-                self.tension_arterial = f'{self.tension_arterial}'.capitalize()
-                self.temperatura = f'{self.temperatura}'.capitalize()
-                self.sat02 = f'{self.sat02}'.capitalize()
-                self.cronica_degenerativa = f'{self.cronica_degenerativa}'.capitalize()
-                self.frecuencia_cardiaca = f'{self.frecuencia_cardiaca}'.capitalize()
-            except:
-                pass
-            super().save(*args, **kwargs)  # Llamar al método save de la clase base para guardar el objeto
-        except InvalidOperation as e:
-            # Manejar la excepción de InvalidOperation
-            # Aquí puedes agregar un registro de error, imprimir un mensaje de error, o tomar otras medidas según sea necesario
-            print(e)
+            self.tension_arterial = f'{self.tension_arterial}'.capitalize()
+            self.temperatura = f'{self.temperatura}'.capitalize()
+            self.sat02 = f'{self.sat02}'.capitalize()
+            self.cronica_degenerativa = f'{self.cronica_degenerativa}'.capitalize()
+            self.frecuencia_cardiaca = f'{self.frecuencia_cardiaca}'.capitalize()
+        except:
             pass
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name_plural = 'Carpeta Media Filiación'

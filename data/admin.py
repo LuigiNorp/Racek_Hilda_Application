@@ -199,7 +199,7 @@ class CapacitacionInline(NestedStackedInline):
     autocomplete_fields = ['paq_capacitacion', 'instructor', ]
 
 
-class CarpetaMediaFilicacionInline(NestedStackedInline):
+class CarpetaMediaFiliacionInline(NestedStackedInline):
     model = CarpetaMediaFiliacion
     extra = 0
 
@@ -279,7 +279,7 @@ class PersonalAdmin(NestedModelAdmin):
         EmpleoAnteriorInline,
         CapacitacionInline,
         IdiomaInline,
-        CarpetaMediaFilicacionInline,
+        CarpetaMediaFiliacionInline,
         DocumentosDigitalesInline,
     ]
     generate_dc3_report.short_description = 'Generar DC-3'

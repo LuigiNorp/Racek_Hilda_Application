@@ -1,7 +1,17 @@
+from django.core.files.storage import default_storage
 from main.reports.report_contants import default_data
-from main.reports.report_tools import *
+from main.reports.report_tools import (
+    replace_variables_in_docx,
+    convert_to_pdf,
+    keep_first_page,
+    scale_image_from_height,
+    add_image_to_worksheet,
+    xlsx_sheet_presets,
+    merge_pdf_files,
+)
 from babel.dates import format_date
 import uuid
+import os
 from openpyxl import load_workbook
 from django.http import FileResponse, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -16,7 +26,24 @@ from django.views import View
 from django.core.cache import cache
 from django.db.models import Q
 from dal import autocomplete
-from main.forms import *
+from main.forms import (
+    CustomUserRegisterForm,
+    CustomUserProfileForm,
+    PersonalForm,
+)
+from main.models import (
+    Profile,
+    CustomUser
+)
+
+from data.models import (
+    Cliente,
+    CodigoPostal,
+    Curp,
+    Rfc,
+    Ocupacion,
+    PaqueteCapacitacion
+)
 
 
 # Create your views here.
@@ -396,6 +423,7 @@ class PaqueteCapacitacionAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
+# Report views
 class GenerateDC3View(View):
     def get(self, personal_id: int, request: any, queryset: any, desired_height_cm=3.5):
         original_file_path = 'media/file_templates/DC3 ACTUALIZADO.xlsx'
@@ -444,11 +472,13 @@ class GenerateDC3View(View):
             except AttributeError:
                 pass
             try:
-                data['fecha_inicial_capacitacion'] = f'{personal.capacitaciones.all().last().inicio.strftime("%d/%m/%Y")}'
+                data[
+                    'fecha_inicial_capacitacion'] = f'{personal.capacitaciones.all().last().inicio.strftime("%d/%m/%Y")}'
             except AttributeError:
                 pass
             try:
-                data['fecha_final_capacitacion'] = f'{personal.capacitaciones.all().last().conclusion.strftime("%d/%m/%Y")}'
+                data[
+                    'fecha_final_capacitacion'] = f'{personal.capacitaciones.all().last().conclusion.strftime("%d/%m/%Y")}'
             except AttributeError:
                 pass
             try:
@@ -581,7 +611,8 @@ class GenerateOdontologicView(View):
             except AttributeError:
                 pass
             try:
-                verified_queries['nombre_completo_dentista'] = f'{personal.carpetaexamenmedico.medico_odontologico.nombre_completo}'
+                verified_queries[
+                    'nombre_completo_dentista'] = f'{personal.carpetaexamenmedico.medico_odontologico.nombre_completo}'
             except AttributeError:
                 pass
             try:
@@ -664,11 +695,13 @@ class GenerateIshiharaTestView(View):
             except AttributeError:
                 pass
             try:
-                verified_queries['nombre_completo_medico'] = f'{personal.carpetaexamenmedico.jefemedico.nombre_completo}'
+                verified_queries[
+                    'nombre_completo_medico'] = f'{personal.carpetaexamenmedico.jefemedico.nombre_completo}'
             except AttributeError:
                 pass
             try:
-                verified_queries['cedula_profesional_medico'] = f'{personal.carpetaexamenmedico.jefemedico.cedula_profesional}'
+                verified_queries[
+                    'cedula_profesional_medico'] = f'{personal.carpetaexamenmedico.jefemedico.cedula_profesional}'
             except AttributeError:
                 pass
             try:
