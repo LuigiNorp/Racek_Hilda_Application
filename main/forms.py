@@ -1,10 +1,9 @@
-from .models import CustomUser
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .choices import DEPARTAMENTO
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Group
 from django import forms
-from data.models import Personal, Cliente, Sede, CarpetaClienteGenerales
+from main.models import *
+from data.models import *
 
 
 class CustomUserRegisterForm(UserCreationForm):

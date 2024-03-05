@@ -1,17 +1,7 @@
-from django.core.files.storage import default_storage
 from main.reports.report_contants import default_data
-from main.reports.report_tools import (
-    replace_variables_in_docx,
-    convert_to_pdf,
-    keep_first_page,
-    scale_image_from_height,
-    add_image_to_worksheet,
-    xlsx_sheet_presets,
-    merge_pdf_files,
-)
+from main.reports.report_tools import *
 from babel.dates import format_date
 import uuid
-import os
 from openpyxl import load_workbook
 from django.http import FileResponse, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -26,24 +16,8 @@ from django.views import View
 from django.core.cache import cache
 from django.db.models import Q
 from dal import autocomplete
-from main.forms import (
-    CustomUserRegisterForm,
-    CustomUserProfileForm,
-    PersonalForm,
-)
-from main.models import (
-    Profile,
-    CustomUser
-)
-
-from data.models import (
-    Cliente,
-    CodigoPostal,
-    Curp,
-    Rfc,
-    Ocupacion,
-    PaqueteCapacitacion
-)
+from main.forms import *
+from datetime import date
 
 
 # Create your views here.
@@ -620,6 +594,12 @@ class GenerateOdontologicView(View):
             except AttributeError:
                 pass
 
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-ODONTOLOGICO.pdf')
+            except AttributeError:
+                pass
+
             # Generate the PDF file name based on the person's full name
             pdf_file_path = f'media/file_templates/temporal.pdf'
             temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
@@ -638,7 +618,74 @@ class GenerateOdontologicView(View):
 
 
 class GenerateFingerprintRecordView(View):
-    pass
+    def get(self, personal_id: int, request: any, queryset: any):
+        verified_queries = default_data
+        docx_file_path = 'media/file_templates/decadactilar.docx'
+
+        for personal in queryset:
+            # Specific data access for decadactilar document
+            try:
+                verified_queries['nombre_completo_personal_invertido'] = f'{personal.curp.get_nombre_completo_invertido()}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['rfc_personal'] = f'{personal.rfc.rfc}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['edad_personal'] = f'{personal.curp.edad}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['municipio_nacimiento'] = f'{personal.curp.municipio_registro}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['sexo_personal'] = f'{personal.curp.sexo}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['empresa'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries[
+                    'calle_y_numero'] = f'{personal.domicilio.calle} {personal.domicilio.numero_exterior}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries[
+                    'colonia_municipio_cp'] = (f'{personal.carpetaexamenmedico.domicilio.colonia} '
+                                               f'{personal.carpetaexamenmedico.domicilio.municipio} '
+                                               f'{personal.carpetaexamenmedico.domicilio.codigo_postal}')
+            except AttributeError:
+                pass
+            try:
+                fecha_mediafiliacion = personal.carpetamediafiliacion.fecha_examen
+                fecha_mediafiliacion_dia = format_date(fecha_mediafiliacion, 'd', locale='es_MX')
+                fecha_mediafiliacion_mes = format_date(fecha_mediafiliacion, 'MMMM', locale='es_MX')
+                fecha_mediafiliacion_anio = format_date(fecha_mediafiliacion, 'yy', locale='es_MX')
+                verified_queries['dia'] = f'{fecha_mediafiliacion_dia}'
+                verified_queries['mes'] = f'{fecha_mediafiliacion_mes}'.upper()
+                verified_queries['anio'] = f'{fecha_mediafiliacion_anio}'
+            except AttributeError:
+                pass
+
+            # Generate the PDF file name based on the person's full name
+            pdf_file_path = f'media/file_templates/temporal.pdf'
+            temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+            temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
+
+            with open(temporary_pdf_path, 'rb') as pdf_file:
+                filename = f'{personal.curp.get_nombre_completo()}-DECADACTILAR.pdf'
+                pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # Delete temporary files
+            os.remove(temporary_docx_path)
+            os.remove(temporary_pdf_path)
+
+            return pdf_response
 
 
 class GenerateCdmxLicenseView(View):
@@ -658,7 +705,73 @@ class GenerateConsentFormView(View):
 
 
 class GenerateTrainingCertificateView(View):
-    pass
+    def get(self, personal_id: int, request: any, queryset: any):
+        verified_queries = default_data
+        docx_file_path = 'media/file_templates/capacitacion.docx'
+
+        for personal in queryset:
+            # Specific data access for capacitacion document
+            try:
+                verified_queries['fecha_constancia'] = f'{personal.capacitaciones.all().last().fecha_constancia}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['apellido_paterno'] = f'{personal.curp.apellido_paterno}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['apellido_materno'] = f'{personal.curp.apellido_materno}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['nombre'] = f'{personal.curp.nombre}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['rfc_personal'] = f'{personal.rfc.rfc}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['empresa'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['nombre_curso'] = f'{personal.capacitaciones.all().last().curso}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['horas_curso'] = f'{personal.capacitaciones.all().last().duracion}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['fecha_inicial_capacitacion'] = f'{personal.capacitaciones.all().last().inicio}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['fecha_final_capacitacion'] = f'{personal.capacitaciones.all().last().conclusion}'
+            except AttributeError:
+                pass
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-CONSTANCIA-CAPACITACION.pdf')
+            except AttributeError:
+                pass
+
+            # Generate the PDF file name based on the person's full name
+            pdf_file_path = f'media/file_templates/temporal.pdf'
+            temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+            temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
+
+            with open(temporary_pdf_path, 'rb') as pdf_file:
+                filename = f'{personal.curp.get_nombre_completo()}-CONSTANCIA-CAPACITACION.pdf'
+                pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # Delete temporary files
+            os.remove(temporary_docx_path)
+            os.remove(temporary_pdf_path)
+
+            return pdf_response
 
 
 class GenerateCdmxTestsView(View):
@@ -758,6 +871,11 @@ class GenerateIshiharaTestView(View):
                 verified_queries['resultado_ishihara'] = f'{personal.carpetaexamenmedico.ishihara_resultado}'
             except AttributeError:
                 pass
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-ISHIHARA.pdf')
+            except AttributeError:
+                pass
 
             # Generate the PDF file name based on the person's full name
             pdf_file_path = f'media/file_templates/temporal.pdf'
@@ -848,6 +966,11 @@ class GeneratePolygraphTestView(View):
                 verified_queries['supervisor_poligrafo'] = f'{personal.carpetaexamenpoligrafo.supervisor}'
             except AttributeError:
                 pass
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-POLIGRAFO.pdf')
+            except AttributeError:
+                pass
 
             # Generate the PDF file name based on the person's full name
             pdf_file_path = f'media/file_templates/temporal.pdf'
@@ -883,7 +1006,72 @@ class GenerateSocioeconomicReportView(View):
 
 
 class GenerateSocialWorkReportView(View):
-    pass
+    def get(self, personal_id: int, request: any, queryset: any):
+        verified_queries = default_data
+        docx_file_path = 'media/file_templates/trabajosocial.docx'
+        today = date.today().strftime("%d%m%Y")
+
+        for personal in queryset:
+            # Specific data access for SocialWork test document
+            try:
+                verified_queries['nombre_completo_personal'] = personal.curp.get_nombre_completo()
+            except AttributeError:
+                pass
+            try:
+                verified_queries['edad_personal'] = f'{personal.curp.edad}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['puesto_personal'] = f'{personal.carpetalaboral.display_choice_value("puesto")}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['domicilio'] = f'{personal.domicilio.get_full_address()}'
+            except AttributeError:
+                pass
+            try:
+                fecha_social = personal.carpetaexamensocioeconomico.fecha_entrevista
+                fecha_social_mx = format_date(fecha_social, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_social'] = f'{fecha_social_mx}'.upper()
+            except AttributeError:
+                pass
+            try:
+                verified_queries['empresa'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['supervisor_social'] = f'{personal.carpetaexamensocioeconomico.supervisor}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['cedula_profesional_supervisor_social'] = f'{personal.carpetaexamensocioeconomico.cedula_profesional_supervisor}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['resultado_social'] = f'{personal.carpetaexamensocioeconomico.get_resultado_aspirante_display()}'
+            except AttributeError:
+                pass
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-TRABAJOSOCIAL.pdf')
+            except AttributeError:
+                pass
+
+            # Generate the PDF file name based on the person's full name
+            pdf_file_path = f'media/file_templates/temporal.pdf'
+            temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+            temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
+
+            with open(temporary_pdf_path, 'rb') as pdf_file:
+                filename = f'{personal.curp.get_nombre_completo()}-TRABAJOSOCIAL.pdf'
+                pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # Delete temporary files
+            os.remove(temporary_docx_path)
+            os.remove(temporary_pdf_path)
+
+            return pdf_response
 
 
 class GenerateSedenaView(View):

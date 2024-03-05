@@ -93,7 +93,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hildaApp.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
@@ -143,18 +142,16 @@ GRAPH_MODELS = {
     'group_models': True,
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
-AUTH_PSWD_MODULE="django.contrib.auth.password_validation."
+AUTH_PSWD_MODULE = "django.contrib.auth.password_validation."
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': f'{AUTH_PSWD_MODULE}UserAttributeSimilarityValidator', },
     {'NAME': f'{AUTH_PSWD_MODULE}MinimumLengthValidator', },
     {'NAME': f'{AUTH_PSWD_MODULE}CommonPasswordValidator', },
     {'NAME': f'{AUTH_PSWD_MODULE}NumericPasswordValidator', },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -163,7 +160,6 @@ LANGUAGE_CODE = 'es-mx'
 TIME_ZONE = 'America/Mexico_City'
 USE_I18N = True
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -198,5 +194,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 # todo: remove localhost:8080
-CSRF_TRUSTED_ORIGINS = ["http://localhost:20001", "http://localhost:8080", "http://spgestor.racekcdmx.com"]
-
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:20001",
+    "http://10.0.0.0:20001",
+    "http://10.1.0.0",
+    "http://www.spgestor.racekcdmx.com",
+    "http://spgestor.racekcdmx.com",
+    "http://192.168.0.100:20001"
+]

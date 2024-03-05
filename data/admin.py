@@ -203,6 +203,13 @@ class CarpetaMediaFiliacionInline(NestedStackedInline):
     model = CarpetaMediaFiliacion
     extra = 0
 
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super().get_readonly_fields(request, obj)
+        if obj.carpetamediafiliacion:
+            if obj.carpetamediafiliacion.estatura is None or obj.carpetamediafiliacion.peso is None:
+                readonly_fields += ('indice_masa_corporal', 'clasificacion_imc')
+        return readonly_fields
+
 
 class DocumentosDigitalesInline(NestedStackedInline):
     model = DocumentosDigitales
@@ -254,6 +261,11 @@ class RfcEmpleadoInline(NestedStackedInline):
     )
 
 
+class ResultadosInline(NestedStackedInline):
+    model = Resultado
+    extra = 1
+
+
 @admin.register(Personal)
 class PersonalAdmin(NestedModelAdmin):
     list_display = ('id', 'nombre_completo', 'cliente',)
@@ -281,10 +293,11 @@ class PersonalAdmin(NestedModelAdmin):
         IdiomaInline,
         CarpetaMediaFiliacionInline,
         DocumentosDigitalesInline,
+        ResultadosInline,
     ]
     generate_dc3_report.short_description = 'Generar DC-3'
     generate_odontologic_report.short_description = 'Generar Evaluación Odontológica'
-    generate_fingerprint_record_report.short_description = 'Generar Registro DecaDactilar'
+    generate_fingerprint_record_report.short_description = 'Generar Registro Decadactilar'
     generate_cdmx_license_report.short_description = 'Generar Cédula CDMX'
     generate_edomex_license_report.short_description = 'Generar Cédula EDOMEX'
     generate_federal_license_report.short_description = 'Generar Cédula Federal'
@@ -345,6 +358,7 @@ class CarpetaExamenFisicoPrevioInline(NestedStackedInline):
         'locomocion',
         'prueba_esfuerzo',
         'resultado',
+        'resultado_aspirante',
         'observacion'
     )
 
@@ -369,6 +383,7 @@ class CarpetaExamenMedicoPrevioInline(NestedStackedInline):
         'ishihara_protanopia',
         'ishihara_tritanopia',
         'ishihara_resultado',
+        'resultado_aspirante',
         'observacion',
     )
 
@@ -389,6 +404,7 @@ class CarpetaExamenPsicologicoPrevioInline(NestedStackedInline):
         'compromiso',
         'habilidades_laborales',
         'resultado_psicologico',
+        'resultado_aspirante',
         'observacion'
     )
 
@@ -406,6 +422,7 @@ class CarpetaExamenToxicologicoPrevioInline(NestedStackedInline):
         'barbituricos',
         'benzodiacepinas',
         'resultado_toxicologico',
+        'resultado_aspirante',
         'observacion'
     )
 
@@ -435,16 +452,16 @@ class CarpetaGeneralesPrevioInline(NestedStackedInline):
     )
 
 
-class CarpetaMediaFilicacionPrevioInline(NestedStackedInline):
+class CarpetaMediaFiliacionPrevioInline(NestedStackedInline):
     model = CarpetaMediaFiliacionPrevio
     extra = 1
     fields = (
         'peso',
         'estatura',
-        'tension_arterial',
-        'temperatura',
         'indice_masa_corporal',
         'clasificacion_imc',
+        'tension_arterial',
+        'temperatura',
         'sat02',
         'frecuencia_cardiaca',
         'cronica_degenerativa',
@@ -452,20 +469,29 @@ class CarpetaMediaFilicacionPrevioInline(NestedStackedInline):
         'rh'
     )
 
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super().get_readonly_fields(request, obj)
+        if obj.carpetamediafiliacion:
+            if obj.carpetamediafiliacion.estatura is None or obj.carpetamediafiliacion.peso is None:
+                readonly_fields += ('indice_masa_corporal', 'clasificacion_imc')
+        return readonly_fields
+
 
 class DocumentosDigitalesPrevioInline(NestedStackedInline):
     model = DocumentosDigitalesPrevio
-    extra = 1
     fields = (
-        'acta_nacimiento',
-        'ine',
-        'comprobante_domicilio',
-        'comprobante_estudios',
-        'curp',
-        'cartilla_smn',
-        'nss',
-        'huellas_digitales'
+        'check_acta_nacimiento',
+        'check_ine',
+        'check_comprobante_estudios',
+        'check_comprobante_domicilio',
+        'check_curp',
+        'check_rfc',
+        'check_cartilla',
+        'check_nss',
+        'check_huellas_digitales',
+        'check_fotografias',
     )
+    extra = 1
 
 
 class CurpPrevioInline(NestedStackedInline):
@@ -529,8 +555,9 @@ class PersonalPrevioAdmin(NestedModelAdmin):
         CarpetaExamenToxicologicoPrevioInline,
         CarpetaExamenSocioeconomicoPrevioInline,
         CarpetaGeneralesPrevioInline,
-        CarpetaMediaFilicacionPrevioInline,
+        CarpetaMediaFiliacionPrevioInline,
         DocumentosDigitalesPrevioInline,
+        ResultadosInline,
     ]
 
     def nombre_completo(self, obj):
@@ -662,3 +689,9 @@ class PaqueteCapacitacionAdmin(admin.ModelAdmin):
     list_display = ('id', 'cliente', 'fecha_solicitud', 'fecha_realizacion',)
     search_fields = ['cliente', 'fecha_realizacion',]
     autocomplete_fields = ['cliente',]
+
+
+@admin.register(ReportAuthenticity)
+class ReportAuthenticityAdmin(admin.ModelAdmin):
+    list_display = ('id', 'authenticity_chain', 'report_name', 'content', 'created_at')
+    search_fields = ['authenticity_chain', 'report_name', 'created_at']

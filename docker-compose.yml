@@ -4,12 +4,12 @@ services:
         image: nginx:stable
         restart: always
         ports:
-            - 8080:80
+            - 20001:80
             - 4343:443
         volumes:
             - ./default.conf.template:/etc/nginx/templates/default.conf.template
             - static_volume:/usr/share/nginx/html
-            - /etc/letsencrypt:/etc/letsencrypt
+            - ./letsencrypt:/etc/letsencrypt
         networks:
             - backend
 

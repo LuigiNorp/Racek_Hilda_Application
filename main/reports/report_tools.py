@@ -1,3 +1,5 @@
+import json
+import hashlib
 import PyPDF2
 from docx import Document
 from openpyxl.drawing.image import Image as XlsxImage
@@ -7,6 +9,7 @@ import os
 import subprocess
 import logging
 import re
+from data.models import ReportAuthenticity
 
 # Creation of logger
 logger = logging.getLogger(__name__)
@@ -127,3 +130,36 @@ def xlsx_sheet_presets(sheet):
         footer=0.1,
         bottom=0.2
     )
+
+
+def generate_and_save_authenticity_chain(data, report_name):
+    # Create a copy of the data dictionary and remove 'cadena_autenticidad'
+    data_without_authenticity = data.copy()
+    data_without_authenticity.pop('cadena_autenticidad', None)
+
+    # Convert the modified data dictionary to a JSON string
+    content = json.dumps(data_without_authenticity)
+
+    # Generate a checksum of the content
+    content_checksum = hashlib.sha256(content.encode()).hexdigest()
+
+    # Check if a report with the same name and content checksum already exists
+    existing_report = ReportAuthenticity.objects.filter(report_name=report_name, content=content_checksum).first()
+
+    if existing_report:
+        # If the report exists and the content hasn't changed, use the existing authenticity chain
+        authenticity_chain = existing_report.authenticity_chain
+    else:
+        # If the report doesn't exist or the content has changed, generate a new authenticity chain
+        authenticity_chain = hashlib.sha256(content.encode()).hexdigest()[:50]
+
+        # Save the new authenticity chain and content checksum to the database
+        ReportAuthenticity.objects.update_or_create(
+            report_name=report_name,
+            defaults={
+                'authenticity_chain': authenticity_chain,
+                'content': content_checksum
+            },
+        )
+    return authenticity_chain
+
