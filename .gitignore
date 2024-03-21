@@ -181,7 +181,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 # VS CODE
-.vscode/
+.vscode/*
 ### react ###
 .DS_*
 logs
@@ -205,4 +205,5 @@ test_racek.tar
 appmap.yml
 main/temp.py
 /Pipfile.lock
-/Pipfile
+/data/signals.py
+/data/middleware.py

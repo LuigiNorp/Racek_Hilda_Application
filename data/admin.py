@@ -22,8 +22,9 @@ from .actions import (
     generate_social_work_report,
     generate_sedena_report,
 )
-from django.contrib import admin
 from django import forms
+from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
 
 # Register your models here.
@@ -98,7 +99,7 @@ class PaqueteCapacitacionInline(NestedStackedInline):
 
 
 @admin.register(Cliente)
-class ClienteAdmin(NestedModelAdmin):
+class ClienteAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_display = ('id', 'nombre_comercial', 'razon_social', 'activo',)
     inlines = [
         DocumentosClienteInline,
@@ -110,6 +111,10 @@ class ClienteAdmin(NestedModelAdmin):
         PaqueteCapacitacionInline,
     ]
     search_fields = ['nombre_comercial', 'razon_social',]
+
+    def save_model(self, request, obj, form, change):
+        obj.update_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 class EvaluadorInline(NestedStackedInline):
@@ -132,6 +137,23 @@ class ReferenciaInline(NestedStackedInline):
     model = Referencia
     inlines = [DomicilioInline]
     extra = 0
+
+
+class ReferenciaEstructFamInline(ReferenciaInline):
+    fields = (
+        'nombre',
+        'apellido_paterno',
+        'apellido_materno',
+        'parentesco',
+        'ocupacion'
+    )
+    inlines = []
+    extra = 0
+
+
+class DatosFamiliarInline(NestedStackedInline):
+    model = DatosFamiliar
+    extra = 1
 
 
 class DependienteInline(NestedStackedInline):
@@ -165,9 +187,20 @@ class CarpetaExamenToxicologicoInline(NestedStackedInline):
     extra = 0
 
 
+class EstructuraFamiliarInline(NestedStackedInline):
+    model = EstructuraFamiliar
+    inlines = [ReferenciaEstructFamInline, DatosFamiliarInline]
+    extra = 0
+
+
 class CarpetaExamenSocioeconomicoInline(NestedStackedInline):
     model = CarpetaExamenSocioeconomico
+    inlines = [EstructuraFamiliarInline]
     extra = 0
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super().get_readonly_fields(request, obj)
+        return readonly_fields + ('total_ingresos_display', 'total_egresos_display',)
 
 
 class CarpetaExamenPoligrafoInline(NestedStackedInline):
@@ -205,7 +238,7 @@ class CarpetaMediaFiliacionInline(NestedStackedInline):
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
-        if obj.carpetamediafiliacion:
+        if obj is not None and obj.carpetamediafiliacion:
             if obj.carpetamediafiliacion.estatura is None or obj.carpetamediafiliacion.peso is None:
                 readonly_fields += ('indice_masa_corporal', 'clasificacion_imc')
         return readonly_fields
@@ -264,6 +297,10 @@ class RfcEmpleadoInline(NestedStackedInline):
 class ResultadosInline(NestedStackedInline):
     model = Resultado
     extra = 1
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super().get_readonly_fields(request, obj)
+        return readonly_fields + ('resultado',)
 
 
 @admin.register(Personal)
@@ -349,15 +386,6 @@ class CarpetaExamenFisicoPrevioInline(NestedStackedInline):
     model = CarpetaExamenFisicoPrevio
     extra = 1
     fields = (
-        'fecha_examen',
-        'elasticidad',
-        'velocidad',
-        'resistencia',
-        'condicion_fisica',
-        'reflejos',
-        'locomocion',
-        'prueba_esfuerzo',
-        'resultado',
         'resultado_aspirante',
         'observacion'
     )
@@ -367,22 +395,6 @@ class CarpetaExamenMedicoPrevioInline(NestedStackedInline):
     model = CarpetaExamenMedicoPrevio
     extra = 1
     fields = (
-        'fecha_examen',
-        'medico_agudeza_visual',
-        'medico_agudeza_auditiva',
-        'medico_agudeza_motriz',
-        'medico_estado_nutricional',
-        'medico_cardiologico',
-        'medico_pulmonar',
-        'medico_resultado',
-        'ishihara_visual_oi',
-        'ishihara_visual_od',
-        'ishihara_visual_ao',
-        'ishihara_lentes',
-        'ishihara_deuteranopia',
-        'ishihara_protanopia',
-        'ishihara_tritanopia',
-        'ishihara_resultado',
         'resultado_aspirante',
         'observacion',
     )
@@ -392,18 +404,6 @@ class CarpetaExamenPsicologicoPrevioInline(NestedStackedInline):
     model = CarpetaExamenPsicologicoPrevio
     extra = 1
     fields = (
-        'fecha_examen',
-        'actitud',
-        'inteligencia',
-        'personalidad',
-        'impulsividad',
-        'organizacion',
-        'valores',
-        'temperamento',
-        'confiabilidad',
-        'compromiso',
-        'habilidades_laborales',
-        'resultado_psicologico',
         'resultado_aspirante',
         'observacion'
     )
@@ -413,15 +413,6 @@ class CarpetaExamenToxicologicoPrevioInline(NestedStackedInline):
     model = CarpetaExamenToxicologicoPrevio
     extra = 1
     fields = (
-        'fecha_examen',
-        'cocaina',
-        'marihuana',
-        'opiaceos',
-        'anfetaminas',
-        'metanfetaminas',
-        'barbituricos',
-        'benzodiacepinas',
-        'resultado_toxicologico',
         'resultado_aspirante',
         'observacion'
     )
@@ -430,7 +421,10 @@ class CarpetaExamenToxicologicoPrevioInline(NestedStackedInline):
 class CarpetaExamenSocioeconomicoPrevioInline(NestedStackedInline):
     model = CarpetaExamenSocioeconomicoPrevio
     extra = 1
-    fields = ('resultado_aspirante', 'comentarios_generales')
+    fields = (
+        'resultado_aspirante',
+        'comentarios_generales'
+    )
 
 
 class CarpetaExamenPoligrafoPrevioInline(NestedStackedInline):
@@ -444,11 +438,6 @@ class CarpetaGeneralesPrevioInline(NestedStackedInline):
     extra = 1
     fields = (
         'estado_civil',
-        'escolaridad',
-        'telefono_domicilio',
-        'telefono_celular',
-        'telefono_recados',
-        'email_empleado'
     )
 
 
@@ -464,6 +453,7 @@ class CarpetaMediaFiliacionPrevioInline(NestedStackedInline):
         'temperatura',
         'sat02',
         'frecuencia_cardiaca',
+        'alergias',
         'cronica_degenerativa',
         'sangre',
         'rh'
@@ -471,7 +461,7 @@ class CarpetaMediaFiliacionPrevioInline(NestedStackedInline):
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
-        if obj.carpetamediafiliacion:
+        if obj is not None and obj.carpetamediafiliacion:
             if obj.carpetamediafiliacion.estatura is None or obj.carpetamediafiliacion.peso is None:
                 readonly_fields += ('indice_masa_corporal', 'clasificacion_imc')
         return readonly_fields
@@ -480,14 +470,6 @@ class CarpetaMediaFiliacionPrevioInline(NestedStackedInline):
 class DocumentosDigitalesPrevioInline(NestedStackedInline):
     model = DocumentosDigitalesPrevio
     fields = (
-        'check_acta_nacimiento',
-        'check_ine',
-        'check_comprobante_estudios',
-        'check_comprobante_domicilio',
-        'check_curp',
-        'check_rfc',
-        'check_cartilla',
-        'check_nss',
         'check_huellas_digitales',
         'check_fotografias',
     )
@@ -547,17 +529,15 @@ class PersonalPrevioAdmin(NestedModelAdmin):
     inlines = [
         CurpPrevioInline,
         RfcPrevioInline,
-        DomicilioInline,
-        EvaluadorInline,
-        CarpetaExamenFisicoPrevioInline,
-        CarpetaExamenMedicoPrevioInline,
-        CarpetaExamenPsicologicoPrevioInline,
-        CarpetaExamenToxicologicoPrevioInline,
-        CarpetaExamenSocioeconomicoPrevioInline,
         CarpetaGeneralesPrevioInline,
         CarpetaMediaFiliacionPrevioInline,
-        DocumentosDigitalesPrevioInline,
+        CarpetaExamenMedicoPrevioInline,
+        CarpetaExamenFisicoPrevioInline,
+        CarpetaExamenToxicologicoPrevioInline,
+        CarpetaExamenPsicologicoPrevioInline,
+        CarpetaExamenSocioeconomicoPrevioInline,
         ResultadosInline,
+        DocumentosDigitalesPrevioInline,
     ]
 
     def nombre_completo(self, obj):
@@ -695,3 +675,10 @@ class PaqueteCapacitacionAdmin(admin.ModelAdmin):
 class ReportAuthenticityAdmin(admin.ModelAdmin):
     list_display = ('id', 'authenticity_chain', 'report_name', 'content', 'created_at')
     search_fields = ['authenticity_chain', 'report_name', 'created_at']
+
+
+@admin.register(Historial)
+class HistorialAdmin(admin.ModelAdmin):
+    list_display = ('id', 'timestamp', 'user', 'action', 'model', 'object_id', 'change', 'ip_address', 'user_agent')
+    search_fields = ['user', 'model', 'timestamp',]
+    readonly_fields = ('id', 'timestamp', 'user', 'action', 'model', 'object_id', 'change', 'ip_address', 'user_agent')

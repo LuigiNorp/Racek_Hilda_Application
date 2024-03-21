@@ -58,7 +58,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'dal',
     'dal_select2',
-    # 'import_export',
+    'import_export',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
@@ -71,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'data.middleware.CurrentUserMiddleware',
 ]
 
 ROOT_URLCONF = 'hildaApp.urls'

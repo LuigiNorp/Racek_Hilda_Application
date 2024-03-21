@@ -9,3 +9,5 @@ data/management/commands/migrations/*[0-9]*[a-zA-Z]*.py
 /db.sqlite3-data
 /Pipfile
 /Pipfile.lock
+/data/signals.py
+/data/middleware.py
