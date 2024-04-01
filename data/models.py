@@ -86,9 +86,9 @@ class Cliente(models.Model):
 
 
 class Sede(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     clave_sede = models.CharField(max_length=6, blank=True, null=True)
     nombre_sede = models.CharField(max_length=100, blank=True, null=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.clave_sede}: {self.nombre_sede}'
@@ -116,14 +116,10 @@ class CarpetaClienteGenerales(models.Model):
     reg_estatal = models.CharField(max_length=30, null=True, blank=True)
     reg_federal = models.CharField(max_length=30, null=True, blank=True)
     rfc = models.CharField(max_length=13, null=True, blank=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     representante_legal = models.CharField(max_length=300, null=True, blank=True)
     encargado_operativo = models.CharField(max_length=300, null=True, blank=True)
     encargado_rh = models.CharField(max_length=300, null=True, blank=True)
@@ -152,12 +148,9 @@ class CarpetaClienteGenerales(models.Model):
 class CarpetaClientePagos(models.Model):
     cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     encargado_pagos = models.CharField(max_length=150, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_oficina = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_oficina = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
     email = models.CharField(max_length=200, blank=True, null=True)
     rfc = models.CharField(max_length=13, blank=True, null=True)
     facturacion_tipo = models.PositiveSmallIntegerField(choices=FACTURACION_TIPO, null=True, blank=True)
@@ -188,14 +181,10 @@ class CarpetaClientePagos(models.Model):
 class CarpetaClienteContactos(models.Model):
     cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE)
     nombre_contacto = models.CharField(max_length=300)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                  help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_1 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_2 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_3 = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     puesto = models.CharField(max_length=30, null=True, blank=True)
     email_1 = models.CharField(max_length=200, null=True, blank=True)
     email_2 = models.CharField(max_length=200, null=True, blank=True)
@@ -466,7 +455,7 @@ class CarpetaLaboral(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
     modalidad = models.PositiveSmallIntegerField(choices=MODALIDAD, null=True, blank=True)
     estatus_empleado = models.PositiveSmallIntegerField(choices=ESTATUS_EMPLEADO, null=True, blank=True)
-    proceso_racek = models.PositiveSmallIntegerField(choices=PROCESO_RACEK, null=True, blank=True)
+    proceso_racek = models.PositiveSmallIntegerField(choices=PROCESO_RACEK, null=True, blank=True, default=5)
     fecha_atencion = models.DateField(null=True, blank=True)
     reingreso = models.BooleanField(default=False, null=True, blank=True)
     inicio_labores = models.DateField(null=True, blank=True)
@@ -551,14 +540,10 @@ class CarpetaLaboral(models.Model):
 class CarpetaGenerales(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
     email_empleado = models.CharField(max_length=200, null=True, blank=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_domicilio = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                          help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
-    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_domicilio = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_celular = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     numero_elemento = models.PositiveIntegerField(null=True, blank=True)
     transporte = models.CharField(max_length=50, null=True, blank=True)
     tiempo_trayecto = models.CharField(max_length=15, blank=True, null=True)
@@ -668,8 +653,7 @@ class CarpetaExamenPsicologico(models.Model):
     compromiso = models.PositiveSmallIntegerField(choices=OPCIONES_PSICOLOGICO, null=True, blank=True)
     habilidades_laborales = models.PositiveSmallIntegerField(choices=OPCIONES_PSICOLOGICO, null=True, blank=True)
     resultado_psicologico = models.PositiveSmallIntegerField(choices=RESULTADO_PSICOLOGICO, null=True, blank=True)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,
-                                                           null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -704,8 +688,7 @@ class CarpetaExamenToxicologico(models.Model):
     barbituricos = models.BooleanField(blank=True, default=False)
     benzodiacepinas = models.BooleanField(blank=True, default=False)
     resultado_toxicologico = models.BooleanField(blank=True, default=False)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADO_TOXICOLOGICO_ASPIRANTE, blank=True,
-                                                           null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADO_TOXICOLOGICO_ASPIRANTE, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -792,8 +775,7 @@ class CarpetaExamenMedico(models.Model):
     ishihara_tritanopia = models.CharField(max_length=30, blank=True, null=True, default="")
     ishihara_acromatopsia = models.CharField(max_length=30, blank=True, null=True)
     ishihara_resultado = models.CharField(max_length=100, blank=True, null=True)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,
-                                                           null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,null=True)
     observacion = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -843,23 +825,15 @@ class CarpetaExamenFisico(models.Model):
     """
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE)
     fecha_examen = models.DateField(null=True, blank=True)
-    elasticidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                              default=0)
-    velocidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                            default=0)
-    resistencia = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                              default=0)
-    condicion_fisica = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                                   default=0)
-    reflejos = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                           default=0)
-    locomocion = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                             default=0)
-    prueba_esfuerzo = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True,
-                                                  default=0)
+    elasticidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    velocidad = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    resistencia = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    condicion_fisica = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    reflejos = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    locomocion = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
+    prueba_esfuerzo = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], blank=True, default=0)
     resultado = models.CharField(max_length=100, blank=True, null=True)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,
-                                                           null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -943,10 +917,8 @@ class CarpetaExamenSocioeconomico(models.Model):
     ultima_vez_enfermo = models.CharField(max_length=100, blank=True, null=True)
     embarazada = models.CharField(max_length=100, blank=True, null=True)
     contacto_emergencia = models.CharField(max_length=100, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_emergencia = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True,
-                                           help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_emergencia = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
     parentesco_emergencia = models.CharField(max_length=100, blank=True, null=True)
     actividates_fin_semana = models.PositiveSmallIntegerField(choices=ACTIVIDADES_FIN_SEMANA, blank=True, null=True)
     actividades_culturales_deportes = models.CharField(max_length=100, blank=True, null=True)
@@ -986,11 +958,9 @@ class CarpetaExamenSocioeconomico(models.Model):
     gasto = models.CharField(max_length=20, blank=True, null=True)
     nombre_recados = models.CharField(max_length=300, blank=True, null=True)
     parentesco = models.CharField(max_length=30, blank=True, null=True)
-    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True,
-                                        help_text='Ingrese número telefónico a 10 dígitos')
+    telefono_recados = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, null=True, help_text='Ingrese número telefónico a 10 dígitos')
     comentario = models.CharField(max_length=300, blank=True, null=True)
-    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True,
-                                                           null=True)
+    resultado_aspirante = models.PositiveSmallIntegerField(choices=RESULTADOS_COMPLETOS_ASPIRANTES, blank=True, null=True)
     comentarios_generales = models.TextField(blank=True, null=True)
 
     fieldsets = (
@@ -1111,9 +1081,7 @@ class CarpetaExamenSocioeconomico(models.Model):
         return self.total_egresos
 
     def calculate_total_incomes(self):
-        total_importe_familiar = sum([familiar.datosfamiliar.importe_familiar for familiar in
-                                      EstructuraFamiliar.objects.filter(carpeta_examen_socioeconomico=self) if
-                                      familiar.datosfamiliar is not None])
+        total_importe_familiar = sum([familiar.datosfamiliar.importe_familiar for familiar in EstructuraFamiliar.objects.filter(carpeta_examen_socioeconomico=self) if familiar.datosfamiliar is not None])
         self.total_ingresos = total_importe_familiar + self.importe_interesado
 
     def calculate_total_expenses(self):
@@ -1240,10 +1208,8 @@ class Referencia(models.Model):
     tiempo_de_conocerse = models.CharField(max_length=30, null=True, blank=True)
     direccion = models.CharField(max_length=100, null=True, blank=True)
     codigo_postal = models.CharField(max_length=5, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono_contacto = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                         help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono_contacto = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     opinion = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -1355,10 +1321,8 @@ class EmpleoAnteriorSeguridadPublica(models.Model):
     direccion = models.CharField(max_length=150, blank=True, null=True)
     numero_exterior = models.CharField(max_length=20, blank=True, null=True)
     numero_interior = models.CharField(max_length=20, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     fecha_ingreso = models.DateField(blank=True, null=True)
     fecha_separacion = models.DateField(blank=True, null=True)
     funciones = models.CharField(max_length=100, blank=True, null=True)
@@ -1406,10 +1370,8 @@ class EmpleoAnteriorSeguridadPublica(models.Model):
 class EmpleoAnterior(models.Model):
     personal = models.ForeignKey(Personal, on_delete=models.CASCADE)
     empresa = models.CharField(max_length=100, blank=True, null=True)
-    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$',
-                                            message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
-    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True,
-                                help_text='Ingrese número telefónico a 10 dígitos')
+    validador_num_telefono = RegexValidator(regex=r'^\+?1?\d{9,10}$', message='El número telefónico debe ser ingresado de la siguiente manera: "5512345678". Limitado a 10 dígitos.')
+    telefono = models.CharField(validators=[validador_num_telefono], max_length=17, blank=True, help_text='Ingrese número telefónico a 10 dígitos')
     fecha_ingreso = models.DateField(blank=True, null=True)
     fecha_separacion = models.DateField(blank=True, null=True)
     salario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
@@ -1420,8 +1382,7 @@ class EmpleoAnterior(models.Model):
     puesto_jefe_inmediato = models.CharField(max_length=50, blank=True, null=True)
     informante = models.CharField(max_length=300, blank=True, null=True)
     puesto_informante = models.CharField(max_length=50, blank=True, null=True)
-    desempenio = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True,
-                                                  verbose_name='desempeño')
+    desempenio = models.PositiveSmallIntegerField(choices=CALIF_BUENO_MALO, blank=True, null=True, verbose_name='desempeño')
     observaciones = models.TextField(blank=True, null=True)
     motivo_separacion = models.OneToOneField(MotivoSeparacion, on_delete=models.RESTRICT, null=True, blank=True)
 
@@ -1468,8 +1429,7 @@ class Instructor(models.Model):
 
 
 class Capacitacion(models.Model):
-    personal = models.ForeignKey(Personal, on_delete=models.RESTRICT, null=True, blank=True,
-                                 related_name='capacitaciones')
+    personal = models.ForeignKey(Personal, on_delete=models.RESTRICT, null=True, blank=True, related_name='capacitaciones')
     fecha_constancia = models.DateField(blank=True, null=True)
     paq_capacitacion = models.ForeignKey(PaqueteCapacitacion, null=True, blank=True, on_delete=models.RESTRICT)
     institucion_empresa = models.CharField(max_length=100, blank=True, null=True)
@@ -1528,15 +1488,11 @@ class RepresentanteTrabajadores(models.Model):
 
 class Domicilio(models.Model):
     personal = models.OneToOneField(Personal, on_delete=models.CASCADE, blank=True, null=True, editable=False)
-    carpeta_cliente_generales = models.OneToOneField(CarpetaClienteGenerales, on_delete=models.CASCADE, blank=True,
-                                                     null=True, editable=False)
-    carpeta_cliente_pagos = models.OneToOneField(CarpetaClientePagos, on_delete=models.CASCADE, blank=True, null=True,
-                                                 editable=False)
+    carpeta_cliente_generales = models.OneToOneField(CarpetaClienteGenerales, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    carpeta_cliente_pagos = models.OneToOneField(CarpetaClientePagos, on_delete=models.CASCADE, blank=True, null=True, editable=False)
     referencia = models.OneToOneField(Referencia, on_delete=models.CASCADE, blank=True, null=True, editable=False)
-    empleo_anterior_sp = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE, blank=True,
-                                              null=True, editable=False)
-    empleo_anterior = models.OneToOneField(EmpleoAnterior, on_delete=models.CASCADE, blank=True, null=True,
-                                           editable=False)
+    empleo_anterior_sp = models.OneToOneField(EmpleoAnteriorSeguridadPublica, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    empleo_anterior = models.OneToOneField(EmpleoAnterior, on_delete=models.CASCADE, blank=True, null=True, editable=False)
     calle = models.CharField(max_length=100, blank=True, null=True)
     numero_exterior = models.CharField(max_length=20, default='S/N', blank=True, null=True)
     numero_interior = models.CharField(max_length=20, blank=True, null=True)
@@ -1621,19 +1577,16 @@ class CarpetaMediaFiliacion(models.Model):
     cejas_direccion = models.PositiveSmallIntegerField(choices=CEJAS_DIRECCION, null=True, blank=True)
     cejas_implantacion = models.PositiveSmallIntegerField(choices=CEJAS_IMPLANTACION, null=True, blank=True)
     cejas_forma = models.PositiveSmallIntegerField(choices=CEJAS_FORMA, null=True, blank=True)
-    cejas_tamanio = models.PositiveSmallIntegerField(choices=CEJAS_TAMANIO, null=True, blank=True,
-                                                     verbose_name='Cejas tamaño')
+    cejas_tamanio = models.PositiveSmallIntegerField(choices=CEJAS_TAMANIO, null=True, blank=True, verbose_name='Cejas tamaño')
     ojos_color = models.PositiveSmallIntegerField(choices=OJOS_COLOR, null=True, blank=True)
     ojos_forma = models.PositiveSmallIntegerField(choices=OJOS_FORMA, null=True, blank=True)
-    ojos_tamanio = models.PositiveSmallIntegerField(choices=OJOS_TAMANIO, null=True, blank=True,
-                                                    verbose_name='Ojos tamaño')
+    ojos_tamanio = models.PositiveSmallIntegerField(choices=OJOS_TAMANIO, null=True, blank=True, verbose_name='Ojos tamaño')
     ojos_raiz = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
     nariz_dorso = models.PositiveSmallIntegerField(choices=NARIZ_DORSO, null=True, blank=True)
     nariz_ancho = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
     nariz_base = models.PositiveSmallIntegerField(choices=NARIZ_BASE, null=True, blank=True)
     nariz_altura = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
-    boca_tamanio = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True,
-                                                    verbose_name='Boca tamaño')
+    boca_tamanio = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True, verbose_name='Boca tamaño')
     boca_comisuras = models.PositiveSmallIntegerField(choices=BOCA_COMISURAS, null=True, blank=True)
     labios_espesor = models.PositiveSmallIntegerField(choices=LABIOS_ESPESOR, null=True, blank=True)
     altura_nasolabial = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
@@ -1645,25 +1598,18 @@ class CarpetaMediaFiliacion(models.Model):
     oreja_derecha_original = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
     oreja_derecha_helix_superior = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
     oreja_derecha_helix_posterior = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
-    oreja_derecha_helix_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, null=True,
-                                                                      blank=True)
-    oreja_derecha_helix_contorno = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_HELIX_CONTORNO, null=True,
-                                                                    blank=True)
-    oreja_derecha_lobulo_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, null=True,
-                                                                       blank=True)
-    oreja_derecha_lobulo_particularidad = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_LOBULO_PARTICULARIDAD,
-                                                                           null=True, blank=True)
+    oreja_derecha_helix_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, null=True, blank=True)
+    oreja_derecha_helix_contorno = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_HELIX_CONTORNO, null=True, blank=True)
+    oreja_derecha_lobulo_adherencia = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_ADHERENCIA, null=True, blank=True)
+    oreja_derecha_lobulo_particularidad = models.PositiveSmallIntegerField(choices=OREJA_DERECHA_LOBULO_PARTICULARIDAD, null=True, blank=True)
     oreja_derecha_lobulo_dimension = models.PositiveSmallIntegerField(choices=TAMANIOS_GMP, null=True, blank=True)
     sangre = models.PositiveSmallIntegerField(choices=SANGRE, null=True, blank=True)
     rh = models.PositiveSmallIntegerField(choices=RH, null=True, blank=True)
     anteojos = models.BooleanField(default=False, null=True, blank=True)
-    estatura = models.PositiveIntegerField(null=True, blank=True, verbose_name='Estatura (cm)',
-                                           help_text='Ingrese estatura en centímetros', default=None)
-    peso = models.PositiveIntegerField(null=True, blank=True, verbose_name='Peso (kg)',
-                                       help_text='Ingrese peso en kilogramos', default=None)
+    estatura = models.PositiveIntegerField(null=True, blank=True, verbose_name='Estatura (cm)', help_text='Ingrese estatura en centímetros', default=None)
+    peso = models.PositiveIntegerField(null=True, blank=True, verbose_name='Peso (kg)', help_text='Ingrese peso en kilogramos', default=None)
     indice_masa_corporal = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, editable=True)
-    clasificacion_imc = models.PositiveSmallIntegerField(choices=CLASIFICACION_IMC, blank=True, null=True,
-                                                         editable=True)
+    clasificacion_imc = models.PositiveSmallIntegerField(choices=CLASIFICACION_IMC, blank=True, null=True, editable=True)
     alergias = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
@@ -1796,8 +1742,7 @@ class DocumentosDigitales(models.Model):
             existing_instance = DocumentosDigitales.objects.get(pk=self.pk)
 
             # Iterate through each file field
-            for field_name in [f.name for f in DocumentosDigitales._meta.get_fields() if
-                               isinstance(f, (models.FileField, models.ImageField))]:
+            for field_name in [f.name for f in DocumentosDigitales._meta.get_fields() if isinstance(f, (models.FileField, models.ImageField))]:
                 old_file = getattr(existing_instance, field_name)
                 new_file = getattr(self, field_name)
 
@@ -1835,6 +1780,46 @@ class ReportAuthenticity(models.Model):
     class Meta:
         verbose_name = 'Reporte Autenticidad'
         verbose_name_plural = 'Reportes Autenticidad'
+
+
+class ImportarExportar(models.Model):
+    archivo_csv = models.FileField(upload_to='temporal/imports', blank=True, null=True)
+
+    def __str__(self):
+        return 'Import/Export'
+
+    def save(self, *args, **kwargs):
+        from data.import_export.imports import DataImporter
+
+        csv_fields = [
+            'Cliente_nombre_comercial', 'Cliente_razon_social', 'Cliente_activo',
+            'CarpetaClienteContactos_nombre_contacto', 'CarpetaClienteContactos_telefono_1',
+            'CarpetaClienteContactos_telefono_2', 'CarpetaClienteContactos_puesto',
+            'CarpetaClienteContactos_email_1', 'RepresentanteTrabajadores_nombre_completo',
+            'CarpetaClienteGenerales_rfc', 'CarpetaClienteGenerales_telefono_1',
+            'CarpetaClienteGenerales_telefono_2', 'CarpetaClienteGenerales_representante_legal',
+            'Personal_folio', 'Personal_origen', 'Personal_fecha', 'Personal_es_empleado',
+            'Domicilio_calle', 'Domicilio_numero_exterior', 'Domicilio_numero_interior',
+            'Domicilio_codigo_postal', 'CodigoPostal_asentamiento', 'Curp_curp', 'Curp_nombre',
+            'Curp_apellido_paterno', 'Curp_apellido_materno', 'Curp_iniciales',
+            'Curp_fecha_nacimiento', 'Curp_edad', 'Curp_sexo', 'Curp_municipio_registro',
+            'Curp_entidad_registro', 'Rfc_rfc', 'Rfc_razon_social', 'CarpetaLaboral_modalidad',
+            'CarpetaLaboral_proceso_racek', 'CarpetaLaboral_puesto', 'Ocupacion_ocupacion',
+            'CarpetaGenerales_telefono_domicilio', 'CarpetaGenerales_telefono_celular',
+            'CarpetaGenerales_estado_civil', 'CarpetaGenerales_estado_cartilla',
+            'CarpetaGenerales_clave_cartilla', 'CarpetaGenerales_clave_ine',
+            'CarpetaGenerales_folio', 'CarpetaGenerales_nss', 'CarpetaGenerales_escolaridad',
+            'Evaluador_solicitante', 'Resultado_resultado', 'Resultado_observaciones'
+        ]
+
+        super().save(*args, **kwargs)
+        data_importer = DataImporter(csv_fields)
+        data_importer.import_data_from_csv(self.archivo_csv)
+        self.archivo_csv.delete(save=True)
+
+    class Meta:
+        verbose_name = 'Importar/Exportar'
+        verbose_name_plural = 'Importar/Exportar'
 
 
 class Historial(models.Model):

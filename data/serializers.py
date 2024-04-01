@@ -240,6 +240,5 @@ DocumentosDigitalesPrevioSerializer = create_serializer(
     ]
 )
 RepresentanteTrabajadoresSerializer = create_serializer(RepresentanteTrabajadores)
-CapacitacionClienteSerializer = create_serializer(PaqueteCapacitacion)
 DomicilioSerializer = create_serializer(Domicilio)
 CodigoPostalSerializer = create_serializer(CodigoPostal)

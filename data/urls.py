@@ -1,7 +1,6 @@
-# myapp/urls.py
 from django.urls import path
-from .views import import_data
+from . import views
 
 urlpatterns = [
-    path('import/', import_data, name='import'),
+    path('download-imports-template/', views.download_csv_template, name='download_import_template'),
 ]

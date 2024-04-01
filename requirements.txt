@@ -6,7 +6,6 @@ django-cors-headers~=4.3.1
 django-db-multitenant~=0.3.2
 django-environ~=0.11.2
 django-extensions~=3.2.3
-django-import-export~=4.0.0b2
 django-model-utils~=4.3.1
 django-nested-admin~=4.0.2
 django-toggle-switch-widget~=0.1.3

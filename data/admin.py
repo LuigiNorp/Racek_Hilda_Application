@@ -24,7 +24,6 @@ from .actions import (
 )
 from django import forms
 from django.contrib import admin
-from import_export.admin import ImportExportModelAdmin
 
 
 # Register your models here.
@@ -32,34 +31,7 @@ class DomicilioInline(NestedStackedInline):
     model = Domicilio
     extra = 0
     autocomplete_fields = ['codigo_postal']
-
-    # Hide Domicilio when is not used (the get_fields is necessary)
-    def get_fields(self, request, obj=None):
-        fields = super().get_fields(request, obj)
-        has_related_instance = False
-
-        if obj:
-            related_fields = {
-                'referencia': 'referencia',
-                'carpeta_cliente_generales': 'carpeta_cliente_generales',
-                'carpeta_cliente_pagos': 'carpeta_cliente_pagos',
-                'personal': 'personal',
-                'empleo_anterior_sp': 'empleo_anterior_sp',
-                'empleo_anterior': 'empleo_anterior'
-            }
-
-            # Rompe el bucle tan pronto como se encuentre una instancia relacionada
-            for field, field_name in related_fields.items():
-                if hasattr(obj, field_name):
-                    fields = [field_name]
-                    has_related_instance = True
-                    break
-
-            # Configura extra en función de si existe una instancia
-            # relacionada con alguno de los campos especificados
-            self.extra = 1 if has_related_instance else 0
-
-        return fields
+    search_fields = ['codigo_postal']
 
 
 class DocumentosClienteInline(NestedStackedInline):
@@ -99,7 +71,7 @@ class PaqueteCapacitacionInline(NestedStackedInline):
 
 
 @admin.register(Cliente)
-class ClienteAdmin(NestedModelAdmin, ImportExportModelAdmin):
+class ClienteAdmin(NestedModelAdmin):
     list_display = ('id', 'nombre_comercial', 'razon_social', 'activo',)
     inlines = [
         DocumentosClienteInline,
@@ -675,6 +647,11 @@ class PaqueteCapacitacionAdmin(admin.ModelAdmin):
 class ReportAuthenticityAdmin(admin.ModelAdmin):
     list_display = ('id', 'authenticity_chain', 'report_name', 'content', 'created_at')
     search_fields = ['authenticity_chain', 'report_name', 'created_at']
+
+
+@admin.register(ImportarExportar)
+class ImportarExportarAdmin(admin.ModelAdmin):
+    list_display = ('archivo_csv',)
 
 
 @admin.register(Historial)
