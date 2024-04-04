@@ -1,6 +1,6 @@
 Babel~=2.14.0
 beautifulsoup4~=4.12.3
-Django~=5.0.4
+Django~=4.2
 django-autocomplete-light~=3.11.0rc1
 django-cors-headers~=4.3.1
 django-db-multitenant~=0.3.2
@@ -16,7 +16,7 @@ gunicorn~=21.2.0
 lxml~=5.1.0
 mysqlclient~=2.2.1
 numpy~=1.26.3
-openpyxl~=3.2.0b1
+openpyxl~=3.1.2
 pandas~=2.2.0rc0
 pillow~=10.2.0
 pygraphviz~=1.12
