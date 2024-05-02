@@ -1789,33 +1789,20 @@ class ImportarExportar(models.Model):
         return 'Import/Export'
 
     def save(self, *args, **kwargs):
-        from data.import_export.imports import DataImporter
+        from data.import_export.imports import CSVImporter
 
-        csv_fields = [
-            'Cliente_nombre_comercial', 'Cliente_razon_social', 'Cliente_activo',
-            'CarpetaClienteContactos_nombre_contacto', 'CarpetaClienteContactos_telefono_1',
-            'CarpetaClienteContactos_telefono_2', 'CarpetaClienteContactos_puesto',
-            'CarpetaClienteContactos_email_1', 'RepresentanteTrabajadores_nombre_completo',
-            'CarpetaClienteGenerales_rfc', 'CarpetaClienteGenerales_telefono_1',
-            'CarpetaClienteGenerales_telefono_2', 'CarpetaClienteGenerales_representante_legal',
-            'Personal_folio', 'Personal_origen', 'Personal_fecha', 'Personal_es_empleado',
-            'Domicilio_calle', 'Domicilio_numero_exterior', 'Domicilio_numero_interior',
-            'Domicilio_codigo_postal', 'CodigoPostal_asentamiento', 'Curp_curp', 'Curp_nombre',
-            'Curp_apellido_paterno', 'Curp_apellido_materno', 'Curp_iniciales',
-            'Curp_fecha_nacimiento', 'Curp_edad', 'Curp_sexo', 'Curp_municipio_registro',
-            'Curp_entidad_registro', 'Rfc_rfc', 'Rfc_razon_social', 'CarpetaLaboral_modalidad',
-            'CarpetaLaboral_proceso_racek', 'CarpetaLaboral_puesto', 'Ocupacion_ocupacion',
-            'CarpetaGenerales_telefono_domicilio', 'CarpetaGenerales_telefono_celular',
-            'CarpetaGenerales_estado_civil', 'CarpetaGenerales_estado_cartilla',
-            'CarpetaGenerales_clave_cartilla', 'CarpetaGenerales_clave_ine',
-            'CarpetaGenerales_folio', 'CarpetaGenerales_nss', 'CarpetaGenerales_escolaridad',
-            'Evaluador_solicitante', 'Resultado_resultado', 'Resultado_observaciones'
-        ]
+        super().save(*args, **kwargs)  # Guardamos el modelo primero
 
-        super().save(*args, **kwargs)
-        data_importer = DataImporter(csv_fields)
-        data_importer.import_data_from_csv(self.archivo_csv)
-        self.archivo_csv.delete(save=True)
+        if self.archivo_csv:
+            loader = CSVImporter(self.archivo_csv.path)
+            loader.import_data_from_csv()
+
+            # Borramos el archivo CSV después de importar los datos
+            if os.path.isfile(self.archivo_csv.path):
+                os.remove(self.archivo_csv.path)
+
+            # Borramos el objeto ImportarExportar
+            self.delete()
 
     class Meta:
         verbose_name = 'Importar/Exportar'

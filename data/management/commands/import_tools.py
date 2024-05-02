@@ -2,14 +2,14 @@ import hashlib
 from django.db import connections
 
 
-def calculate_checksum(file_path):
+def calculate_checksum(file_path: str) -> str:
     with open(file_path, 'rb') as f:
         data = f.read()
         checksum = hashlib.sha256(data).hexdigest()
     return checksum
 
 
-def calculate_checksum_sql(django_dbname: str, query):
+def calculate_checksum_sql(django_dbname: str, query) -> str:
     connection = connections[django_dbname]
     with connection.cursor() as cursor:
         cursor.execute(query)

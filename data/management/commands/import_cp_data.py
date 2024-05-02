@@ -27,12 +27,12 @@ class Command(BaseCommand):
 
         # Handle CodigoPostal data import
         if not sql_checksum or sql_checksum < csv_checksum:
-            self.import_or_update_codigospostales('media/file_templates/cp.csv')
+            self.__import_or_update_codigospostales('media/file_templates/cp.csv')
             self.stdout.write(self.style.SUCCESS('CodigoPostal data import completed successfully'))
         else:
             self.stdout.write(self.style.SUCCESS('CodigoPostal data is up to date'))
 
-    def import_or_update_codigospostales(self, file_path):
+    def __import_or_update_codigospostales(self, file_path):
         codigopostal_database = set(CodigoPostal.objects.values_list('codigo_postal', flat=True))
         objects = []
         df = pd.read_csv(file_path)

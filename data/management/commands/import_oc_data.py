@@ -24,12 +24,12 @@ class Command(BaseCommand):
 
 		# Handle Ocupaciones data import
 		if sql_checksum is None or csv_checksum > sql_checksum:
-			self.import_or_update_ocupaciones('media/file_templates/ocupaciones.csv')
+			self.__import_or_update_ocupaciones('media/file_templates/ocupaciones.csv')
 			self.stdout.write(self.style.SUCCESS('Ocupaciones data import completed successfully'))
 		else:
 			self.stdout.write(self.style.SUCCESS('Ocupaciones data is up to date'))
 
-	def import_or_update_ocupaciones(self, file_path):
+	def __import_or_update_ocupaciones(self, file_path):
 		ocupacion_database = set(Ocupacion.objects.values_list('clave_subarea', flat=True))
 		objects = []
 		df = pd.read_csv(file_path)
