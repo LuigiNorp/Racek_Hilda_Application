@@ -117,7 +117,7 @@ class CSVImporter:
             setattr(client, field, value)
         client.save()
 
-    def create_grandparent_model_instances(self, data: any) -> object:
+    def __create_grandparent_model_instances(self, data: any) -> object:
         client_data = data.get('Cliente')
         if client_data:
             client_data_dict = self.__convert_model_data_to_dict(client_data)
