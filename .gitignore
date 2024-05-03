@@ -207,3 +207,4 @@ main/temp.py
 /Pipfile.lock
 /data/signals.py
 /data/middleware.py
+/media/temporal/

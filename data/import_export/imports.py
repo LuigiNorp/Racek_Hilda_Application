@@ -99,19 +99,30 @@ class CSVImporter:
             self.__extract_data_from_row(row_content, headers, row_num)
 
     @staticmethod
-    def __create_grandparent_model_instances(data: any) -> object:
-        cliente_data = data.get('Cliente')
-        if cliente_data:
-            # Convertir la lista de diccionarios en un solo diccionario
-            cliente_data_dict = {k: v for d in cliente_data for k, v in d.items()}
-            # Obtener o crear la instancia de Cliente
-            cliente, created = Cliente.objects.get_or_create(nombre_comercial=cliente_data_dict.get('nombre_comercial'), defaults=cliente_data_dict)
-            if not created:
-                # Si la instancia ya existía, actualizar los campos
-                for field, value in cliente_data_dict.items():
-                    setattr(cliente, field, value)
-                cliente.save()
-            return cliente
+    def __convert_model_data_to_dict(data: list) -> dict:
+        # Convertir la lista de diccionarios en un solo diccionario
+        return {k: v for d in data for k, v in d.items()}
+
+    def __get_or_create_client(self, data_dict: dict) -> object:
+        # Obtener o crear la instancia de Cliente
+        client, created = Cliente.objects.get_or_create(nombre_comercial=data_dict.get('nombre_comercial'), defaults=data_dict)
+        if not created:
+            # Si la instancia ya existía, actualizar los campos
+            self.__update_client_fields(client, data_dict)
+        return client
+
+    @staticmethod
+    def __update_client_fields(client: object, data_dict: dict) -> None:
+        for field, value in data_dict.items():
+            setattr(client, field, value)
+        client.save()
+
+    def create_grandparent_model_instances(self, data: any) -> object:
+        client_data = data.get('Cliente')
+        if client_data:
+            client_data_dict = self.__convert_model_data_to_dict(client_data)
+            client = self.__get_or_create_client(client_data_dict)
+            return client
         return None
 
     def __create_parent_models_instances(self, model_data, grandparent_instance):
