@@ -10,16 +10,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Calculate checksums for CSV and SQL data
         query_for_codigpostal_checksum = '''
-            SELECT SHA256(GROUP_CONCAT(
-                codigo_postal || ',' ||
-                tipo_asentamiento || ',' ||
-                asentamiento || ',' ||
-                municipio || ',' ||
-                estado || ',' ||
-                ciudad || ',' ||
-                pais
-            )) AS data_checksum
-            FROM data_codigopostal
+            SELECT SHA2(GROUP_CONCAT(
+            codigo_postal || ',' ||
+            tipo_asentamiento || ',' ||
+            asentamiento || ',' ||
+            municipio || ',' ||
+            estado || ',' ||
+            ciudad || ',' ||
+            pais
+        ), 256) AS data_checksum
+        FROM data_codigopostal
         '''
 
         csv_checksum = calculate_checksum('media/file_templates/cp.csv')
