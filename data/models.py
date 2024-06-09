@@ -40,7 +40,7 @@ def get_upload_path(instance, filename):
 class CodigoPostal(models.Model):
     codigo_postal = models.CharField(max_length=5, blank=True, null=True)
     tipo_asentamiento = models.CharField(max_length=50, blank=True, null=True)
-    asentamiento = models.CharField(max_length=100, blank=True, null=True)
+    asentamiento = models.CharField(max_length=200, blank=True, null=True)
     municipio = models.CharField(max_length=100, blank=True, null=True)
     estado = models.CharField(max_length=50, blank=True, null=True)
     ciudad = models.CharField(max_length=100, blank=True, null=True)
