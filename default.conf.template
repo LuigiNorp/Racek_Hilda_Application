@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name 10.0.0.0 192.168.0.100 10.1.0.0 spgestor.racekcdmx.com www.spgestor.racekcdmx.com;
+    server_name 10.0.0.0 192.168.0.200 10.1.0.0 spgestor.racekcdmx.com www.spgestor.racekcdmx.com;
     location / {
         proxy_pass http://app:8000;
         proxy_set_header Host $host;
@@ -8,8 +8,9 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
         # Add CORS headers
+        add_header 'Access-Control-Allow-Origin' 'http://10.1.0.0:20001' always;
         add_header 'Access-Control-Allow-Origin' 'http://10.0.0.0:20001' always;
-        add_header 'Access-Control-Allow-Origin' 'http://192.168.0.100:20001' always;
+        add_header 'Access-Control-Allow-Origin' 'http://192.168.0.200:20001' always;
         add_header 'Access-Control-Allow-Origin' 'http://spgestor.racekcdmx.com' always;
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
         add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
