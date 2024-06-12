@@ -1,11 +1,8 @@
+from main.reports.report_contants import default_data
+from main.reports.report_tools import *
+from babel.dates import format_date
 import uuid
-from PyPDF2 import PdfReader, PdfWriter
 from openpyxl import load_workbook
-from openpyxl.drawing.image import Image as XlsxImage
-from openpyxl.worksheet.page import PageMargins
-from PIL import Image as PilImage
-import subprocess
-from unidecode import unidecode
 from django.http import FileResponse, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.views import APIView
@@ -20,50 +17,7 @@ from django.core.cache import cache
 from django.db.models import Q
 from dal import autocomplete
 from main.forms import *
-
-
-def keep_first_page(pdf_path):
-    # Open the PDF file
-    reader = PdfReader(pdf_path)
-
-    # Create a new PDF writer
-    writer = PdfWriter()
-
-    # Add the first page to the writer
-    writer.add_page(reader.pages[0])
-
-    # Write the output to a new file
-    with open(pdf_path, 'wb') as output_file:
-        writer.write(output_file)
-
-
-def verify_data(personal, datos):
-    result = {}
-    for key, function in datos.items():
-        try:
-            result[key] = function(personal)
-        except AttributeError:
-            result[key] = None
-        except ValueError:
-            result[key] = 'Invalid value'
-    return result
-
-
-def scale_image_from_height(image_path, desired_height_cm):
-    # Load the image with PIL to get its size
-    with PilImage.open(image_path) as pil_img:
-        original_width, original_height = pil_img.size
-
-    # Convert the height from cm to pixels and set the height of the image
-    dpi = 96
-    cm_to_pixels = lambda cm: int(dpi * cm / 2.54)  # convert cm to pixels
-    desired_height_px = cm_to_pixels(desired_height_cm)
-
-    # Calculate the new width to maintain aspect ratio
-    scale_factor = desired_height_px / original_height
-    desired_width_px = int(original_width * scale_factor)
-
-    return desired_width_px, desired_height_px
+from datetime import date
 
 
 # Create your views here.
@@ -407,7 +361,7 @@ class CodigoPostalAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         qs = CodigoPostal.objects.all()
         if self.q:
-            qs = qs.filter(zip_code__istartswith=self.q)
+            qs = qs.filter(codigo_postal__istartswith=self.q)
         return qs
 
 
@@ -427,119 +381,698 @@ class RfcAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
-def remove_accents(text):
-    # Use unidecode to remove accents and replace special characters
-    return unidecode(text)
+class OcupacionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Ocupacion.objects.all()
+        if self.q:
+            qs = qs.filter(clave_subarea__istartswith=self.q)
+        return qs
 
 
+class PaqueteCapacitacionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = PaqueteCapacitacion.objects.all()
+        if self.q:
+            qs = qs.filter(fecha_realizacion__istartswith=self.q)
+        return qs
+
+
+# Report views
 class GenerateDC3View(View):
-    @staticmethod
-    def add_image_to_worksheet(image_path, cell, activesheet, width, height):
-        # Load and add the image with openpyxl
-        img = XlsxImage(image_path)
-        img.width = width
-        img.height = height
-
-        # Add image to the specified cell
-        activesheet.add_image(img, cell)
-    
-    @staticmethod
-    def convert_xlsx_to_pdf(xlsx_path, pdf_path):
-        convertion_command = f"libreoffice --headless --convert-to pdf:writer_pdf_Export --outdir {os.path.dirname(pdf_path)} {xlsx_path}"
-        subprocess.run(convertion_command, shell=True)
-        return pdf_path
-
-    def get(self, personal_id, request, queryset, desired_height_cm=3.5):
-        original_file_path = "./media/file_templates/DC3 ACTUALIZADO.xlsx"
+    def get(self, personal_id: int, request: any, queryset: any, desired_height_cm=3.5):
+        original_file_path = 'media/file_templates/DC3 ACTUALIZADO.xlsx'
         modified_xlsx_path = 'media/file_templates/modified_dc3.xlsx'
-
         wb = load_workbook(original_file_path)
         sheet = wb.active
-        sheet.page_setup.paperSize = sheet.PAPERSIZE_LETTER
-        sheet.page_margins = PageMargins(
-            top=0.2,
-            left=0.25,
-            right=0.01,
-            header=0.1,
-            footer=0.1,
-            bottom=0.2
-        )
 
-        dc3_needed_data = {
-            'nombre_completo': lambda p: p.curp.get_nombre_completo(),
-            'curp': lambda p: p.curp.curp,
-            'ocupacion': lambda p: p.carpetalaboral.ocupacion.nombre_ocupacion,
-            'puesto': lambda p: p.carpetalaboral.puesto.nombre_puesto,
-            'razon_social': lambda p: p.cliente.razon_social,
-            'rfc': lambda p: p.cliente.carpetaclientegenerales.rfc,
-            'nombre_curso': lambda p: p.carpetacapacitacion.capacitacion.curso,
-            'horas_curso': lambda p: p.carpetacapacitacion.capacitacion.duracion,
-            'fecha_inicial_capacitacion': lambda p: p.carpetacapacitacion.capacitacion.inicio,
-            'fecha_final_capacitacion': lambda p: p.carpetacapacitacion.capacitacion.conclusion,
-            'area_curso': lambda p: p.carpetacapacitacion.capacitacion.area_curso,
-            'nombre_instructor': lambda p: p.carpetacapacitacion.capacitacion.instructor.nombre_instructor,
-            'registro_instructor': lambda p: p.carpetacapacitacion.capacitacion.instructor.numero_registro,
-            'representante_legal': lambda p: p.cliente.carpetaclientegenerales.representante_legal,
-            'representante_trabajadores': lambda p: p.cliente.representantetrabajadores.nombre_completo,
-            'logotipo': lambda p: p.cliente.documentoscliente.logotipo.path,
-            'qr_code': lambda p: p.cliente.documentoscliente.qr_code.path,
-        }
+        # Set paper size to letter and setting margins
+        xlsx_sheet_presets(sheet)
 
         for personal in queryset:
-            verified_data = verify_data(personal, dc3_needed_data)
+            # Access data from personal object and related objects
+            data = default_data
+
+            # Try to access each attribute individually and handle exceptions separately
+            try:
+                data['nombre_completo_personal'] = personal.curp.get_nombre_completo()
+            except AttributeError:
+                pass
+            try:
+                data['curp_personal'] = f'{personal.curp.curp}'
+            except AttributeError:
+                pass
+            try:
+                data['ocupacion_personal'] = f'{personal.carpetalaboral.ocupacion.get_ocupacion_fullname()}'
+            except AttributeError:
+                pass
+            try:
+                data['puesto_personal'] = f'{personal.carpetalaboral.display_choice_value("puesto")}'
+            except AttributeError:
+                pass
+            try:
+                data['razon_social'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                data['rfc_personal'] = f'{personal.cliente.carpetaclientegenerales.rfc}'
+            except AttributeError:
+                pass
+            try:
+                data['nombre_curso'] = f'{personal.capacitaciones.all().last().curso}'
+            except AttributeError:
+                pass
+            try:
+                data['horas_curso'] = f'{personal.capacitaciones.all().last().duracion}'
+            except AttributeError:
+                pass
+            try:
+                data[
+                    'fecha_inicial_capacitacion'] = f'{personal.capacitaciones.all().last().inicio.strftime("%d/%m/%Y")}'
+            except AttributeError:
+                pass
+            try:
+                data[
+                    'fecha_final_capacitacion'] = f'{personal.capacitaciones.all().last().conclusion.strftime("%d/%m/%Y")}'
+            except AttributeError:
+                pass
+            try:
+                data['area_curso'] = f'{personal.capacitaciones.all().last().display_choice_value("area_curso")}'
+            except AttributeError:
+                pass
+            try:
+                data['nombre_capacitador'] = f'{personal.capacitaciones.all().last().instructor.nombre_instructor}'
+            except AttributeError:
+                pass
+            try:
+                data['registro_capacitador'] = f'{personal.capacitaciones.all().last().instructor.numero_registro}'
+            except AttributeError:
+                pass
+            try:
+                data['representante_legal'] = f'{personal.cliente.carpetaclientegenerales.representante_legal}'
+            except AttributeError:
+                pass
+            try:
+                data['representante_trabajadores'] = f'{personal.cliente.representantetrabajadores.nombre_completo}'
+            except AttributeError:
+                pass
+            try:
+                data['logotipo'] = f'{personal.cliente.documentoscliente.logotipo.path}'
+            except ValueError:
+                pass
+            try:
+                data['qr_code'] = f'{personal.cliente.documentoscliente.qr_code.path}'
+            except ValueError:
+                pass
 
             cell_mapping = {
-                'AJ5': verified_data['nombre_completo'],
-                'AJ6': verified_data['curp'],
-                'AJ7': verified_data['ocupacion'],
-                'AJ8': verified_data['puesto'],
-                'AJ9': verified_data['nombre_curso'],
-                'AJ10': verified_data['horas_curso'],
-                'AJ11': verified_data['fecha_inicial_capacitacion'],
-                'AJ12': verified_data['fecha_final_capacitacion'],
-                'AJ13': verified_data['area_curso'],
-                'AJ14': verified_data['nombre_instructor'],
-                'AJ15': verified_data['registro_instructor'],
-                'AJ21': verified_data['razon_social'],
-                'AJ22': verified_data['rfc'],
-                'AJ23': verified_data['representante_legal'],
-                'AJ24': verified_data['representante_trabajadores'],
+                'AJ5': data['nombre_completo_personal'],
+                'AJ6': data['curp_personal'],
+                'AJ7': data['ocupacion_personal'],
+                'AJ8': data['puesto_personal'],
+                'AJ9': data['nombre_curso'],
+                'AJ10': data['horas_curso'],
+                'AJ11': data['fecha_inicial_capacitacion'],
+                'AJ12': data['fecha_final_capacitacion'],
+                'AJ13': data['area_curso'],
+                'AJ14': data['nombre_capacitador'],
+                'AJ15': data['registro_capacitador'],
+                'AJ21': data['razon_social'],
+                'AJ22': data['rfc_personal'],
+                'AJ23': data['representante_legal'],
+                'AJ24': data['representante_trabajadores'],
             }
-
             for cell, value in cell_mapping.items():
                 sheet[cell].value = value
-
-            if verified_data['logotipo']:
-                img_path = verified_data['logotipo']
+            if data['logotipo']:
+                img_path = data['logotipo']
                 width, height = scale_image_from_height(img_path, desired_height_cm)
-                self.add_image_to_worksheet(img_path, 'B1', sheet, width, height)
-
-            if verified_data['qr_code']:
-                img_path = verified_data['qr_code']
+                add_image_to_worksheet(img_path, 'B1', sheet, width, height)
+            if data['qr_code']:
+                img_path = data['qr_code']
                 width, height = scale_image_from_height(img_path, desired_height_cm)
-                self.add_image_to_worksheet(img_path, 'AC1', sheet, width, height)
-
+                add_image_to_worksheet(img_path, 'AC1', sheet, width, height)
         wb.save(modified_xlsx_path)
-
         # Build the PDF filename using attributes from the first object in the queryset
         first_personal = queryset.first()
         pdf_filename = 'modified_dc3.pdf'
-        pdf_path = os.path.join('media/file_templates', pdf_filename)
+        front_pdf = os.path.join('media/file_templates', pdf_filename)
 
         # Convert the modified XLSX to PDF using LibreOffice
-        self.convert_xlsx_to_pdf(modified_xlsx_path, pdf_path)
+        convert_to_pdf(modified_xlsx_path, front_pdf)
 
         # Keep only the first page on PDF file
-        keep_first_page(pdf_path)
+        keep_first_page(front_pdf)
+
+        # Add reverse sheet to report
+        reverese_pdf = 'media/file_templates/dc3_reverse.pdf'
+        pdf_merged = 'merged_dc3.pdf'
+        merged_path = os.path.join('media/file_templates', pdf_merged)
+        merge_pdf_files(front_pdf, reverese_pdf, merged_path)
 
         # Return the PDF as a response with the desired filename
-        with open(pdf_path, 'rb') as pdf_file:
+        with open(merged_path, 'rb') as pdf_file:
             filename = f'{first_personal.curp.get_nombre_completo()}-DC3.pdf'
             pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
             pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
 
         # Delete temporary file
         os.remove(modified_xlsx_path)
-        os.remove(pdf_path)
+        os.remove(front_pdf)
+        os.remove(merged_path)
 
         return pdf_response
+
+
+class GenerateOdontologicView(View):
+    def get(self, personal_id: int, request: any, queryset: any):
+        verified_queries = default_data
+        docx_file_path = 'media/file_templates/odontologico.docx'
+
+        for personal in queryset:
+            # Specific data access for odontologico document
+            try:
+                fecha_odontolico = personal.carpetaexamenmedico.fecha_examen
+                fecha_odontolico_mx = format_date(fecha_odontolico, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_odontologico'] = f'{fecha_odontolico_mx}'.upper()
+            except AttributeError:
+                pass
+            try:
+                verified_queries['nombre_completo_personal'] = f'{personal.curp.get_nombre_completo()}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['id_racek'] = f'{personal.id}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['rfc_personal'] = f'{personal.rfc.rfc}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['sexo_personal'] = f'{personal.curp.sexo}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['edad_personal'] = f'{personal.curp.edad}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['ocupacion_personal'] = f'{personal.carpetalaboral.ocupacion.get_ocupacion_fullname()}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['empresa'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries[
+                    'nombre_completo_dentista'] = f'{personal.carpetaexamenmedico.medico_odontologico.nombre_completo}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['firma_dentista'] = f'{personal.carpetaexamenmedico.medicoodontologico.firma.path}'
+            except AttributeError:
+                pass
+
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-ODONTOLOGICO.pdf')
+            except AttributeError:
+                pass
+
+            # Generate the PDF file name based on the person's full name
+            pdf_file_path = f'media/file_templates/temporal.pdf'
+            temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+            temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
+
+            with open(temporary_pdf_path, 'rb') as pdf_file:
+                filename = f'{personal.curp.get_nombre_completo()}-ODONTOLOGICO.pdf'
+                pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # Delete temporary files
+            os.remove(temporary_docx_path)
+            os.remove(temporary_pdf_path)
+
+            return pdf_response
+
+
+class GenerateFingerprintRecordView(View):
+    def get(self, personal_id: int, request: any, queryset: any):
+        verified_queries = default_data
+        docx_file_path = 'media/file_templates/decadactilar.docx'
+
+        for personal in queryset:
+            # Specific data access for decadactilar document
+            try:
+                verified_queries['nombre_completo_personal_invertido'] = f'{personal.curp.get_nombre_completo_invertido()}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['rfc_personal'] = f'{personal.rfc.rfc}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['edad_personal'] = f'{personal.curp.edad}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['municipio_nacimiento'] = f'{personal.curp.municipio_registro}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['sexo_personal'] = f'{personal.curp.sexo}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['empresa'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries[
+                    'calle_y_numero'] = f'{personal.domicilio.calle} {personal.domicilio.numero_exterior}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries[
+                    'colonia_municipio_cp'] = (f'{personal.carpetaexamenmedico.domicilio.colonia} '
+                                               f'{personal.carpetaexamenmedico.domicilio.municipio} '
+                                               f'{personal.carpetaexamenmedico.domicilio.codigo_postal}')
+            except AttributeError:
+                pass
+            try:
+                fecha_mediafiliacion = personal.carpetamediafiliacion.fecha_examen
+                fecha_mediafiliacion_dia = format_date(fecha_mediafiliacion, 'd', locale='es_MX')
+                fecha_mediafiliacion_mes = format_date(fecha_mediafiliacion, 'MMMM', locale='es_MX')
+                fecha_mediafiliacion_anio = format_date(fecha_mediafiliacion, 'yy', locale='es_MX')
+                verified_queries['dia'] = f'{fecha_mediafiliacion_dia}'
+                verified_queries['mes'] = f'{fecha_mediafiliacion_mes}'.upper()
+                verified_queries['anio'] = f'{fecha_mediafiliacion_anio}'
+            except AttributeError:
+                pass
+
+            # Generate the PDF file name based on the person's full name
+            pdf_file_path = f'media/file_templates/temporal.pdf'
+            temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+            temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
+
+            with open(temporary_pdf_path, 'rb') as pdf_file:
+                filename = f'{personal.curp.get_nombre_completo()}-DECADACTILAR.pdf'
+                pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # Delete temporary files
+            os.remove(temporary_docx_path)
+            os.remove(temporary_pdf_path)
+
+            return pdf_response
+
+
+class GenerateCdmxLicenseView(View):
+    pass
+
+
+class GenerateEdomexLicenseView(View):
+    pass
+
+
+class GenerateFederalLicenseView(View):
+    pass
+
+
+class GenerateConsentFormView(View):
+    pass
+
+
+class GenerateTrainingCertificateView(View):
+    def get(self, personal_id: int, request: any, queryset: any):
+        verified_queries = default_data
+        docx_file_path = 'media/file_templates/capacitacion.docx'
+
+        for personal in queryset:
+            # Specific data access for capacitacion document
+            try:
+                verified_queries['fecha_constancia'] = f'{personal.capacitaciones.all().last().fecha_constancia}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['apellido_paterno'] = f'{personal.curp.apellido_paterno}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['apellido_materno'] = f'{personal.curp.apellido_materno}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['nombre'] = f'{personal.curp.nombre}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['rfc_personal'] = f'{personal.rfc.rfc}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['empresa'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['nombre_curso'] = f'{personal.capacitaciones.all().last().curso}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['horas_curso'] = f'{personal.capacitaciones.all().last().duracion}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['fecha_inicial_capacitacion'] = f'{personal.capacitaciones.all().last().inicio}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['fecha_final_capacitacion'] = f'{personal.capacitaciones.all().last().conclusion}'
+            except AttributeError:
+                pass
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-CONSTANCIA-CAPACITACION.pdf')
+            except AttributeError:
+                pass
+
+            # Generate the PDF file name based on the person's full name
+            pdf_file_path = f'media/file_templates/temporal.pdf'
+            temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+            temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
+
+            with open(temporary_pdf_path, 'rb') as pdf_file:
+                filename = f'{personal.curp.get_nombre_completo()}-CONSTANCIA-CAPACITACION.pdf'
+                pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # Delete temporary files
+            os.remove(temporary_docx_path)
+            os.remove(temporary_pdf_path)
+
+            return pdf_response
+
+
+class GenerateCdmxTestsView(View):
+    pass
+
+
+class GenerateFederalTestsView(View):
+    pass
+
+
+class GenerateSocioeconomicPhotosView(View):
+    pass
+
+
+class GenerateIshiharaTestView(View):
+    def get(self, personal_id: int, request: any, queryset: any):
+        verified_queries = default_data
+        docx_file_path = 'media/file_templates/ishihara.docx'
+
+        for personal in queryset:
+            # Specific data access for ishihara document
+            try:
+                if personal.carpetaexamenmedico.jefemedico.sexo_medico == 'FEMENINO':
+                    verified_queries['articulo_determinado'] = f'la'.capitalize()
+                elif personal.telefono_domicilio:
+                    verified_queries['articulo_determinado'] = f'el'.capitalize()
+            except AttributeError:
+                pass
+            try:
+                if personal.carpetaexamenmedico.jefemedico.sexo_medico == 'FEMENINO':
+                    verified_queries['genero_sustantivo'] = f'a'
+                elif personal.telefono_domicilio:
+                    verified_queries['genero_sustantivo'] = f'o'
+            except AttributeError:
+                pass
+            try:
+                verified_queries[
+                    'nombre_completo_medico'] = f'{personal.carpetaexamenmedico.jefemedico.nombre_completo}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries[
+                    'cedula_profesional_medico'] = f'{personal.carpetaexamenmedico.jefemedico.cedula_profesional}'
+            except AttributeError:
+                pass
+            try:
+                fecha_examen_medico = personal.carpetaexamenmedico.fecha_examen
+                fecha_examen_medico_mx = format_date(fecha_examen_medico, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_examen_medico'] = f"{fecha_examen_medico_mx}"
+            except AttributeError:
+                pass
+            try:
+                verified_queries['nombre_completo_personal'] = f'{personal.curp.get_nombre_completo()}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['curp'] = f'{personal.curp.curp}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['empresa'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['oi'] = f'{personal.carpetaexamenmedico.ishihara_visual_oi}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['od'] = f'{personal.carpetaexamenmedico.ishihara_visual_od}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['ao'] = f'{personal.carpetaexamenmedico.ishihara_visual_ao}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['lentes'] = f'{personal.carpetaexamenmedico.ishihara_lentes}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['deuteranopia'] = f'{personal.carpetaexamenmedico.ishihara_deuteranopia}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['protanopia'] = f'{personal.carpetaexamenmedico.ishihara_protanopia}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['tritanopia'] = f'{personal.carpetaexamenmedico.ishihara_tritanopia}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['acromatopsia'] = f'{personal.carpetaexamenmedico.ishihara_acromatopsia}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['resultado_ishihara'] = f'{personal.carpetaexamenmedico.ishihara_resultado}'
+            except AttributeError:
+                pass
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-ISHIHARA.pdf')
+            except AttributeError:
+                pass
+
+            # Generate the PDF file name based on the person's full name
+            pdf_file_path = f'media/file_templates/temporal.pdf'
+            temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+            temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
+
+            with open(temporary_pdf_path, 'rb') as pdf_file:
+                filename = f'{personal.curp.get_nombre_completo()}-ISHIHARA.pdf'
+                pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # Delete temporary files
+            os.remove(temporary_docx_path)
+            os.remove(temporary_pdf_path)
+
+            return pdf_response
+
+
+class GenerateHonestyTestView(View):
+    pass
+
+
+class GeneratePolygraphTestView(View):
+    def get(self, personal_id: int, request: any, queryset: any):
+        verified_queries = default_data
+        docx_file_path = 'media/file_templates/poligrafo.docx'
+
+        for personal in queryset:
+            # Specific data access for poligraph test document
+            try:
+                fecha_reporte = personal.carpetaexamenpoligrafo.fechareporte
+                fecha_reporte_mx = format_date(fecha_reporte, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_reporte'] = f'{fecha_reporte_mx}'.upper()
+            except AttributeError:
+                pass
+            try:
+                verified_queries['cliente'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                fecha_poligrafo = personal.carpetaexamenpoligrafo.fechapoligrafo
+                fecha_poligrafo_mx = format_date(fecha_poligrafo, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_poligrafo'] = f'{fecha_poligrafo_mx}'.upper()
+            except AttributeError:
+                pass
+            try:
+                verified_queries['nombre_completo_personal'] = f'{personal.curp.get_nombre_completo()}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['puesto'] = f'{personal.carpetalaboral.display_choice_value("puesto")}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['edad'] = f'{personal.curp.edad}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['nivel_academico'] = f'{personal.carpetagenerales.get_escolaridad_display()}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['estado_civil'] = f'{personal.carpetagenerales.get_estado_civil_display()}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['curp'] = f'{personal.curp.curp}'
+            except AttributeError:
+                pass
+            try:
+                if personal.telefono_celular:
+                    verified_queries['telefono'] = f'{personal.telefono_celular}'
+                elif personal.telefono_domicilio:
+                    verified_queries['telefono'] = f'{personal.telefono_domicilio}'
+                elif personal.telefono_recados:
+                    verified_queries['telefono'] = f'{personal.telefono_recados}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['domicilio'] = f'{personal.domicilio.get_full_address()}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['poligrafista'] = f'{personal.carpetaexamenpoligrafo.poligrafista}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['supervisor_poligrafo'] = f'{personal.carpetaexamenpoligrafo.supervisor}'
+            except AttributeError:
+                pass
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-POLIGRAFO.pdf')
+            except AttributeError:
+                pass
+
+            # Generate the PDF file name based on the person's full name
+            pdf_file_path = f'media/file_templates/temporal.pdf'
+            temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+            temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
+
+            with open(temporary_pdf_path, 'rb') as pdf_file:
+                filename = f'{personal.curp.get_nombre_completo()}-POLIGRAFO.pdf'
+                pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # Delete temporary files
+            os.remove(temporary_docx_path)
+            os.remove(temporary_pdf_path)
+
+            return pdf_response
+
+
+class GenerateGchPreliminaryView(View):
+    pass
+
+
+class GeneratePsychologicalView(View):
+    pass
+
+
+class GenerateCandidateView(View):
+    pass
+
+
+class GenerateSocioeconomicReportView(View):
+    pass
+
+
+class GenerateSocialWorkReportView(View):
+    def get(self, personal_id: int, request: any, queryset: any):
+        verified_queries = default_data
+        docx_file_path = 'media/file_templates/trabajosocial.docx'
+        today = date.today().strftime("%d%m%Y")
+
+        for personal in queryset:
+            # Specific data access for SocialWork test document
+            try:
+                verified_queries['nombre_completo_personal'] = personal.curp.get_nombre_completo()
+            except AttributeError:
+                pass
+            try:
+                verified_queries['edad_personal'] = f'{personal.curp.edad}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['puesto_personal'] = f'{personal.carpetalaboral.display_choice_value("puesto")}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['domicilio'] = f'{personal.domicilio.get_full_address()}'
+            except AttributeError:
+                pass
+            try:
+                fecha_social = personal.carpetaexamensocioeconomico.fecha_entrevista
+                fecha_social_mx = format_date(fecha_social, 'd \'de\' MMMM \'de\' yyyy', locale='es_MX')
+                verified_queries['fecha_social'] = f'{fecha_social_mx}'.upper()
+            except AttributeError:
+                pass
+            try:
+                verified_queries['empresa'] = f'{personal.cliente.razon_social}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['supervisor_social'] = f'{personal.carpetaexamensocioeconomico.supervisor}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['cedula_profesional_supervisor_social'] = f'{personal.carpetaexamensocioeconomico.cedula_profesional_supervisor}'
+            except AttributeError:
+                pass
+            try:
+                verified_queries['resultado_social'] = f'{personal.carpetaexamensocioeconomico.get_resultado_aspirante_display()}'
+            except AttributeError:
+                pass
+            # Generate and save unique authenticity chain
+            try:
+                verified_queries['cadena_autenticidad'] = generate_and_save_authenticity_chain(verified_queries, f'{personal.curp.get_nombre_completo()}-TRABAJOSOCIAL.pdf')
+            except AttributeError:
+                pass
+
+            # Generate the PDF file name based on the person's full name
+            pdf_file_path = f'media/file_templates/temporal.pdf'
+            temporary_docx_path = replace_variables_in_docx(docx_file_path, verified_queries)
+            temporary_pdf_path = convert_to_pdf(temporary_docx_path, pdf_file_path)
+
+            with open(temporary_pdf_path, 'rb') as pdf_file:
+                filename = f'{personal.curp.get_nombre_completo()}-TRABAJOSOCIAL.pdf'
+                pdf_response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                pdf_response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # Delete temporary files
+            os.remove(temporary_docx_path)
+            os.remove(temporary_pdf_path)
+
+            return pdf_response
+
+
+class GenerateSedenaView(View):
+    pass

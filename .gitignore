@@ -183,7 +183,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 # VS CODE
-.vscode/
+.vscode/*
 ### react ###
 .DS_*
 logs
@@ -204,3 +204,9 @@ test_racek.tar
 
 # End of https://www.toptal.com/developers/gitignore/api/react,django
 
+appmap.yml
+main/temp.py
+/Pipfile.lock
+/data/signals.py
+/data/middleware.py
+/media/temporal/*.*

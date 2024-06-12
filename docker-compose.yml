@@ -1,58 +1,48 @@
-version: "3.9"
-
 services:
-    web:
-        image: nginx:stable
-        restart: always
-        ports:
-            - 8080:80
-            - 4343:443
-        environment:
-            - DJANGO_HOST=app
-        volumes:
-            - ./default.conf.template:/etc/nginx/templates/default.conf.template
-            - ./conf/:/etc/nginx/conf.d/:ro
-            - media:/app/media
-            - static:/app/staticfiles
-        networks:
-            - backend
+  web:
+    image: nginx:stable
+    restart: always
+    ports:
+      - 20001:80
+      - 4343:443
+    volumes:
+      - ./default.conf.template:/etc/nginx/templates/default.conf.template
+      - static_volume:/usr/share/nginx/html
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - backend_network
 
-    app:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        restart: always
-        ports:
-            - 20001:20001
-        command: >
-            bash -c "python manage.py makemigrations &&
-                     python manage.py migrate &&
-                     python manage.py migrate data --database=hilda_data &&
-                     python manage.py createsuperbossgroup &&
-                     python manage.py import_cp_data &&
-                     python manage.py runserver 0.0.0.0:20001"
-
-        environment:
-            NAME: ${NAME}
-            USER: ${USER}
-            PASSWORD: ${PASSWORD}
-            HOST: ${HOST}
-            PORT: ${PORT}
-        volumes:
-            - .:/app
-            - ./conf/:/etc/nginx/conf.d/:ro
-            - static:/app/staticfiles
-        networks:
-            - backend
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    command: >
+      bash -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               python manage.py migrate data --database=hilda_data &&
+               python manage.py createsuperbossgroup &&
+               python manage.py import_cp_data &&
+               python manage.py import_oc_data &&
+               python manage.py collectstatic --no-input &&
+               gunicorn hildaApp.wsgi:application --bind 0.0.0.0:8000"
+    environment:
+      NAME: ${NAME}
+      USER: ${USER}
+      PASSWORD: ${PASSWORD}
+      HOST: ${HOST}
+      PORT: ${PORT}
+    volumes:
+      - .:/app
+      - static_volume:/usr/share/nginx/html
+    extra_hosts:
+      - ${HOST}:${HOST_IP}
+    networks:
+      - backend_network
 
 networks:
-    backend:
+  backend_network:
+    external: true
 
 volumes:
-  media:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /volume1/docker/Hilda_App/media/
-  static:
+  static_volume:

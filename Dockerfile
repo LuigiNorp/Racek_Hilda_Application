@@ -1,14 +1,13 @@
-FROM python:3.9.12
+FROM python:3.11
 ENV PYTHONUNBUFFERED 1
 ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 ENV PYTHONDONTWRITEBYTECODE 1
+ENV LD_LIBRARY_PATH="/usr/lib/libreoffice/lib:$LD_LIBRARY_PATH"
 
 WORKDIR /app
 COPY requirements.txt /app
 RUN apt-get update && apt-get install -y \
     libcairo2-dev \
-    python3-dev \
-    python3.9-dev \
     libgirepository1.0-dev \
     pkg-config \
     dos2unix \
@@ -20,18 +19,10 @@ RUN apt-get update && apt-get install -y \
     gcc \
 	graphviz \
 	libgraphviz-dev \
-	pkg-config \
     libreoffice \
-    # snapd \
     && apt-get clean
-# RUN systemctl start snapd.service
-# RUN snap install core 
-# RUN snap refresh core
-# RUN snap install --classic certbot
-# RUN ln -s /snap/bin/certbot /usr/bin/certbot
-# RUN certbot --nginx     
 
 RUN pip install -r requirements.txt
 COPY . .
-VOLUME ["/media"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:20001"]
+EXPOSE 8000
+CMD ["gunicorn", "hildaApp.wsgi:application", "--bind", "0.0.0.0:8000"]

@@ -1,11 +1,7 @@
-from .models import CustomUser
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .choices import DEPARTAMENTO
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Group
 from django import forms
-from django.forms import HiddenInput
-
 from main.models import *
 from data.models import *
 
@@ -44,9 +40,10 @@ class CustomUserRegisterForm(UserCreationForm):
         self.fields['is_superuser'].help_text = '<div class="help">{}</div>'.format(is_superuser_default_help_text)
         self.fields['is_staff'].help_text = '<div class="help">{}</div>'.format(is_staff_default_help_text)
         self.fields[
-            'groups'].help_text = '<div class="help">{} Mantenga presionado "Control" o "Comando" en una Mac, para seleccionar más de uno.</div>'.format(
-            groups_help_text)
-        # self.fields['permissions'].help_text = '<div class="help" id="id_permissions_helptext">{}. Mantenga presionado "Control" o "Comando" en una Mac, para seleccionar más de uno.</div>'.format(permissions_help_text)
+            'groups'].help_text = ('<div class="help">{} Mantenga presionado "Control" o "Comando" en una Mac, '
+                                   'para seleccionar más de uno.</div>').format(groups_help_text)
+        # self.fields['permissions'].help_text = '<div class="help" id="id_permissions_helptext">{}. Mantenga
+        # presionado "Control" o "Comando" en una Mac, para seleccionar más de uno.</div>'.format(permissions_help_text)
 
     def clean_password2(self):
         # Check that both passwords match.
@@ -72,7 +69,11 @@ class CustomUserProfileForm(UserChangeForm):
     apellido_materno = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
     username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(label='Password', widget=forms.PasswordInput(
-        attrs={'class': 'form-control', 'value': 'existing_password'}))
+        attrs={
+            'class': 'form-control',
+            'value': 'existing_password'
+        }
+    ))
     email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-control'}))
     departamento = forms.ChoiceField(label='Departamento', choices=DEPARTAMENTO,
                                      widget=forms.Select(attrs={'class': 'form-control'}))
@@ -112,7 +113,7 @@ class PersonalForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if request and 'previous' in request.META.get('HTTP_REFERER', ''):
-            self.fields = ['folio','origen','fecha','observaciones','resultado']
+            self.fields = ['folio', 'origen', 'fecha', 'observaciones', 'resultado']
         else:
             self.fields = '__all__'  # Include all fields for other URLs
 
