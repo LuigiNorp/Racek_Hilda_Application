@@ -10,12 +10,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Calculate checksums for Ocupaciones CSV and SQL data
         query_for_ocupaciones_checksum = '''
-            SELECT SHA2(GROUP_CONCAT(
+            SELECT SHA256(GROUP_CONCAT(
                 clave_subarea || ',' ||
                 subarea || ',' ||
                 clave_area || ',' ||
                 area
-            ), 256) AS data_checksum
+            )) AS data_checksum
             FROM data_ocupacion
         '''
 
