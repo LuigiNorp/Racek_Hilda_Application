@@ -96,31 +96,15 @@ WSGI_APPLICATION = 'hildaApp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-# The real one
+# The development database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('APPDATA'),
-        'USER': env('USER_DB'),
-        'PASSWORD': env('PASSWORD'),
-        'HOST': env('HOST'),
-        'PORT': env('PORT'),
-        'ATOMIC_REQUEST': env('ATOMIC_REQUEST'),
-        'OPTIONS': {
-			'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3-app',
     },
     'hilda_data': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('DB'),
-        'USER': env('USER_DB'),
-        'PASSWORD': env('PASSWORD'),
-        'HOST': env('HOST'),
-        'PORT': env('PORT'),
-        'ATOMIC_REQUEST': env('ATOMIC_REQUEST'),
-        'OPTIONS': {
-    		'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3-data',
     },
 }
 
