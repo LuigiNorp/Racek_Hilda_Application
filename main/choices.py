@@ -1,7 +1,7 @@
 DEPARTAMENTO = (
     (1, 'César'),
     (2, 'Karla'),
-    (3,'Ramiro'),
+    (3, 'Ramiro'),
 )
 
 PERMISOS = (
@@ -11,3 +11,4 @@ PERMISOS = (
     (4, 'superboss'),
     (5, 'dbadmin'),
 )
+
