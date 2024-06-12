@@ -82,7 +82,7 @@ class ClienteAdmin(NestedModelAdmin):
         CarpetaClienteContactosInline,
         PaqueteCapacitacionInline,
     ]
-    search_fields = ['nombre_comercial', 'razon_social',]
+    search_fields = ['nombre_comercial', 'razon_social', ]
 
     def save_model(self, request, obj, form, change):
         obj.update_by = request.user
@@ -210,9 +210,20 @@ class CarpetaMediaFiliacionInline(NestedStackedInline):
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
-        if obj is not None and obj.carpetamediafiliacion:
-            if obj.carpetamediafiliacion.estatura is None or obj.carpetamediafiliacion.peso is None:
-                readonly_fields += ('indice_masa_corporal', 'clasificacion_imc')
+
+        if obj is not None:
+            try:
+                carpetamediafiliacion = obj.carpetamediafiliacion
+            except CarpetaMediaFiliacion.DoesNotExist:
+                carpetamediafiliacion = None
+
+            if carpetamediafiliacion:
+                estatura_is_none = carpetamediafiliacion.estatura is None
+                peso_is_none = carpetamediafiliacion.peso is None
+
+                if estatura_is_none or peso_is_none:
+                    readonly_fields += ('indice_masa_corporal', 'clasificacion_imc')
+
         return readonly_fields
 
 
@@ -278,8 +289,8 @@ class ResultadosInline(NestedStackedInline):
 @admin.register(Personal)
 class PersonalAdmin(NestedModelAdmin):
     list_display = ('id', 'nombre_completo', 'cliente',)
-    search_fields = ['cliente',]
-    autocomplete_fields = ['cliente',]
+    search_fields = ['cliente', ]
+    autocomplete_fields = ['cliente', ]
     inlines = [
         CurpEmpleadoInline,
         RfcEmpleadoInline,
@@ -433,11 +444,21 @@ class CarpetaMediaFiliacionPrevioInline(NestedStackedInline):
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
-        if obj is not None and obj.carpetamediafiliacion:
-            if obj.carpetamediafiliacion.estatura is None or obj.carpetamediafiliacion.peso is None:
-                readonly_fields += ('indice_masa_corporal', 'clasificacion_imc')
-        return readonly_fields
 
+        if obj is not None:
+            try:
+                carpetamediafiliacion = obj.carpetamediafiliacion
+            except CarpetaMediaFiliacion.DoesNotExist:
+                carpetamediafiliacion = None
+
+            if carpetamediafiliacion:
+                estatura_is_none = carpetamediafiliacion.estatura is None
+                peso_is_none = carpetamediafiliacion.peso is None
+
+                if estatura_is_none or peso_is_none:
+                    readonly_fields += ('indice_masa_corporal', 'clasificacion_imc')
+
+        return readonly_fields
 
 class DocumentosDigitalesPrevioInline(NestedStackedInline):
     model = DocumentosDigitalesPrevio
@@ -496,8 +517,8 @@ class RfcPrevioInline(NestedStackedInline):
 @admin.register(PersonalPrevio)
 class PersonalPrevioAdmin(NestedModelAdmin):
     list_display = ('id', 'nombre_completo', 'cliente',)
-    search_fields = ['cliente',]
-    autocomplete_fields = ['cliente',]
+    search_fields = ['cliente', ]
+    autocomplete_fields = ['cliente', ]
     inlines = [
         CurpPrevioInline,
         RfcPrevioInline,
@@ -521,13 +542,13 @@ class PersonalPrevioAdmin(NestedModelAdmin):
 @admin.register(Curp)
 class CurpAdmin(admin.ModelAdmin):
     list_display = ('id', 'curp', 'nombre', 'apellido_paterno', 'apellido_materno', 'fecha_nacimiento', 'sexo',)
-    search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno',]
+    search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno', ]
 
 
 @admin.register(CurpEmpleado)
 class CurpEmpleadoAdmin(admin.ModelAdmin):
     list_display = ('id', 'curp', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo',)
-    search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno',]
+    search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno', ]
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -542,7 +563,7 @@ class CurpEmpleadoAdmin(admin.ModelAdmin):
 @admin.register(CurpPrevio)
 class CurpPrevioAdmin(admin.ModelAdmin):
     list_display = ('curp', 'nombre', 'apellido_paterno', 'apellido_materno', 'sexo',)
-    search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno',]
+    search_fields = ['curp', 'nombre', 'apellido_paterno', 'apellido_materno', ]
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -557,13 +578,13 @@ class CurpPrevioAdmin(admin.ModelAdmin):
 @admin.register(Rfc)
 class RfcAdmin(admin.ModelAdmin):
     list_display = ('id', 'rfc', 'razon_social',)
-    search_fields = ['rfc', 'razon_social',]
+    search_fields = ['rfc', 'razon_social', ]
 
 
 @admin.register(RfcEmpleado)
 class RfcEmpleadoAdmin(admin.ModelAdmin):
     list_display = ('id', 'rfc', 'razon_social',)
-    search_fields = ['rfc', 'razon_social',]
+    search_fields = ['rfc', 'razon_social', ]
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -578,7 +599,7 @@ class RfcEmpleadoAdmin(admin.ModelAdmin):
 @admin.register(RfcPrevio)
 class RfcPrevioAdmin(admin.ModelAdmin):
     list_display = ('rfc', 'razon_social',)
-    search_fields = ['rfc', 'razon_social',]
+    search_fields = ['rfc', 'razon_social', ]
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -598,13 +619,13 @@ class PuestoFuncionalAdmin(admin.ModelAdmin):
 @admin.register(JefeMedico)
 class JefeMedicoAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre_completo', 'cedula_profesional',)
-    search_fields = ['nombre_completo', 'cedula_profesional',]
+    search_fields = ['nombre_completo', 'cedula_profesional', ]
 
 
 @admin.register(MedicoOdontologico)
 class MedicoOdontologicoAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre_completo', 'cedula_profesional',)
-    search_fields = ['nombre_completo', 'cedula_profesional',]
+    search_fields = ['nombre_completo', 'cedula_profesional', ]
 
 
 @admin.register(TipoBaja)
@@ -620,13 +641,13 @@ class MotivoSeparacionAdmin(admin.ModelAdmin):
 @admin.register(Instructor)
 class InstructorAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre_instructor', 'numero_registro',)
-    search_fields = ['nombre_instructor', 'numero_registro',]
+    search_fields = ['nombre_instructor', 'numero_registro', ]
 
 
 @admin.register(CodigoPostal)
 class CodigoPostalAdmin(admin.ModelAdmin):
     list_display = ('id', 'codigo_postal', 'tipo_asentamiento', 'asentamiento', 'municipio', 'estado', 'ciudad', 'pais')
-    search_fields = ['codigo_postal', 'tipo_asentamiento', 'asentamiento',]
+    search_fields = ['codigo_postal', 'tipo_asentamiento', 'asentamiento', ]
 
 
 @admin.register(Ocupacion)
@@ -639,8 +660,13 @@ class OcupacionAdmin(admin.ModelAdmin):
 @admin.register(PaqueteCapacitacion)
 class PaqueteCapacitacionAdmin(admin.ModelAdmin):
     list_display = ('id', 'cliente', 'fecha_solicitud', 'fecha_realizacion',)
-    search_fields = ['cliente', 'fecha_realizacion',]
-    autocomplete_fields = ['cliente',]
+    search_fields = ['cliente', 'fecha_realizacion', ]
+    autocomplete_fields = ['cliente', ]
+
+
+@admin.register(Evaluador)
+class EvaluadorAdmin(admin.ModelAdmin):
+    list_display = ('id', 'solicitante', 'personal',)
 
 
 @admin.register(ReportAuthenticity)
@@ -657,5 +683,5 @@ class ImportarExportarAdmin(admin.ModelAdmin):
 @admin.register(Historial)
 class HistorialAdmin(admin.ModelAdmin):
     list_display = ('id', 'timestamp', 'user', 'action', 'model', 'object_id', 'change', 'ip_address', 'user_agent')
-    search_fields = ['user', 'model', 'timestamp',]
+    search_fields = ['user', 'model', 'timestamp', ]
     readonly_fields = ('id', 'timestamp', 'user', 'action', 'model', 'object_id', 'change', 'ip_address', 'user_agent')
