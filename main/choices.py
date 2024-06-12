@@ -11,4 +11,3 @@ PERMISOS = (
     (4, 'superboss'),
     (5, 'dbadmin'),
 )
-
