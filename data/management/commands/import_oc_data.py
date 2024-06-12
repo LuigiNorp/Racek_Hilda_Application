@@ -10,14 +10,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Calculate checksums for Ocupaciones CSV and SQL data
         query_for_ocupaciones_checksum = '''
-			SELECT SHA2(GROUP_CONCAT(
-				clave_subarea || ',' ||
-				subarea || ',' ||
-				clave_area || ',' ||
-				area
-			), 256) AS data_checksum
-			FROM data_ocupacion
-			'''
+            SELECT SHA2(GROUP_CONCAT(
+                clave_subarea || ',' ||
+                subarea || ',' ||
+                clave_area || ',' ||
+                area
+            ), 256) AS data_checksum
+            FROM data_ocupacion
+        '''
 
         csv_checksum = calculate_checksum('media/file_templates/ocupaciones.csv')
         sql_checksum = calculate_checksum_sql('hilda_data', query_for_ocupaciones_checksum)

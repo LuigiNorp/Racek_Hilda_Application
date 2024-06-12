@@ -1,6 +1,7 @@
 import pandas as pd
 from django.core.management.base import BaseCommand
 from data.models import CodigoPostal
+from unidecode import unidecode
 from .import_tools import *
 
 
@@ -11,15 +12,15 @@ class Command(BaseCommand):
         # Calculate checksums for CSV and SQL data
         query_for_codigpostal_checksum = '''
             SELECT SHA2(GROUP_CONCAT(
-            codigo_postal || ',' ||
-            tipo_asentamiento || ',' ||
-            asentamiento || ',' ||
-            municipio || ',' ||
-            estado || ',' ||
-            ciudad || ',' ||
-            pais
-        ), 256) AS data_checksum
-        FROM data_codigopostal
+                codigo_postal || ',' ||
+                tipo_asentamiento || ',' ||
+                asentamiento || ',' ||
+                municipio || ',' ||
+                estado || ',' ||
+                ciudad || ',' ||
+                pais
+            ), 256) AS data_checksum
+            FROM data_codigopostal
         '''
 
         csv_checksum = calculate_checksum('media/file_templates/cp.csv')
@@ -39,6 +40,7 @@ class Command(BaseCommand):
         total_rows = len(df)
 
         for i, row in df.iterrows():
+            asentamiento_normalizado = unidecode(row['d_asenta'])  # Normalizar el asentamiento
             codigopostal_input = CodigoPostal(
                 codigo_postal=row['d_codigo'],
                 asentamiento=row['d_asenta'],
@@ -46,14 +48,17 @@ class Command(BaseCommand):
                 municipio=row['D_mnpio'],
                 estado=row['d_estado'],
                 ciudad=row['d_ciudad'],
-                pais='México')
+                pais='México',
+                asentamiento_normalizado=asentamiento_normalizado  # Asignar el asentamiento normalizado
+            )
 
             populate_database_if_data_row_is_none(
                 CodigoPostal,
                 codigopostal_input,
                 'codigo_postal',
                 codigopostal_database,
-                objects)
+                objects
+            )
 
             save_and_clear_data_row(
                 CodigoPostal,
