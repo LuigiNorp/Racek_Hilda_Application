@@ -4,6 +4,9 @@
 
 Racek_Hilda_Application es una aplicación web desarrollada con Django Rest Framework que le pertenece a Racek, la cual permite registrar y disponer información de manera sencilla de los trámites para Empresas de Seguridad Privada que Racek tiene como clientes. Permite registrar usuarios de Racek (Gestores) y empleados de la empresa cliente, guardar sus documentos en una base de datos MariaDB; la aplicación utiliza dos bases de datos: una para almacenar todos los usuarios y datos de la aplicación, y otra para almacenar la información ingresada a través del sitio web.
 
+Permite la generación reportes en formato PDF a partir de plantillas hechas en archivos DOCX y XLSX. Igualmente permite la exportación e importación de la base de datos. La importación se puede hacer por medio de un archivo CSV
+
+
 ### Tipos de Usuarios
 
 #### 1) Gestor (Operative)
